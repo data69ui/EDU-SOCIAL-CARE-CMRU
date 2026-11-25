@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import type {
   AcademicYear,
@@ -17,7 +18,7 @@ import type {
   UserRole,
   VolunteerRecord,
   YearLevel,
-} from '../src/types/scholarship';
+} from '../src/types/scholarship.js';
 import {
   buildDefaultStudentPassword,
   buildPublicOverviewStats,
@@ -32,12 +33,12 @@ import {
   validatePasswordChangePayload,
   validateStrongPassword,
   validateStudentId,
-} from '../src/utils/scholarshipLogic';
+} from '../src/utils/scholarshipLogic.js';
 import {
   clampPayloadText,
   MAX_SERVER_UPLOAD_BYTES,
   validateUploadedBinary,
-} from '../src/utils/securityGuard';
+} from '../src/utils/securityGuard.js';
 
 export interface StoredUser extends UserAccount {
   passwordHash?: string;
@@ -52,10 +53,57 @@ export interface DatabaseState {
   volunteers: VolunteerRecord[];
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
-const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
-const DB_BACKUP_FILE = path.join(DATA_DIR, 'db.backup.json');
+const IS_VERCEL = Boolean(
+  process.env.VERCEL || process.env.VERCEL_ENV || process.env.NOW_REGION
+);
+const REMOTE_STATE_KEY = 'cmru_edu_social_care:db_state';
+const REMOTE_SECRET_KEY = 'cmru_edu_social_care:session_secret';
+const REMOTE_UPLOAD_PREFIX = 'cmru_edu_social_care:upload:';
+
+function resolveWritableDirs(): {
+  dataDir: string;
+  uploadsDir: string;
+  dbFile: string;
+  dbBackupFile: string;
+} {
+  const candidates = IS_VERCEL
+    ? [path.join(os.tmpdir(), 'cmru-edu-social-care-data')]
+    : [
+        path.resolve(process.cwd(), 'data'),
+        path.join(os.tmpdir(), 'cmru-edu-social-care-data'),
+      ];
+
+  for (const dir of candidates) {
+    try {
+      const uploads = path.join(dir, 'uploads');
+      fs.mkdirSync(dir, { recursive: true });
+      fs.mkdirSync(uploads, { recursive: true });
+      return {
+        dataDir: dir,
+        uploadsDir: uploads,
+        dbFile: path.join(dir, 'db.json'),
+        dbBackupFile: path.join(dir, 'db.backup.json'),
+      };
+    } catch {
+      // Fall back to /tmp on read-only filesystems (e.g. EROFS / EACCES)
+    }
+  }
+
+  const fallback = path.join(os.tmpdir(), 'cmru-edu-social-care-data');
+  const uploads = path.join(fallback, 'uploads');
+  fs.mkdirSync(uploads, { recursive: true });
+  return {
+    dataDir: fallback,
+    uploadsDir: uploads,
+    dbFile: path.join(fallback, 'db.json'),
+    dbBackupFile: path.join(fallback, 'db.backup.json'),
+  };
+}
+
+const RESOLVED_DIRS = resolveWritableDirs();
+const UPLOADS_DIR = RESOLVED_DIRS.uploadsDir;
+const DB_FILE = RESOLVED_DIRS.dbFile;
+const DB_BACKUP_FILE = RESOLVED_DIRS.dbBackupFile;
 
 function sanitizePayloadValue<T>(val: T, depth = 0): T {
   if (depth > 6) return val;
@@ -109,18 +157,145 @@ function createEmptyState(): DatabaseState {
 
 class FileStore {
   private state: DatabaseState;
+  private initializedRemote = false;
+  private lastRemoteSyncAt = 0;
+  private pendingRemotePersist: Promise<void> = Promise.resolve();
+  private runtimeSessionSecret: string | null = null;
 
   constructor() {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.mkdirSync(RESOLVED_DIRS.dataDir, { recursive: true });
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
     const loaded = this.tryReadJson(DB_FILE) || this.tryReadJson(DB_BACKUP_FILE);
     if (loaded) {
       this.state = loaded;
     } else {
       this.state = createEmptyState();
-      this.persist();
+      if (!this.getRemoteConfig()) {
+        this.persistLocalOnly();
+      }
     }
     this.migrateLegacyStudentPasswords();
+  }
+
+  private getRemoteConfig(): { url: string; token: string } | null {
+    const url = (
+      process.env.UPSTASH_REDIS_REST_URL ||
+      process.env.KV_REST_API_URL ||
+      ''
+    )
+      .trim()
+      .replace(/\/+$/, '');
+    const token = (
+      process.env.UPSTASH_REDIS_REST_TOKEN ||
+      process.env.KV_REST_API_TOKEN ||
+      ''
+    ).trim();
+    if (!url || !token) return null;
+    return { url, token };
+  }
+
+  private async remoteGet(key: string): Promise<string | null> {
+    const cfg = this.getRemoteConfig();
+    if (!cfg) return null;
+    const res = await fetch(`${cfg.url}/get/${encodeURIComponent(key)}`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${cfg.token}` },
+    });
+    if (!res.ok) {
+      throw new Error(`Remote KV GET failed (${res.status})`);
+    }
+    const json = (await res.json()) as { result?: unknown };
+    return typeof json.result === 'string' ? json.result : null;
+  }
+
+  private async remoteSet(key: string, value: string): Promise<void> {
+    const cfg = this.getRemoteConfig();
+    if (!cfg) return;
+    const res = await fetch(`${cfg.url}/set/${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${cfg.token}`,
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+      body: value,
+    });
+    if (!res.ok) {
+      throw new Error(`Remote KV SET failed (${res.status})`);
+    }
+  }
+
+  async ready(forceRefresh = false): Promise<void> {
+    const cfg = this.getRemoteConfig();
+    if (!cfg) {
+      if (!this.runtimeSessionSecret) {
+        this.runtimeSessionSecret =
+          process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+      }
+      return;
+    }
+
+    const stale = Date.now() - this.lastRemoteSyncAt > 1500;
+    if (!forceRefresh && this.initializedRemote && !stale) {
+      return;
+    }
+
+    await this.pendingRemotePersist.catch(() => {});
+
+    try {
+      const raw = await this.remoteGet(REMOTE_STATE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<DatabaseState>;
+        if (parsed && Array.isArray(parsed.users)) {
+          const users = parsed.users;
+          const hasAdmin = users.some((u) => u.role === 'admin');
+          this.state = {
+            adminInitialized: Boolean(parsed.adminInitialized) && hasAdmin,
+            users,
+            basicInfos: parsed.basicInfos || {},
+            applications: parsed.applications || {},
+            grades: Array.isArray(parsed.grades) ? parsed.grades : [],
+            volunteers: Array.isArray(parsed.volunteers) ? parsed.volunteers : [],
+          };
+          this.persistLocalOnly();
+        }
+      } else if (!this.initializedRemote) {
+        await this.remoteSet(REMOTE_STATE_KEY, JSON.stringify(this.state));
+      }
+
+      if (!process.env.SESSION_SECRET && !this.runtimeSessionSecret) {
+        const remoteSecret = await this.remoteGet(REMOTE_SECRET_KEY);
+        if (remoteSecret && remoteSecret.length >= 32) {
+          this.runtimeSessionSecret = remoteSecret;
+        } else {
+          const generated = crypto.randomBytes(32).toString('hex');
+          this.runtimeSessionSecret = generated;
+          await this.remoteSet(REMOTE_SECRET_KEY, generated);
+        }
+      } else if (process.env.SESSION_SECRET) {
+        this.runtimeSessionSecret = process.env.SESSION_SECRET;
+      }
+
+      this.initializedRemote = true;
+      this.lastRemoteSyncAt = Date.now();
+    } catch (err) {
+      console.error('[store.ready remote sync error]', err);
+      if (!this.runtimeSessionSecret) {
+        this.runtimeSessionSecret =
+          process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+      }
+    }
+  }
+
+  getRuntimeSessionSecret(): string {
+    if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+    if (!this.runtimeSessionSecret) {
+      this.runtimeSessionSecret = crypto.randomBytes(32).toString('hex');
+    }
+    return this.runtimeSessionSecret;
+  }
+
+  async flush(): Promise<void> {
+    await this.pendingRemotePersist;
   }
 
   private tryReadJson(filePath: string): DatabaseState | null {
@@ -161,12 +336,13 @@ class FileStore {
       }
     }
     if (changed) {
-      this.persist();
+      this.persistLocalOnly();
     }
   }
 
-  private persist() {
+  private persistLocalOnly() {
     const serialized = JSON.stringify(this.state, null, 2);
+    fs.mkdirSync(RESOLVED_DIRS.dataDir, { recursive: true });
     if (fs.existsSync(DB_FILE)) {
       try {
         const existingRaw = fs.readFileSync(DB_FILE, 'utf-8');
@@ -181,6 +357,19 @@ class FileStore {
     const tmp = `${DB_FILE}.tmp`;
     fs.writeFileSync(tmp, serialized, 'utf-8');
     fs.renameSync(tmp, DB_FILE);
+  }
+
+  private persist() {
+    this.persistLocalOnly();
+    if (this.getRemoteConfig()) {
+      const snapshot = JSON.stringify(this.state);
+      this.pendingRemotePersist = this.pendingRemotePersist
+        .catch(() => {})
+        .then(() => this.remoteSet(REMOTE_STATE_KEY, snapshot))
+        .then(() => {
+          this.lastRemoteSyncAt = Date.now();
+        });
+    }
   }
 
   getUploadsDir() {
@@ -830,7 +1019,18 @@ class FileStore {
     if (!dest.startsWith(UPLOADS_DIR + path.sep)) {
       throw new Error('เส้นทางจัดเก็บไฟล์ไม่ถูกต้อง');
     }
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
     fs.writeFileSync(dest, buffer);
+
+    if (this.getRemoteConfig()) {
+      const payload = JSON.stringify({
+        mimeType: validation.canonicalMime,
+        base64: buffer.toString('base64'),
+      });
+      this.pendingRemotePersist = this.pendingRemotePersist
+        .catch(() => {})
+        .then(() => this.remoteSet(`${REMOTE_UPLOAD_PREFIX}${safeFilename}`, payload));
+    }
 
     return {
       id: `file_${crypto.randomUUID().slice(0, 8)}`,
@@ -840,6 +1040,33 @@ class FileStore {
       url: `/uploads/${safeFilename}`,
       uploadedAt: new Date().toISOString(),
     };
+  }
+
+  async readUploadedFile(
+    safeFilename: string
+  ): Promise<{ buffer: Buffer; mimeType?: string } | null> {
+    const dest = path.resolve(UPLOADS_DIR, safeFilename);
+    if (!dest.startsWith(UPLOADS_DIR + path.sep)) {
+      return null;
+    }
+    if (fs.existsSync(dest)) {
+      return { buffer: fs.readFileSync(dest) };
+    }
+    if (this.getRemoteConfig()) {
+      try {
+        const raw = await this.remoteGet(`${REMOTE_UPLOAD_PREFIX}${safeFilename}`);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as { mimeType?: string; base64?: string };
+        if (!parsed.base64) return null;
+        const buffer = Buffer.from(parsed.base64, 'base64');
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+        fs.writeFileSync(dest, buffer);
+        return { buffer, mimeType: parsed.mimeType };
+      } catch {
+        return null;
+      }
+    }
+    return null;
   }
 }
 

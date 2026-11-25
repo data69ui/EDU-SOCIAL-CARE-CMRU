@@ -51,12 +51,23 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
       },
     });
 
-    const data = await res.json().catch(() => ({}));
+    const contentType = res.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const data = isJson ? await res.json().catch(() => ({})) : {};
     if (!res.ok) {
       if (res.status === 401) {
         setStoredToken(null);
       }
+      if (res.status === 413) {
+        throw new Error('ขนาดไฟล์หรือข้อมูลใหญ่เกินขีดจำกัดของเซิร์ฟเวอร์ (แนะนำไม่เกิน 3 MB ต่อไฟล์)');
+      }
+      if (!isJson && res.status === 404) {
+        throw new Error('ไม่พบ API ของระบบ กรุณาตรวจสอบการตั้งค่าเซิร์ฟเวอร์');
+      }
       throw new Error(data.error || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    }
+    if (!isJson) {
+      throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง กรุณาตรวจสอบการตั้งค่า API');
     }
     return data as T;
   } catch (err) {
