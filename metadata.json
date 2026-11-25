@@ -1,0 +1,6 @@
+{
+  "name": "EDU SOCIAL CARE CMRU",
+  "description": "ระบบบริหารจัดการทุนการศึกษา กองทุนเงินให้กู้ยืมเพื่อการศึกษา (กยศ.) และบันทึกกิจกรรมจิตอาสา สาขาวิชาสังคมศึกษา คณะครุศาสตร์ มหาวิทยาลัยราชภัฏเชียงใหม่",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
