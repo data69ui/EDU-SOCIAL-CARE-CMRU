@@ -632,6 +632,93 @@ test('Cloudflare Worker + D1 + R2 full end-to-end flow', async (t) => {
   const postDeleteOverview = await reqJson(env, '/api/public/overview');
   assert.equal(postDeleteOverview.json.overview.totalAllStudents, 0);
 
+  // 10c. Snapshot restore RBAC & full student/application/grade/volunteer recovery
+  const teacherRestoreForbidden = await reqJson(env, '/api/admin/restore-snapshot', {
+    method: 'POST',
+    token: teacherToken,
+    body: { students: [] },
+  });
+  assert.equal(teacherRestoreForbidden.response.status, 403);
+
+  const restoreRes = await reqJson(env, '/api/admin/restore-snapshot', {
+    method: 'POST',
+    token: adminToken,
+    body: {
+      students: [
+        {
+          user: {
+            id: 'usr_old',
+            role: 'student',
+            username: '68141102',
+            fullName: 'นายสมศักดิ์ กู้คืนข้อมูล',
+            studentId: '68141102',
+            authProvider: 'password',
+            hasPassword: true,
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+          basicInfo: {
+            studentId: '68141102',
+            fullName: 'นายสมศักดิ์ กู้คืนข้อมูล',
+            academicYear: '2569',
+            yearLevel: 'ปี 1',
+            gpax: '3.55',
+            pdpaConsented: true,
+            hasStudentLoan: 'กู้',
+            hasOtherScholarship: 'ได้รับทุน',
+            receivedScholarships: [{ id: 's9', name: 'ทุนฟื้นฟู', provider: 'มร.ชม.' }],
+            isDraft: false,
+          },
+          application: {
+            academicYear: '2569',
+            yearLevel: 'ปี 1',
+            gpax: '3.55',
+            status: 'approved',
+            advisorComment: 'กู้คืนเรียบร้อย',
+          },
+          grades: [
+            {
+              academicYear: '2569',
+              yearLevel: 'ปี 1',
+              semester: 'ภาคเรียนที่ 1',
+              gpa: '3.55',
+              attachments: [],
+            },
+          ],
+          volunteers: [
+            {
+              academicYear: '2569',
+              activityTitle: 'อาสาพัฒนาชุมชน',
+              activityDetail: 'ทำความสะอาด',
+              learnings: 'สามัคคี',
+              hours: 5,
+              activityDate: '2026-09-01',
+              dailyLifeApplication: 'มีวินัย',
+              photos: [],
+              approvalStatus: 'approved',
+              approvedHours: 5,
+              advisorNote: 'ผ่าน',
+            },
+          ],
+        },
+      ],
+      workspaceConfig: {
+        spreadsheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
+        spreadsheetTitle: 'Restored Sheet',
+      },
+    },
+  });
+  assert.equal(restoreRes.response.status, 200);
+  assert.equal(restoreRes.json.result.restoredStudents, 1);
+  assert.equal(restoreRes.json.result.restoredApplications, 1);
+  assert.equal(restoreRes.json.result.restoredGrades, 1);
+  assert.equal(restoreRes.json.result.restoredVolunteers, 1);
+  assert.equal(restoreRes.json.result.workspaceRestored, true);
+
+  const restoredOverview = await reqJson(env, '/api/public/overview');
+  assert.equal(restoredOverview.json.overview.totalAllStudents, 1);
+  assert.equal(restoredOverview.json.overview.approvedCount, 1);
+  assert.equal(restoredOverview.json.overview.approvedVolunteerHours, 5);
+
   // 11. SPA assets fallback check
   const spaRes = await worker.fetch(
     new Request('https://cmru-care.workers.dev/dashboard'),

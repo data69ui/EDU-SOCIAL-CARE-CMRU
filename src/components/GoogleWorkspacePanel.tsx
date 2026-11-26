@@ -30,14 +30,17 @@ import {
   inspectDriveFolder,
   inspectSpreadsheet,
   listDriveFolderFiles,
+  readDriveFileJson,
   readStudentsFromGoogleSheet,
   syncStudentsToGoogleSheet,
   uploadFileToGoogleDrive,
+  uploadJsonSnapshotToDrive,
 } from '../services/googleWorkspace';
 import type {
   GoogleWorkspaceConfig,
   ImportStudentsResult,
   StudentFullRecord,
+  SystemSnapshotPayload,
 } from '../types/scholarship';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import {
@@ -48,14 +51,18 @@ import {
 interface GoogleWorkspacePanelProps {
   students: StudentFullRecord[];
   currentUserName: string;
+  isAdmin?: boolean;
   onImportedFromSheet: (result: ImportStudentsResult) => Promise<void> | void;
+  onRestoredSnapshot?: () => Promise<void> | void;
   onDownloadJsonBackup: () => void;
 }
 
 export function GoogleWorkspacePanel({
   students,
   currentUserName,
+  isAdmin = false,
   onImportedFromSheet,
+  onRestoredSnapshot,
   onDownloadJsonBackup,
 }: GoogleWorkspacePanelProps) {
   const [googleUserEmail, setGoogleUserEmail] = useState<string | null>(null);
@@ -423,6 +430,117 @@ export function GoogleWorkspacePanel({
     );
   };
 
+  const handleBackupSnapshotToDrive = () => {
+    if (!accessToken) {
+      setStatusMessage({ type: 'error', text: 'กรุณาเข้าสู่ระบบด้วย Google ก่อน' });
+      return;
+    }
+    const snapshot: SystemSnapshotPayload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      exportedBy: currentUserName,
+      students,
+      workspaceConfig: config,
+    };
+    const fileName = `cmru_edu_social_care_snapshot_${new Date().toISOString().slice(0, 10)}.json`;
+    askConfirm(
+      {
+        title: 'สำรองข้อมูลทั้งระบบลง Google Drive',
+        description:
+          'ระบบจะบันทึกไฟล์สำรองข้อมูลครบทุกส่วน (รายชื่อนักศึกษา ข้อมูลพื้นฐาน ใบสมัคร ผลการเรียน จิตอาสา และการตั้งค่า Workspace) เป็นไฟล์ JSON ลงใน Google Drive',
+        details: [
+          `ชื่อไฟล์: ${fileName}`,
+          `จำนวนข้อมูลนักศึกษา: ${students.length} คน`,
+          `โฟลเดอร์ปลายทาง: ${config.driveFolderName || 'Google Drive หลัก'}`,
+        ],
+        confirmLabel: 'สำรองลง Google Drive',
+      },
+      async () => {
+        await uploadJsonSnapshotToDrive(accessToken, snapshot, {
+          folderId: config.driveFolderId,
+          fileName,
+        });
+        const files = await listDriveFolderFiles(accessToken, config.driveFolderId);
+        setDriveFiles(files);
+        setStatusMessage({
+          type: 'success',
+          text: `สำรองข้อมูลทั้งระบบ (${students.length} คน) ลง Google Drive ชื่อ "${fileName}" เรียบร้อยแล้ว`,
+        });
+      }
+    );
+  };
+
+  const handleRestoreFromDriveSnapshot = (item: DriveItemInfo) => {
+    if (!accessToken || !isAdmin) return;
+    askConfirm(
+      {
+        title: 'กู้คืนข้อมูลทั้งระบบจาก Google Drive',
+        description:
+          'ระบบจะอ่านไฟล์สำรอง JSON นี้จาก Google Drive และนำข้อมูลนักศึกษา ใบสมัคร ผลการเรียน และชั่วโมงจิตอาสากลับเข้าสู่ฐานข้อมูลทันที',
+        details: [`ไฟล์สำรอง: ${item.name}`, `Drive File ID: ${item.id}`],
+        confirmLabel: 'ยืนยันกู้คืนข้อมูล',
+        tone: 'warning',
+      },
+      async () => {
+        const snapshot = await readDriveFileJson<SystemSnapshotPayload>(accessToken, item.id);
+        const res = await api.restoreSnapshot(snapshot);
+        if (onRestoredSnapshot) await onRestoredSnapshot();
+        const cfgRes = await api.getWorkspaceConfig().catch(() => null);
+        if (cfgRes?.config) {
+          setConfig(cfgRes.config);
+          setSheetInput(cfgRes.config.spreadsheetId || '');
+          setFolderInput(cfgRes.config.driveFolderId || '');
+        }
+        setStatusMessage({
+          type: 'success',
+          text: `กู้คืนข้อมูลสำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`,
+        });
+      }
+    );
+  };
+
+  const handleRestoreFromLocalJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !isAdmin) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as SystemSnapshotPayload;
+      if (!parsed || !Array.isArray(parsed.students)) {
+        throw new Error('ไฟล์ JSON นี้ไม่ใช่ไฟล์สำรองข้อมูลของระบบ EDU SOCIAL CARE CMRU');
+      }
+      askConfirm(
+        {
+          title: 'กู้คืนข้อมูลทั้งระบบจากไฟล์สำรอง JSON',
+          description:
+            'ระบบจะนำข้อมูลนักศึกษา ใบสมัคร ผลการเรียน ชั่วโมงจิตอาสา และการตั้งค่า Workspace จากไฟล์นี้กลับเข้าสู่ฐานข้อมูลปัจจุบัน',
+          details: [
+            `ชื่อไฟล์: ${file.name}`,
+            `จำนวนนักศึกษาในไฟล์: ${parsed.students.length} คน`,
+          ],
+          confirmLabel: 'ยืนยันกู้คืนข้อมูล',
+          tone: 'warning',
+        },
+        async () => {
+          const res = await api.restoreSnapshot(parsed);
+          if (onRestoredSnapshot) await onRestoredSnapshot();
+          const cfgRes = await api.getWorkspaceConfig().catch(() => null);
+          if (cfgRes?.config) {
+            setConfig(cfgRes.config);
+            setSheetInput(cfgRes.config.spreadsheetId || '');
+            setFolderInput(cfgRes.config.driveFolderId || '');
+          }
+          setStatusMessage({
+            type: 'success',
+            text: `กู้คืนข้อมูลจากไฟล์ "${file.name}" สำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`,
+          });
+        }
+      );
+    } catch (err) {
+      setStatusMessage({ type: 'error', text: (err as Error).message });
+    }
+  };
+
   return (
     <div className="no-print space-y-6">
       {/* Header & Google Auth Connection Bar */}
@@ -476,10 +594,14 @@ export function GoogleWorkspacePanel({
           <div className="rounded-xl border border-[#E5C98E] bg-[#FDF8EC] p-4 flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <p className="text-sm font-semibold text-[#5C410A]">
-                ยังไม่ได้เชื่อมต่อบัญชี Google สำหรับ Google Sheets &amp; Google Drive
+                {googleUserEmail
+                  ? `เชื่อมต่อบัญชี Google (${googleUserEmail}) ไว้แล้ว — กดเพื่อยืนยัน Token ชั่วคราวของเซสชันนี้`
+                  : 'ยังไม่ได้เชื่อมต่อบัญชี Google สำหรับ Google Sheets & Google Drive'}
               </p>
               <p className="text-xs text-[#7B5A12]">
-                กดปุ่ม &ldquo;Sign in with Google&rdquo; เพื่ออนุญาตให้แอปสร้าง/อัปเดตฐานข้อมูล Google Sheets และอัปโหลดรูปภาพ/ไฟล์ลง Google Drive โดยได้รับอนุญาตจากผู้ใช้งาน
+                {googleUserEmail
+                  ? 'เพื่อความปลอดภัยของสิทธิ์ OAuth เมื่อรีเฟรชหน้าเว็บ ระบบจะขอให้กด "Sign in with Google" เพื่อเปิดสิทธิ์ใช้งาน Sheets และ Drive อีกครั้ง (ข้อมูลใน Sheets/Drive ไม่หาย)'
+                  : 'กดปุ่ม "Sign in with Google" เพื่ออนุญาตให้แอปสร้าง/อัปเดตฐานข้อมูล Google Sheets และอัปโหลดรูปภาพ/ไฟล์ลง Google Drive โดยได้รับอนุญาตจากผู้ใช้งาน'}
               </p>
             </div>
             <GoogleSignInButton
@@ -738,38 +860,55 @@ export function GoogleWorkspacePanel({
                 </p>
               ) : (
                 <div className="max-h-60 overflow-auto divide-y divide-[#F0E8D8] rounded-xl border border-[#EAE0CE]">
-                  {driveFiles.map((f) => (
-                    <div
-                      key={f.id}
-                      className="flex items-center justify-between gap-2 px-3 py-2 text-xs bg-white"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <a
-                          href={f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium text-[#23181A] hover:text-[#7A1629] hover:underline truncate block"
-                        >
-                          {f.name}
-                        </a>
-                        <p className="text-[11px] text-[#66585B] tabular-nums">
-                          {f.size ? `${(Number(f.size) / 1024).toFixed(0)} KB · ` : ''}
-                          {f.modifiedTime
-                            ? new Date(f.modifiedTime).toLocaleDateString('th-TH')
-                            : ''}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteDriveFile(f)}
-                        disabled={busy}
-                        aria-label={`ลบไฟล์ ${f.name} ออกจาก Google Drive`}
-                        className="rounded-lg p-1.5 text-[#66585B] hover:bg-[#FEE2E2] hover:text-[#B91C1C] transition-colors shrink-0"
+                  {driveFiles.map((f) => {
+                    const isJsonSnapshot =
+                      f.name.toLowerCase().endsWith('.json') ||
+                      f.mimeType === 'application/json';
+                    return (
+                      <div
+                        key={f.id}
+                        className="flex items-center justify-between gap-2 px-3 py-2 text-xs bg-white"
                       >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      </button>
-                    </div>
-                  ))}
+                        <div className="min-w-0 flex-1">
+                          <a
+                            href={f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium text-[#23181A] hover:text-[#7A1629] hover:underline truncate block"
+                          >
+                            {f.name}
+                          </a>
+                          <p className="text-[11px] text-[#66585B] tabular-nums">
+                            {f.size ? `${(Number(f.size) / 1024).toFixed(0)} KB · ` : ''}
+                            {f.modifiedTime
+                              ? new Date(f.modifiedTime).toLocaleDateString('th-TH')
+                              : ''}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isAdmin && isJsonSnapshot && (
+                            <button
+                              type="button"
+                              onClick={() => handleRestoreFromDriveSnapshot(f)}
+                              disabled={busy}
+                              className="rounded-lg border border-[#166534]/40 bg-[#F0FDF4] px-2.5 py-1 text-[11px] font-semibold text-[#166534] hover:bg-[#DCFCE7] transition-colors disabled:opacity-50"
+                            >
+                              กู้คืนระบบ
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDriveFile(f)}
+                            disabled={busy}
+                            aria-label={`ลบไฟล์ ${f.name} ออกจาก Google Drive`}
+                            className="rounded-lg p-1.5 text-[#66585B] hover:bg-[#FEE2E2] hover:text-[#B91C1C] transition-colors shrink-0"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -777,17 +916,26 @@ export function GoogleWorkspacePanel({
         </section>
       </div>
 
-      {/* Export & JSON Backup strip */}
+      {/* Export & Full Snapshot Backup/Restore strip */}
       <section className="rounded-2xl border border-[#DFD1BA] bg-white p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
         <div>
           <h3 className="font-display text-sm font-bold text-[#23181A]">
-            ส่งออกรายงานสำรองเพิ่มเติม (Excel / CSV / JSON)
+            สำรองข้อมูล &amp; กู้คืนระบบทั้งหมด (Google Drive Snapshot / Excel / CSV / JSON)
           </h3>
           <p className="text-xs text-[#66585B]">
-            ดาวน์โหลดข้อมูลทั้งหมดเก็บเป็นไฟล์สำรองออฟไลน์นอกเหนือจาก Google Sheets
+            บันทึกสแนปช็อตฐานข้อมูลทั้งหมดเก็บไว้บน Google Drive หรือไฟล์ JSON และกู้คืนได้ทันทีหากมีการย้าย/รีเซ็ตเซิร์ฟเวอร์
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleBackupSnapshotToDrive}
+            disabled={!accessToken || busy}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#1D4ED8] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1E40AF] transition-colors disabled:opacity-50"
+          >
+            <HardDrive className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>สำรองระบบลง Google Drive</span>
+          </button>
           <button
             type="button"
             onClick={() => exportStudentsToExcel(students)}
@@ -810,6 +958,22 @@ export function GoogleWorkspacePanel({
             <DatabaseBackup className="h-3.5 w-3.5" aria-hidden="true" />
             <span>สำรองข้อมูล (JSON)</span>
           </button>
+          {isAdmin && (
+            <label
+              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#166534] bg-[#F0FDF4] px-4 py-2 text-xs font-semibold text-[#166534] hover:bg-[#DCFCE7] transition-colors ${
+                busy ? 'opacity-50 pointer-events-none' : ''
+              }`}
+            >
+              <Upload className="h-3.5 w-3.5" aria-hidden="true" />
+              <span>กู้คืนจากไฟล์ JSON</span>
+              <input
+                type="file"
+                accept=".json,application/json"
+                onChange={handleRestoreFromLocalJson}
+                className="sr-only"
+              />
+            </label>
+          )}
         </div>
       </section>
 

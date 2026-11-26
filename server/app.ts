@@ -255,14 +255,31 @@ function requireSameOriginOrHeader(req: Request, res: Response, next: NextFuncti
   next();
 }
 
+function isHttpsRequest(req: Request): boolean {
+  const fwdProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+  const origin = String(req.headers.origin || '').toLowerCase();
+  const referer = String(req.headers.referer || '').toLowerCase();
+  const cfVisitor = String(req.headers['cf-visitor'] || '').toLowerCase();
+  return (
+    req.secure ||
+    fwdProto.includes('https') ||
+    req.headers['x-forwarded-ssl'] === 'on' ||
+    origin.startsWith('https://') ||
+    referer.startsWith('https://') ||
+    cfVisitor.includes('"https"')
+  );
+}
+
+function buildCookieString(req: Request, value: string, maxAgeSeconds: number): string {
+  const sameSite = isHttpsRequest(req)
+    ? 'SameSite=None; Secure; Partitioned'
+    : 'SameSite=Lax';
+  return `${COOKIE_NAME}=${encodeURIComponent(value)}; Path=/; HttpOnly; ${sameSite}; Max-Age=${maxAgeSeconds}`;
+}
+
 function setSessionCookie(req: Request, res: Response, userId: string) {
   const token = signSession(userId);
-  const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-  const sameSite = isHttps ? 'SameSite=None; Secure; Partitioned' : 'SameSite=Lax';
-  res.setHeader(
-    'Set-Cookie',
-    `${COOKIE_NAME}=${encodeURIComponent(token)}; Path=/; HttpOnly; ${sameSite}; Max-Age=604800`
-  );
+  res.setHeader('Set-Cookie', buildCookieString(req, token, 604800));
   return token;
 }
 
@@ -335,6 +352,7 @@ export function createApp() {
 
   // Scoped JSON payload limits to prevent oversized-body DoS attacks
   app.use('/api/uploads', express.json({ limit: '10mb' }));
+  app.use('/api/admin/restore-snapshot', express.json({ limit: '10mb' }));
   app.use(express.json({ limit: '512kb' }));
 
   app.get('/api/health', (_req, res) => {
@@ -426,12 +444,7 @@ export function createApp() {
   });
 
   app.post('/api/auth/logout', (req, res) => {
-    const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-    const sameSite = isHttps ? 'SameSite=None; Secure; Partitioned' : 'SameSite=Lax';
-    res.setHeader(
-      'Set-Cookie',
-      `${COOKIE_NAME}=; Path=/; HttpOnly; ${sameSite}; Max-Age=0`
-    );
+    res.setHeader('Set-Cookie', buildCookieString(req, '', 0));
     res.json({ ok: true });
   });
 
@@ -450,12 +463,7 @@ export function createApp() {
         }
         store.deleteUser(target.id);
         await store.flush();
-        const isHttps = req.secure || req.headers['x-forwarded-proto'] === 'https';
-        const sameSite = isHttps ? 'SameSite=None; Secure; Partitioned' : 'SameSite=Lax';
-        res.setHeader(
-          'Set-Cookie',
-          `${COOKIE_NAME}=; Path=/; HttpOnly; ${sameSite}; Max-Age=0`
-        );
+        res.setHeader('Set-Cookie', buildCookieString(req, '', 0));
         res.json({ ok: true });
       } catch (err) {
         res.status(400).json({ error: (err as Error).message });
@@ -1117,11 +1125,32 @@ export function createApp() {
     res.json({ config: store.getWorkspaceConfig() });
   });
 
-  app.put('/api/workspace/config', requireRole(['teacher', 'admin']), async (req, res) => {
-    const saved = store.saveWorkspaceConfig((req.body || {}) as Record<string, unknown>);
-    await store.flush();
-    res.json({ config: saved });
-  });
+  app.put(
+    '/api/workspace/config',
+    requireSameOriginOrHeader,
+    requireRole(['teacher', 'admin']),
+    async (req, res) => {
+      const saved = store.saveWorkspaceConfig((req.body || {}) as Record<string, unknown>);
+      await store.flush();
+      res.json({ config: saved });
+    }
+  );
+
+  app.post(
+    '/api/admin/restore-snapshot',
+    uploadLimitMiddleware,
+    requireSameOriginOrHeader,
+    requireRole(['admin']),
+    async (req, res) => {
+      try {
+        const result = store.restoreSnapshot(req.body);
+        await store.flush();
+        res.json({ result });
+      } catch (err) {
+        res.status(400).json({ error: (err as Error).message });
+      }
+    }
+  );
 
   app.get('/api/admin/apps-script-template', requireRole(['admin', 'teacher']), (_req, res) => {
     res.json({ code: APPS_SCRIPT_TEMPLATE });

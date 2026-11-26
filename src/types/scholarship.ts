@@ -314,3 +314,19 @@ export interface ImportStudentsResult {
   skippedCount: number;
   errors: string[];
 }
+
+export interface SystemSnapshotPayload {
+  version?: number;
+  exportedAt?: string;
+  exportedBy?: string;
+  students: StudentFullRecord[];
+  workspaceConfig?: GoogleWorkspaceConfig;
+}
+
+export interface RestoreSnapshotResult {
+  restoredStudents: number;
+  restoredApplications: number;
+  restoredGrades: number;
+  restoredVolunteers: number;
+  workspaceRestored: boolean;
+}

@@ -81,6 +81,8 @@ export function StudentDashboard({
 }: StudentDashboardProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [basicDraft, setBasicDraft] = useState<BasicInfoData | null>(null);
+  const [appDraft, setAppDraft] = useState<ScholarshipApplicationData | null>(null);
 
   const { user, basicInfo, application, grades, volunteers } = bundle;
   const statusMeta = getApplicationStatusMeta(application?.status);
@@ -92,10 +94,12 @@ export function StudentDashboard({
       : [];
 
   const handleBasicUpdated = (nextBasic: BasicInfoData) => {
+    setBasicDraft(null);
     onUpdateBundle({ ...bundle, basicInfo: nextBasic });
   };
 
   const handleApplicationSaved = (nextApp: ScholarshipApplicationData) => {
+    setAppDraft(null);
     onUpdateBundle({ ...bundle, application: nextApp });
   };
 
@@ -322,6 +326,8 @@ export function StudentDashboard({
           {activeSection === 'basic' && (
             <StudentBasicInfoForm
               basicInfo={basicInfo}
+              draftBasicInfo={basicDraft}
+              onDraftChange={setBasicDraft}
               onUpdated={handleBasicUpdated}
               onGoToApplication={() => onSelectSection('application')}
               onDeleteAccount={onDeleteAccount}
@@ -333,6 +339,8 @@ export function StudentDashboard({
               studentUserId={user.id}
               basicInfo={basicInfo}
               existingApplication={application}
+              draftApplication={appDraft}
+              onDraftChange={setAppDraft}
               onSaved={handleApplicationSaved}
             />
           )}

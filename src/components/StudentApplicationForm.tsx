@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState, type SetStateAction } from 'react';
 import { RefreshCw, Send, Save } from 'lucide-react';
 import { api } from '../services/api';
 import type {
@@ -18,6 +18,8 @@ interface StudentApplicationFormProps {
   studentUserId: string;
   basicInfo: BasicInfoData;
   existingApplication: ScholarshipApplicationData | null;
+  draftApplication?: ScholarshipApplicationData | null;
+  onDraftChange?: (draft: ScholarshipApplicationData | null) => void;
   onSaved: (next: ScholarshipApplicationData) => void;
 }
 
@@ -98,11 +100,25 @@ export function StudentApplicationForm({
   studentUserId,
   basicInfo,
   existingApplication,
+  draftApplication,
+  onDraftChange,
   onSaved,
 }: StudentApplicationFormProps) {
-  const [form, setForm] = useState<ScholarshipApplicationData>(() =>
+  const [form, setFormState] = useState<ScholarshipApplicationData>(() =>
+    draftApplication ||
     prefillApplicationFromBasicInfo(basicInfo, existingApplication, studentUserId)
   );
+  const isDirtyRef = useRef(Boolean(draftApplication));
+  const setForm = (updater: SetStateAction<ScholarshipApplicationData>) => {
+    isDirtyRef.current = true;
+    setFormState(updater);
+  };
+  useEffect(() => {
+    if (isDirtyRef.current) {
+      onDraftChange?.(form);
+    }
+  }, [form]);
+
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
@@ -139,7 +155,9 @@ export function StudentApplicationForm({
     setSaving(true);
     try {
       const res = await api.saveApplication(form, submitNow);
-      setForm(res.application);
+      isDirtyRef.current = false;
+      setFormState(res.application);
+      onDraftChange?.(null);
       onSaved(res.application);
       setFeedback({
         type: 'success',

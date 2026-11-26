@@ -29,14 +29,19 @@ export default function App() {
     'login' | 'register'
   >('login');
 
+  const [bootError, setBootError] = useState<string | null>(null);
+
   const loadStudentData = async () => {
     const res = await api.getMyStudentBundle();
     setStudentBundle(res.bundle);
     setTeacherNames(res.teacherNames || []);
   };
 
-  useEffect(() => {
-    (async () => {
+  const bootstrapSession = async () => {
+    setInitializing(true);
+    setBootError(null);
+    let lastError: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const [statusRes, meRes] = await Promise.all([api.getAuthStatus(), api.getMe()]);
         setAdminInitialized(statusRes.adminInitialized);
@@ -46,12 +51,24 @@ export default function App() {
             await loadStudentData();
           }
         }
-      } catch {
-        // Ignore initial fetch errors and show public home overview
-      } finally {
         setInitializing(false);
+        return;
+      } catch (err) {
+        lastError = err;
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 400 : 900));
+        }
       }
-    })();
+    }
+    setBootError(
+      (lastError as Error)?.message ||
+        'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ชั่วคราว กรุณากดลองใหม่อีกครั้ง'
+    );
+    setInitializing(false);
+  };
+
+  useEffect(() => {
+    void bootstrapSession();
   }, []);
 
   const handleAuthenticated = async (authedUser: UserAccount) => {
@@ -171,6 +188,22 @@ export default function App() {
             <div className="mx-auto max-w-[1200px] px-6 py-28 text-center space-y-3">
               <div className="mx-auto h-10 w-10 rounded-full border-2 border-[#C6922C] border-t-[#7A1629] animate-spin" />
               <p className="text-sm text-[#66585B]">กำลังโหลดระบบ EDU SOCIAL CARE CMRU...</p>
+            </div>
+          ) : bootError ? (
+            <div className="mx-auto max-w-[640px] px-6 py-24 text-center space-y-4">
+              <div className="rounded-2xl border border-[#FCD34D] bg-[#FFFBEB] p-6 space-y-3">
+                <p className="font-display text-base font-bold text-[#92400E]">
+                  การเชื่อมต่อเซิร์ฟเวอร์สะดุดชั่วคราว
+                </p>
+                <p className="text-xs text-[#78350F]">{bootError}</p>
+                <button
+                  type="button"
+                  onClick={() => void bootstrapSession()}
+                  className="inline-flex items-center justify-center rounded-xl bg-[#7A1629] px-5 py-2 text-xs font-semibold text-white hover:bg-[#5E1020] transition-colors"
+                >
+                  เชื่อมต่อใหม่
+                </button>
+              </div>
             </div>
           ) : !user ? (
             guestView === 'overview' ? (

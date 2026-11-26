@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState, type SetStateAction } from 'react';
 import { Edit3, Award, CheckCircle2, X, Trash2, AlertTriangle, Plus } from 'lucide-react';
 import { api } from '../services/api';
 import type { BasicInfoData, ParentInfo, ReceivedScholarshipItem } from '../types/scholarship';
@@ -14,6 +14,8 @@ import { PdpaConsentModal } from './PdpaConsentModal';
 
 interface StudentBasicInfoFormProps {
   basicInfo: BasicInfoData;
+  draftBasicInfo?: BasicInfoData | null;
+  onDraftChange?: (draft: BasicInfoData | null) => void;
   onUpdated: (next: BasicInfoData) => void;
   onGoToApplication: () => void;
   onDeleteAccount?: () => Promise<void>;
@@ -148,19 +150,35 @@ function ParentFieldsGroup({
 
 export function StudentBasicInfoForm({
   basicInfo,
+  draftBasicInfo,
+  onDraftChange,
   onUpdated,
   onGoToApplication,
   onDeleteAccount,
 }: StudentBasicInfoFormProps) {
-  const [form, setForm] = useState<BasicInfoData>(() => ({
-    ...basicInfo,
-    receivedScholarships:
-      basicInfo.hasOtherScholarship === 'ได้รับทุน'
-        ? sanitizeReceivedScholarships(basicInfo.receivedScholarships, basicInfo.otherScholarshipDetail)
-        : [],
-  }));
+  const [form, setFormState] = useState<BasicInfoData>(() => {
+    const source = draftBasicInfo || basicInfo;
+    return {
+      ...source,
+      receivedScholarships:
+        source.hasOtherScholarship === 'ได้รับทุน'
+          ? sanitizeReceivedScholarships(source.receivedScholarships, source.otherScholarshipDetail)
+          : [],
+    };
+  });
+  const isDirtyRef = useRef(Boolean(draftBasicInfo));
+  const setForm = (updater: SetStateAction<BasicInfoData>) => {
+    isDirtyRef.current = true;
+    setFormState(updater);
+  };
+  useEffect(() => {
+    if (isDirtyRef.current) {
+      onDraftChange?.(form);
+    }
+  }, [form]);
+
   const [isEditing, setIsEditing] = useState<boolean>(
-    basicInfo.isDraft || !basicInfo.savedAt
+    Boolean(draftBasicInfo) || basicInfo.isDraft || !basicInfo.savedAt
   );
   const [showGpaModal, setShowGpaModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -209,7 +227,9 @@ export function StudentBasicInfoForm({
     try {
       const updated = await api.savePdpaDecision(consented);
       const merged = { ...form, ...updated.basicInfo };
-      setForm(merged);
+      isDirtyRef.current = false;
+      setFormState(merged);
+      onDraftChange?.(null);
       onUpdated(merged);
     } catch (err) {
       setFeedback({ type: 'error', text: (err as Error).message });
@@ -366,7 +386,9 @@ export function StudentBasicInfoForm({
         isDraft: asDraft,
       };
       const res = await api.saveBasicInfo(payload);
-      setForm(res.basicInfo);
+      isDirtyRef.current = false;
+      setFormState(res.basicInfo);
+      onDraftChange?.(null);
       onUpdated(res.basicInfo);
       if (!asDraft) {
         setIsEditing(false);

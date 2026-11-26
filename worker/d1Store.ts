@@ -7,9 +7,11 @@ import type {
   ImportedStudentRow,
   ImportStudentsResult,
   PublicOverviewStats,
+  RestoreSnapshotResult,
   ScholarshipApplicationData,
   SemesterType,
   StudentFullRecord,
+  SystemSnapshotPayload,
   UploadedFileMeta,
   UserAccount,
   UserRole,
@@ -1429,6 +1431,209 @@ export class D1Store {
     return {
       buffer,
       mimeType: obj.httpMetadata?.contentType,
+    };
+  }
+
+  async restoreSnapshot(rawPayload: unknown): Promise<RestoreSnapshotResult> {
+    if (!rawPayload || typeof rawPayload !== 'object') {
+      throw new Error('รูปแบบไฟล์สำรองข้อมูลไม่ถูกต้อง');
+    }
+    const snapshot = rawPayload as Partial<SystemSnapshotPayload>;
+    if (!Array.isArray(snapshot.students)) {
+      throw new Error('ไม่พบรายการข้อมูลนักศึกษา (students) ในไฟล์สำรองข้อมูล');
+    }
+    if (snapshot.students.length > 1000) {
+      throw new Error('ไฟล์สำรองข้อมูลมีจำนวนรายการเกินขีดจำกัด (สูงสุด 1,000 รายการ)');
+    }
+
+    let restoredStudents = 0;
+    let restoredApplications = 0;
+    let restoredGrades = 0;
+    let restoredVolunteers = 0;
+
+    for (const rawRec of snapshot.students) {
+      if (!rawRec || typeof rawRec !== 'object') continue;
+      const rec = rawRec as Partial<StudentFullRecord>;
+      const rawSid =
+        rec.basicInfo?.studentId || rec.user?.studentId || rec.user?.username || '';
+      const idCheck = validateStudentId(String(rawSid));
+      if (!idCheck.valid) continue;
+
+      const studentId = idCheck.normalized;
+      const cleanEmail = String(rec.basicInfo?.email || rec.user?.email || '')
+        .trim()
+        .toLowerCase();
+      const fullName = clampPayloadText(
+        rec.basicInfo?.fullName || rec.user?.fullName || `นักศึกษา ${studentId}`,
+        180
+      ).trim();
+
+      let targetUser =
+        (await this.findUserByUsernameOrEmail(studentId, 'student')) ||
+        (cleanEmail ? await this.findUserByUsernameOrEmail(cleanEmail, 'student') : undefined);
+
+      if (!targetUser) {
+        targetUser = await this.createUser({
+          role: 'student',
+          username: studentId.toLowerCase(),
+          email: cleanEmail || undefined,
+          password: buildDefaultStudentPassword(studentId),
+          fullName,
+          studentId,
+          academicYear: rec.basicInfo?.academicYear,
+          yearLevel: rec.basicInfo?.yearLevel,
+          mustChangePassword: true,
+          authProvider: 'password',
+        });
+      }
+
+      if (rec.basicInfo && typeof rec.basicInfo === 'object') {
+        const sanitizedBasic = sanitizePayloadValue(rec.basicInfo);
+        const baseBasic = createEmptyBasicInfo(
+          cleanEmail || targetUser.email || targetUser.username,
+          fullName,
+          studentId
+        );
+        await this.saveBasicInfo(targetUser.id, {
+          ...baseBasic,
+          ...sanitizedBasic,
+          studentId,
+          fullName,
+          email: cleanEmail || sanitizedBasic.email || baseBasic.email,
+        });
+      }
+      restoredStudents += 1;
+
+      if (rec.application && typeof rec.application === 'object') {
+        const sanitizedApp = sanitizePayloadValue(rec.application);
+        const appStatus = sanitizedApp.status || 'draft';
+        const now = sanitizedApp.updatedAt || new Date().toISOString();
+        const appRecord: ScholarshipApplicationData = {
+          ...sanitizedApp,
+          id: sanitizedApp.id || `app_${targetUser.id}`,
+          studentUserId: targetUser.id,
+          studentId,
+          fullName: sanitizedApp.fullName || fullName,
+          status: appStatus,
+          advisorComment: sanitizedApp.advisorComment || '',
+          updatedAt: now,
+        };
+        await this.env.DB.prepare(
+          `INSERT INTO applications (
+            id, student_user_id, status, academic_year, year_level, gpax,
+            advisor_comment, reviewed_by, reviewed_at, submitted_at, updated_at, payload_json
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(student_user_id) DO UPDATE SET
+            status = excluded.status,
+            academic_year = excluded.academic_year,
+            year_level = excluded.year_level,
+            gpax = excluded.gpax,
+            advisor_comment = excluded.advisor_comment,
+            reviewed_by = excluded.reviewed_by,
+            reviewed_at = excluded.reviewed_at,
+            submitted_at = excluded.submitted_at,
+            updated_at = excluded.updated_at,
+            payload_json = excluded.payload_json`
+        )
+          .bind(
+            appRecord.id,
+            targetUser.id,
+            appRecord.status,
+            appRecord.academicYear || '2569',
+            appRecord.yearLevel || 'ปี 1',
+            appRecord.gpax || '',
+            appRecord.advisorComment || '',
+            appRecord.reviewedBy || null,
+            appRecord.reviewedAt || null,
+            appRecord.submittedAt || null,
+            appRecord.updatedAt,
+            JSON.stringify(appRecord)
+          )
+          .run();
+        restoredApplications += 1;
+      }
+
+      if (Array.isArray(rec.grades)) {
+        for (const rawGrade of rec.grades) {
+          if (!rawGrade || typeof rawGrade !== 'object') continue;
+          const g = sanitizePayloadValue(rawGrade);
+          await this.upsertGradeRecord({
+            studentUserId: targetUser.id,
+            academicYear: g.academicYear || '2569',
+            yearLevel: g.yearLevel || 'ปี 1',
+            semester: g.semester || 'ภาคเรียนที่ 1',
+            gpa: g.gpa || '',
+            attachments: Array.isArray(g.attachments) ? g.attachments : [],
+            uploadedByRole: g.uploadedByRole || 'student',
+            uploadedByName: g.uploadedByName || fullName,
+          });
+          restoredGrades += 1;
+        }
+      }
+
+      if (Array.isArray(rec.volunteers)) {
+        for (const rawVol of rec.volunteers) {
+          if (!rawVol || typeof rawVol !== 'object') continue;
+          const v = sanitizePayloadValue(rawVol);
+          const existingVol = await this.env.DB.prepare(
+            'SELECT id FROM volunteers WHERE student_user_id = ? AND activity_title = ? AND activity_date = ?'
+          )
+            .bind(targetUser.id, v.activityTitle || '', v.activityDate || '')
+            .first<{ id: string }>();
+          if (!existingVol) {
+            const volId = `vol_${crypto.randomUUID().slice(0, 8)}`;
+            await this.env.DB.prepare(
+              `INSERT INTO volunteers (
+                id, student_user_id, student_id, student_name, academic_year, activity_title,
+                activity_detail, learnings, hours, activity_date, daily_life_application,
+                photos_json, approval_status, approved_hours, advisor_note, reviewed_by, reviewed_at, created_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            )
+              .bind(
+                volId,
+                targetUser.id,
+                studentId,
+                v.studentName || fullName,
+                v.academicYear || '2569',
+                clampPayloadText(v.activityTitle || '', 400),
+                clampPayloadText(v.activityDetail || '', 2000),
+                clampPayloadText(v.learnings || '', 2000),
+                Number(v.hours || 0),
+                clampPayloadText(v.activityDate || '', 80),
+                clampPayloadText(v.dailyLifeApplication || '', 2000),
+                JSON.stringify(Array.isArray(v.photos) ? v.photos : []),
+                v.approvalStatus || 'pending',
+                Number(v.approvedHours || 0),
+                clampPayloadText(v.advisorNote || '', 1000),
+                v.reviewedBy || null,
+                v.reviewedAt || null,
+                v.createdAt || new Date().toISOString()
+              )
+              .run();
+            restoredVolunteers += 1;
+          }
+        }
+      }
+    }
+
+    let workspaceRestored = false;
+    if (snapshot.workspaceConfig && typeof snapshot.workspaceConfig === 'object') {
+      const cleanedCfg = sanitizeWorkspaceConfigInput(
+        snapshot.workspaceConfig as Record<string, unknown>
+      );
+      if (Object.keys(cleanedCfg).length > 0) {
+        const currentCfg = await this.getWorkspaceConfig();
+        await this.saveWorkspaceConfig({ ...currentCfg, ...cleanedCfg });
+        workspaceRestored = true;
+      }
+    }
+
+    return {
+      restoredStudents,
+      restoredApplications,
+      restoredGrades,
+      restoredVolunteers,
+      workspaceRestored,
     };
   }
 }

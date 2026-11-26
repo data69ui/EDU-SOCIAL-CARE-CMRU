@@ -11,9 +11,11 @@ import type {
   ImportedStudentRow,
   ImportStudentsResult,
   PublicOverviewStats,
+  RestoreSnapshotResult,
   ScholarshipApplicationData,
   SemesterType,
   StudentFullRecord,
+  SystemSnapshotPayload,
   UploadedFileMeta,
   UserAccount,
   UserRole,
@@ -168,9 +170,15 @@ class FileStore {
   constructor() {
     fs.mkdirSync(RESOLVED_DIRS.dataDir, { recursive: true });
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-    const loaded = this.tryReadJson(DB_FILE) || this.tryReadJson(DB_BACKUP_FILE);
-    if (loaded) {
-      this.state = loaded;
+    const primary = this.tryReadJson(DB_FILE);
+    const backup = this.tryReadJson(DB_BACKUP_FILE);
+    if (primary && (primary.users.length > 0 || !backup || backup.users.length === 0)) {
+      this.state = primary;
+    } else if (backup) {
+      this.state = backup;
+      if (!this.getRemoteConfig()) {
+        this.persistLocalOnly();
+      }
     } else {
       this.state = createEmptyState();
       if (!this.getRemoteConfig()) {
@@ -251,15 +259,29 @@ class FileStore {
         if (parsed && Array.isArray(parsed.users)) {
           const users = parsed.users;
           const hasAdmin = users.some((u) => u.role === 'admin');
-          this.state = {
-            adminInitialized: Boolean(parsed.adminInitialized) && hasAdmin,
-            users,
-            basicInfos: parsed.basicInfos || {},
-            applications: parsed.applications || {},
-            grades: Array.isArray(parsed.grades) ? parsed.grades : [],
-            volunteers: Array.isArray(parsed.volunteers) ? parsed.volunteers : [],
-          };
-          this.persistLocalOnly();
+          const remoteEmpty =
+            users.length === 0 && !parsed.workspaceConfig?.spreadsheetId && !parsed.workspaceConfig?.driveFolderId;
+          const localHasData =
+            this.state.users.length > 0 ||
+            Boolean(this.state.workspaceConfig?.spreadsheetId) ||
+            Boolean(this.state.workspaceConfig?.driveFolderId);
+
+          if (remoteEmpty && localHasData) {
+            await this.remoteSet(REMOTE_STATE_KEY, JSON.stringify(this.state));
+          } else {
+            this.state = {
+              adminInitialized: Boolean(parsed.adminInitialized) && hasAdmin,
+              users,
+              basicInfos: parsed.basicInfos || {},
+              applications: parsed.applications || {},
+              grades: Array.isArray(parsed.grades) ? parsed.grades : [],
+              volunteers: Array.isArray(parsed.volunteers) ? parsed.volunteers : [],
+              workspaceConfig: parsed.workspaceConfig
+                ? sanitizeWorkspaceConfigInput(parsed.workspaceConfig as Record<string, unknown>)
+                : undefined,
+            };
+            this.persistLocalOnly();
+          }
         }
       } else if (!this.initializedRemote) {
         await this.remoteSet(REMOTE_STATE_KEY, JSON.stringify(this.state));
@@ -316,6 +338,9 @@ class FileStore {
         applications: parsed.applications || {},
         grades: Array.isArray(parsed.grades) ? parsed.grades : [],
         volunteers: Array.isArray(parsed.volunteers) ? parsed.volunteers : [],
+        workspaceConfig: parsed.workspaceConfig
+          ? sanitizeWorkspaceConfigInput(parsed.workspaceConfig as Record<string, unknown>)
+          : undefined,
       };
     } catch {
       return null;
@@ -1080,6 +1105,203 @@ class FileStore {
     this.state.workspaceConfig = cleaned;
     this.persist();
     return cleaned;
+  }
+
+  restoreSnapshot(rawPayload: unknown): RestoreSnapshotResult {
+    if (!rawPayload || typeof rawPayload !== 'object') {
+      throw new Error('รูปแบบไฟล์สำรองข้อมูลไม่ถูกต้อง');
+    }
+    const snapshot = rawPayload as Partial<SystemSnapshotPayload>;
+    if (!Array.isArray(snapshot.students)) {
+      throw new Error('ไม่พบรายการข้อมูลนักศึกษา (students) ในไฟล์สำรองข้อมูล');
+    }
+    if (snapshot.students.length > 1000) {
+      throw new Error('ไฟล์สำรองข้อมูลมีจำนวนรายการเกินขีดจำกัด (สูงสุด 1,000 รายการ)');
+    }
+
+    let restoredStudents = 0;
+    let restoredApplications = 0;
+    let restoredGrades = 0;
+    let restoredVolunteers = 0;
+
+    for (const rawRec of snapshot.students) {
+      if (!rawRec || typeof rawRec !== 'object') continue;
+      const rec = rawRec as Partial<StudentFullRecord>;
+      const rawSid =
+        rec.basicInfo?.studentId || rec.user?.studentId || rec.user?.username || '';
+      const idCheck = validateStudentId(String(rawSid));
+      if (!idCheck.valid) continue;
+
+      const studentId = idCheck.normalized;
+      const cleanEmail = String(rec.basicInfo?.email || rec.user?.email || '')
+        .trim()
+        .toLowerCase();
+      const fullName = clampPayloadText(
+        rec.basicInfo?.fullName || rec.user?.fullName || `นักศึกษา ${studentId}`,
+        180
+      ).trim();
+
+      let targetUser =
+        this.findUserByUsernameOrEmail(studentId, 'student') ||
+        (cleanEmail ? this.findUserByUsernameOrEmail(cleanEmail, 'student') : undefined);
+
+      if (!targetUser) {
+        const defaultPw = buildDefaultStudentPassword(studentId);
+        targetUser = {
+          id: `usr_student_${crypto.randomUUID().slice(0, 8)}`,
+          role: 'student',
+          username: studentId.toLowerCase(),
+          email: cleanEmail || undefined,
+          fullName,
+          studentId,
+          authProvider: 'password',
+          hasPassword: true,
+          mustChangePassword: true,
+          failedLoginAttempts: 0,
+          passwordHash: hashPassword(defaultPw),
+          createdAt: rec.user?.createdAt || new Date().toISOString(),
+        };
+        this.state.users.push(targetUser);
+      } else {
+        targetUser.fullName = fullName || targetUser.fullName;
+        targetUser.studentId = studentId;
+        if (cleanEmail) targetUser.email = cleanEmail;
+      }
+
+      if (rec.basicInfo && typeof rec.basicInfo === 'object') {
+        const sanitizedBasic = sanitizePayloadValue(rec.basicInfo);
+        const baseBasic = createEmptyBasicInfo(
+          cleanEmail || targetUser.email || targetUser.username,
+          fullName,
+          studentId
+        );
+        const cleanedScholarships =
+          sanitizedBasic.hasOtherScholarship === 'ได้รับทุน'
+            ? sanitizeReceivedScholarships(
+                sanitizedBasic.receivedScholarships,
+                sanitizedBasic.otherScholarshipDetail
+              )
+            : [];
+        this.state.basicInfos[targetUser.id] = {
+          ...baseBasic,
+          ...sanitizedBasic,
+          studentId,
+          fullName,
+          email: cleanEmail || sanitizedBasic.email || baseBasic.email,
+          receivedScholarships: cleanedScholarships,
+          otherScholarshipDetail:
+            sanitizedBasic.hasOtherScholarship === 'ได้รับทุน'
+              ? cleanedScholarships
+                  .map((s) => (s.provider ? `${s.name} (${s.provider})` : s.name))
+                  .join(', ')
+              : '',
+        };
+      } else if (!this.state.basicInfos[targetUser.id]) {
+        this.state.basicInfos[targetUser.id] = createEmptyBasicInfo(
+          cleanEmail,
+          fullName,
+          studentId
+        );
+      }
+      restoredStudents += 1;
+
+      if (rec.application && typeof rec.application === 'object') {
+        const sanitizedApp = sanitizePayloadValue(rec.application);
+        this.state.applications[targetUser.id] = {
+          ...sanitizedApp,
+          id: sanitizedApp.id || `app_${targetUser.id}`,
+          studentUserId: targetUser.id,
+          studentId,
+          fullName: sanitizedApp.fullName || fullName,
+          updatedAt: sanitizedApp.updatedAt || new Date().toISOString(),
+        };
+        restoredApplications += 1;
+      }
+
+      if (Array.isArray(rec.grades)) {
+        for (const rawGrade of rec.grades) {
+          if (!rawGrade || typeof rawGrade !== 'object') continue;
+          const g = sanitizePayloadValue(rawGrade);
+          const existingGrade = this.state.grades.find(
+            (item) =>
+              item.studentUserId === targetUser!.id &&
+              item.academicYear === g.academicYear &&
+              item.yearLevel === g.yearLevel &&
+              item.semester === g.semester
+          );
+          if (existingGrade) {
+            existingGrade.gpa = g.gpa || existingGrade.gpa;
+            existingGrade.attachments = Array.isArray(g.attachments)
+              ? g.attachments
+              : existingGrade.attachments;
+            existingGrade.updatedAt = g.updatedAt || new Date().toISOString();
+          } else {
+            this.state.grades.push({
+              ...g,
+              id: `grd_${crypto.randomUUID().slice(0, 8)}`,
+              studentUserId: targetUser.id,
+              studentId,
+              studentName: g.studentName || fullName,
+              attachments: Array.isArray(g.attachments) ? g.attachments : [],
+              createdAt: g.createdAt || new Date().toISOString(),
+              updatedAt: g.updatedAt || new Date().toISOString(),
+            });
+          }
+          restoredGrades += 1;
+        }
+      }
+
+      if (Array.isArray(rec.volunteers)) {
+        for (const rawVol of rec.volunteers) {
+          if (!rawVol || typeof rawVol !== 'object') continue;
+          const v = sanitizePayloadValue(rawVol);
+          const duplicate = this.state.volunteers.find(
+            (item) =>
+              item.studentUserId === targetUser!.id &&
+              ((v.id && item.id === v.id) ||
+                (item.activityTitle === v.activityTitle &&
+                  item.activityDate === v.activityDate))
+          );
+          if (!duplicate) {
+            this.state.volunteers.push({
+              ...v,
+              id: `vol_${crypto.randomUUID().slice(0, 8)}`,
+              studentUserId: targetUser.id,
+              studentId,
+              studentName: v.studentName || fullName,
+              hours: Number(v.hours || 0),
+              approvedHours: Number(v.approvedHours || 0),
+              photos: Array.isArray(v.photos) ? v.photos : [],
+              createdAt: v.createdAt || new Date().toISOString(),
+            });
+            restoredVolunteers += 1;
+          }
+        }
+      }
+    }
+
+    let workspaceRestored = false;
+    if (snapshot.workspaceConfig && typeof snapshot.workspaceConfig === 'object') {
+      const cleanedCfg = sanitizeWorkspaceConfigInput(
+        snapshot.workspaceConfig as Record<string, unknown>
+      );
+      if (Object.keys(cleanedCfg).length > 0) {
+        this.state.workspaceConfig = {
+          ...(this.state.workspaceConfig || {}),
+          ...cleanedCfg,
+        };
+        workspaceRestored = true;
+      }
+    }
+
+    this.persist();
+    return {
+      restoredStudents,
+      restoredApplications,
+      restoredGrades,
+      restoredVolunteers,
+      workspaceRestored,
+    };
   }
 }
 

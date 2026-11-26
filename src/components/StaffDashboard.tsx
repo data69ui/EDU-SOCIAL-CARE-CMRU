@@ -558,13 +558,16 @@ export function StaffDashboard({
     }
   };
 
-  const handleDownloadJsonBackup = () => {
+  const handleDownloadJsonBackup = async () => {
+    const cfgRes = await api.getWorkspaceConfig().catch(() => ({ config: undefined }));
     const payload = {
+      version: 1,
       exportedAt: new Date().toISOString(),
       exportedBy: currentUser.username,
       totalStudents: students.length,
       students,
       users: allUsers,
+      workspaceConfig: cfgRes.config,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json;charset=utf-8;',
@@ -2842,10 +2845,16 @@ export function StaffDashboard({
               <GoogleWorkspacePanel
                 students={students}
                 currentUserName={currentUser.fullName}
+                isAdmin={isAdmin}
                 onImportedFromSheet={async () => {
                   await loadData();
                 }}
-                onDownloadJsonBackup={handleDownloadJsonBackup}
+                onRestoredSnapshot={async () => {
+                  await loadData();
+                }}
+                onDownloadJsonBackup={() => {
+                  void handleDownloadJsonBackup();
+                }}
               />
             )}
           </motion.div>

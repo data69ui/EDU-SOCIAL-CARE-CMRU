@@ -1,6 +1,7 @@
 import type {
   ImportedStudentRow,
   StudentFullRecord,
+  SystemSnapshotPayload,
   UploadedFileMeta,
 } from '../types/scholarship';
 import {
@@ -669,6 +670,63 @@ export async function deleteDriveFile(accessToken: string, driveFileId: string):
   if (!res.ok && res.status !== 404) {
     throw new Error(`ไม่สามารถลบไฟล์ออกจาก Google Drive (${res.status})`);
   }
+}
+
+export async function uploadJsonSnapshotToDrive(
+  accessToken: string,
+  snapshot: SystemSnapshotPayload,
+  options?: { folderId?: string; fileName?: string }
+): Promise<DriveItemInfo> {
+  const fileName =
+    options?.fileName || `cmru_edu_social_care_snapshot_${new Date().toISOString().slice(0, 10)}.json`;
+  const metadata: { name: string; parents?: string[]; mimeType: string } = {
+    name: fileName,
+    mimeType: 'application/json',
+  };
+  if (options?.folderId && /^[a-zA-Z0-9_-]{10,120}$/.test(options.folderId)) {
+    metadata.parents = [options.folderId];
+  }
+
+  const form = new FormData();
+  form.append(
+    'metadata',
+    new Blob([JSON.stringify(metadata)], { type: 'application/json' })
+  );
+  form.append(
+    'file',
+    new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' }),
+    fileName
+  );
+
+  return googleFetchJson<DriveItemInfo>(
+    `${DRIVE_UPLOAD_BASE}?uploadType=multipart&fields=id,name,mimeType,size,modifiedTime,webViewLink`,
+    accessToken,
+    {
+      method: 'POST',
+      body: form,
+    }
+  );
+}
+
+export async function readDriveFileJson<T = SystemSnapshotPayload>(
+  accessToken: string,
+  driveFileId: string
+): Promise<T> {
+  if (!/^[a-zA-Z0-9_-]{10,120}$/.test(driveFileId)) {
+    throw new Error('รหัสไฟล์ Google Drive ไม่ถูกต้อง');
+  }
+  const res = await fetch(
+    `${DRIVE_API_BASE}/${encodeURIComponent(driveFileId)}?alt=media`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+  if (!res.ok) {
+    throw new Error(`ไม่สามารถอ่านไฟล์สำรองจาก Google Drive (${res.status})`);
+  }
+  return (await res.json()) as T;
 }
 
 export async function syncVolunteerHoursSummaryRow(

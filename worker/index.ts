@@ -164,8 +164,11 @@ function parseCookies(cookieHeader: string | null): Record<string, string> {
 
 function buildCookieHeader(request: Request, value: string, maxAgeSeconds: number): string {
   const url = new URL(request.url);
-  const proto = request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '');
-  const isHttps = proto === 'https';
+  const proto = (request.headers.get('x-forwarded-proto') || url.protocol.replace(':', '')).toLowerCase();
+  const origin = (request.headers.get('origin') || '').toLowerCase();
+  const referer = (request.headers.get('referer') || '').toLowerCase();
+  const isHttps =
+    proto.includes('https') || origin.startsWith('https://') || referer.startsWith('https://');
   const sameSite = isHttps ? 'SameSite=None; Secure; Partitioned' : 'SameSite=Lax';
   return `${COOKIE_NAME}=${encodeURIComponent(value)}; Path=/; HttpOnly; ${sameSite}; Max-Age=${maxAgeSeconds}`;
 }
@@ -1192,6 +1195,25 @@ export default {
         if (!parsed.ok) return parsed.response;
         const config = await store.saveWorkspaceConfig(parsed.data);
         return jsonResponse({ config });
+      }
+
+      if (pathname === '/api/admin/restore-snapshot' && method === 'POST') {
+        const uploadLimitErr = checkRateLimit(
+          uploadRateLimiter,
+          request,
+          'มีการอัปโหลดหรือนำเข้าข้อมูลถี่เกินกำหนด กรุณารอสักครู่แล้วลองใหม่'
+        );
+        if (uploadLimitErr) return uploadLimitErr;
+        const roleErr = checkRole(currentUser, ['admin']);
+        if (roleErr) return roleErr;
+        const parsed = await readJsonBody<Record<string, unknown>>(request, 10 * 1024 * 1024);
+        if (!parsed.ok) return parsed.response;
+        try {
+          const result = await store.restoreSnapshot(parsed.data);
+          return jsonResponse({ result });
+        } catch (err) {
+          return jsonResponse({ error: (err as Error).message }, 400);
+        }
       }
 
       if (pathname === '/api/admin/apps-script-template' && method === 'GET') {

@@ -8,9 +8,11 @@ import type {
   ImportedStudentRow,
   ImportStudentsResult,
   PublicOverviewStats,
+  RestoreSnapshotResult,
   ScholarshipApplicationData,
   SemesterType,
   StudentFullRecord,
+  SystemSnapshotPayload,
   UploadedFileMeta,
   UserAccount,
   UserRole,
@@ -34,8 +36,10 @@ function setStoredToken(token: string | null) {
   inMemoryToken = token;
 }
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
+async function request<T>(url: string, options?: RequestInit, attempt = 0): Promise<T> {
   const token = getStoredToken();
+  const method = (options?.method || 'GET').toUpperCase();
+  const isIdempotent = method === 'GET' || method === 'HEAD';
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 25_000);
 
@@ -51,6 +55,15 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
+
+    if (
+      isIdempotent &&
+      attempt === 0 &&
+      (res.status === 502 || res.status === 503 || res.status === 504)
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      return request<T>(url, options, attempt + 1);
+    }
 
     const contentType = res.headers.get('content-type') || '';
     const isJson = contentType.includes('application/json');
@@ -74,6 +87,10 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
   } catch (err) {
     if ((err as Error).name === 'AbortError') {
       throw new Error('การเชื่อมต่อเซิร์ฟเวอร์ใช้เวลานานเกินกำหนด กรุณาลองใหม่อีกครั้ง');
+    }
+    if (isIdempotent && attempt === 0 && err instanceof TypeError) {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      return request<T>(url, options, attempt + 1);
     }
     throw err;
   } finally {
@@ -369,6 +386,13 @@ export const api = {
     return request<{ config: GoogleWorkspaceConfig }>('/api/workspace/config', {
       method: 'PUT',
       body: JSON.stringify(config),
+    });
+  },
+
+  restoreSnapshot(payload: SystemSnapshotPayload) {
+    return request<{ result: RestoreSnapshotResult }>('/api/admin/restore-snapshot', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
   },
 
