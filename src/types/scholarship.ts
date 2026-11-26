@@ -31,6 +31,8 @@ export interface GoogleWorkspaceConfig {
   driveFolderId?: string;
   driveFolderName?: string;
   driveFolderUrl?: string;
+  appsScriptWebAppUrl?: string;
+  appsScriptSavedAt?: string;
   lastSyncedAt?: string;
   lastSyncedBy?: string;
 }
@@ -294,6 +296,7 @@ export interface PublicOverviewStats {
   academicYearCounts: AcademicYearCount[];
   byYearLevel: YearLevelSummaryBucket[];
   scholarshipSummary: ScholarshipCategorySummary[];
+  appsScriptWebAppUrl?: string;
 }
 
 export interface ImportedStudentRow {

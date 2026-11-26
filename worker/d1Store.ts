@@ -988,8 +988,14 @@ export class D1Store {
     academicYear: AcademicYear | 'all' = 'all',
     yearLevel: YearLevel | 'all' = 'all'
   ): Promise<PublicOverviewStats> {
-    const bundles = await this.getAllStudentBundles();
-    return buildPublicOverviewStats(bundles, academicYear, yearLevel);
+    const [bundles, wsConfig] = await Promise.all([
+      this.getAllStudentBundles(),
+      this.getWorkspaceConfig(),
+    ]);
+    const stats = buildPublicOverviewStats(bundles, academicYear, yearLevel);
+    return wsConfig.appsScriptWebAppUrl
+      ? { ...stats, appsScriptWebAppUrl: wsConfig.appsScriptWebAppUrl }
+      : stats;
   }
 
   async savePdpaDecision(studentUserId: string, consented: boolean): Promise<BasicInfoData> {

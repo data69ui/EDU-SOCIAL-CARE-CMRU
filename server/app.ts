@@ -26,6 +26,7 @@ import {
   FixedWindowRateLimiter,
   isSafeUploadFilename,
 } from '../src/utils/securityGuard.js';
+import { generateAppsScriptFiles } from '../src/services/googleAppsScriptTemplate.js';
 import { sanitizeUser, store, StoredUser, verifyPassword } from './store.js';
 
 dotenv.config();
@@ -290,51 +291,6 @@ const MIME_BY_EXT: Record<string, string> = {
   '.webp': 'image/webp',
   '.pdf': 'application/pdf',
 };
-
-const APPS_SCRIPT_TEMPLATE = `/**
- * EDU SOCIAL CARE CMRU - Google Apps Script & Google Sheets/Drive Bridge
- * สาขาวิชาสังคมศึกษา คณะครุศาสตร์ มหาวิทยาลัยราชภัฏเชียงใหม่
- */
-const SPREADSHEET_ID = 'PUT_YOUR_GOOGLE_SHEET_ID_HERE';
-const DRIVE_FOLDER_ID = 'PUT_YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE';
-
-function doPost(e) {
-  try {
-    const payload = JSON.parse(e.postData.contents);
-    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = ss.getSheetByName(payload.sheetName || 'Applications') || ss.insertSheet('Applications');
-
-    if (payload.action === 'upsertRow') {
-      const headers = ['StudentID', 'FullName', 'AcademicYear', 'YearLevel', 'GPAX', 'Status', 'VolunteerHours', 'UpdatedAt'];
-      if (sheet.getLastRow() === 0) {
-        sheet.appendRow(headers);
-      }
-      sheet.appendRow([
-        payload.studentId,
-        payload.fullName,
-        payload.academicYear,
-        payload.yearLevel,
-        payload.gpax,
-        payload.status,
-        payload.volunteerHours || 0,
-        new Date().toISOString()
-      ]);
-      return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    if (payload.action === 'uploadDriveFile') {
-      const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-      const bytes = Utilities.base64Decode(payload.base64Data);
-      const blob = Utilities.newBlob(bytes, payload.mimeType, payload.fileName);
-      const file = folder.createFile(blob);
-      return ContentService.createTextOutput(JSON.stringify({ ok: true, fileUrl: file.getUrl() })).setMimeType(ContentService.MimeType.JSON);
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: 'Unknown action' })).setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err) })).setMimeType(ContentService.MimeType.JSON);
-  }
-}`;
 
 export function createApp() {
   const app = express();
@@ -1153,7 +1109,12 @@ export function createApp() {
   );
 
   app.get('/api/admin/apps-script-template', requireRole(['admin', 'teacher']), (_req, res) => {
-    res.json({ code: APPS_SCRIPT_TEMPLATE });
+    const cfg = store.getWorkspaceConfig();
+    const files = generateAppsScriptFiles({
+      spreadsheetId: cfg.spreadsheetId,
+      driveFolderId: cfg.driveFolderId,
+    });
+    res.json({ code: files.codeGs, indexHtml: files.indexHtml });
   });
 
   // Global API & JSON parse error handler (prevents server crash or stack leakage)

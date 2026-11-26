@@ -99,7 +99,7 @@ const SECTION_META: Record<StaffSectionKey, { title: string; breadcrumb: string 
   'excel-import': { title: 'นำเข้าข้อมูล Excel / เพิ่มรายชื่อ', breadcrumb: 'อัปโหลดไฟล์ .xlsx / .csv หรือเพิ่มรายบุคคล' },
   'pdf-reports': { title: 'ศูนย์พิมพ์รายงาน PDF', breadcrumb: 'พิมพ์รายชื่อรวมและโปรไฟล์รายบุคคล' },
   'admin-users': { title: 'จัดการผู้ใช้งาน', breadcrumb: 'สร้างบัญชี แก้ไขรหัสผ่าน และลบบัญชี' },
-  integrations: { title: 'Google Sheets & Google Drive', breadcrumb: 'ซิงก์ฐานข้อมูล Google Sheets และเก็บไฟล์บน Google Drive' },
+  integrations: { title: 'Google Sheets, Drive & Script', breadcrumb: 'ซิงก์ Sheets, Drive และแสดงผลผ่าน Google Apps Script' },
 };
 
 function getInitials(name: string) {
@@ -635,7 +635,7 @@ export function StaffDashboard({
       title: 'นำเข้าข้อมูล & Google Workspace',
       items: [
         { key: 'excel-import', label: 'นำเข้า Excel / เพิ่มรายชื่อ', icon: FileSpreadsheet },
-        { key: 'integrations', label: 'Google Sheets & Drive', icon: FileSpreadsheet },
+        { key: 'integrations', label: 'Google Sheets, Drive & Script', icon: FileSpreadsheet },
         { key: 'pdf-reports', label: 'พิมพ์รายงาน PDF', icon: Printer },
       ],
     },

@@ -260,6 +260,24 @@ export function sanitizeGoogleWorkspaceUrl(url: unknown): string | undefined {
   }
 }
 
+export function sanitizeAppsScriptWebAppUrl(url: unknown): string | undefined {
+  if (typeof url !== 'string' || !url.trim()) return undefined;
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== 'https:') return undefined;
+    if (parsed.hostname !== 'script.google.com') return undefined;
+    // Allow standard Apps Script Web App URLs (/macros/s/.../exec or /dev, and domain-scoped /a/macros/.../exec)
+    if (!/^\/(?:a\/[^/]+\/)?macros\/s\/[a-zA-Z0-9_-]{10,160}\/(?:exec|dev)$/.test(parsed.pathname)) {
+      return undefined;
+    }
+    parsed.search = '';
+    parsed.hash = '';
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   spreadsheetId?: string;
   spreadsheetTitle?: string;
@@ -267,6 +285,8 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   driveFolderId?: string;
   driveFolderName?: string;
   driveFolderUrl?: string;
+  appsScriptWebAppUrl?: string;
+  appsScriptSavedAt?: string;
   lastSyncedAt?: string;
   lastSyncedBy?: string;
 } {
@@ -276,6 +296,7 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   const driveFolderId = isSafeGoogleResourceId(raw.driveFolderId)
     ? String(raw.driveFolderId).trim()
     : undefined;
+  const appsScriptWebAppUrl = sanitizeAppsScriptWebAppUrl(raw.appsScriptWebAppUrl);
 
   return {
     ...(spreadsheetId ? { spreadsheetId } : {}),
@@ -296,6 +317,10 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
       : driveFolderId
         ? { driveFolderUrl: `https://drive.google.com/drive/folders/${driveFolderId}` }
         : {}),
+    ...(appsScriptWebAppUrl ? { appsScriptWebAppUrl } : {}),
+    ...(appsScriptWebAppUrl && raw.appsScriptSavedAt
+      ? { appsScriptSavedAt: clampPayloadText(raw.appsScriptSavedAt, 64).trim() }
+      : {}),
     ...(raw.lastSyncedAt ? { lastSyncedAt: clampPayloadText(raw.lastSyncedAt, 64).trim() } : {}),
     ...(raw.lastSyncedBy ? { lastSyncedBy: clampPayloadText(raw.lastSyncedBy, 120).trim() } : {}),
   };

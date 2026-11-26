@@ -397,7 +397,7 @@ export const api = {
   },
 
   getAppsScriptTemplate() {
-    return request<{ code: string }>('/api/admin/apps-script-template');
+    return request<{ code: string; indexHtml?: string }>('/api/admin/apps-script-template');
   },
 };
 

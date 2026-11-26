@@ -802,7 +802,9 @@ class FileStore {
     academicYear: AcademicYear | 'all' = 'all',
     yearLevel: YearLevel | 'all' = 'all'
   ): PublicOverviewStats {
-    return buildPublicOverviewStats(this.getAllStudentBundles(), academicYear, yearLevel);
+    const stats = buildPublicOverviewStats(this.getAllStudentBundles(), academicYear, yearLevel);
+    const appsScriptWebAppUrl = this.state.workspaceConfig?.appsScriptWebAppUrl;
+    return appsScriptWebAppUrl ? { ...stats, appsScriptWebAppUrl } : stats;
   }
 
   savePdpaDecision(studentUserId: string, consented: boolean): BasicInfoData {

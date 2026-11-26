@@ -44,6 +44,7 @@ import type {
 } from '../types/scholarship';
 import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { GoogleAppsScriptSection } from './GoogleAppsScriptSection';
 import {
   WorkspaceConfirmDialog,
   WorkspaceConfirmRequest,
@@ -576,10 +577,10 @@ export function GoogleWorkspacePanel({
             </div>
             <div>
               <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
-                ศูนย์จัดการฐานข้อมูล Google Sheets &amp; ที่เก็บไฟล์ Google Drive
+                ศูนย์จัดการ Google Sheets, Google Drive และแสดงผลผ่าน Google Script
               </h2>
               <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-0.5">
-                เชื่อมต่อบัญชี Google เพื่อเก็บข้อมูลนักศึกษา ใบสมัคร ผลการเรียน จิตอาสา ใน Google Sheets และจัดเก็บภาพ/PDF ใน Google Drive
+                เชื่อมต่อบัญชี Google เพื่อเก็บข้อมูลใน Google Sheets, จัดเก็บภาพ/PDF ใน Google Drive และเผยแพร่หน้าเว็บแสดงผลผ่าน Google Apps Script
               </p>
             </div>
           </div>
@@ -939,6 +940,15 @@ export function GoogleWorkspacePanel({
           </div>
         </section>
       </div>
+
+      {/* Google Apps Script Web App Card */}
+      <GoogleAppsScriptSection
+        config={config}
+        students={students}
+        busy={busy}
+        onSaveConfig={persistWorkspaceConfig}
+        onStatusMessage={setStatusMessage}
+      />
 
       {/* Export & Full Snapshot Backup/Restore strip */}
       <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
