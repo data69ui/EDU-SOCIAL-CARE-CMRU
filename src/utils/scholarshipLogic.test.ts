@@ -168,6 +168,7 @@ test('prefillApplicationFromBasicInfo maps student basic info into scholarship a
   basic.gpax = '3.62';
   basic.phone = '0812345678';
   basic.hasStudentLoan = 'กู้';
+  basic.livingWith = 'อยู่ร่วมกับบิดาและมารดา';
   basic.necessityReason = 'ครอบครัวมีรายได้น้อยจากอาชีพเกษตรกรรม';
   basic.spendingPlan = 'ใช้เป็นค่าอุปกรณ์การเรียนและค่าหอพัก';
 
@@ -176,6 +177,7 @@ test('prefillApplicationFromBasicInfo maps student basic info into scholarship a
   assert.equal(app.studentId, '67110001');
   assert.equal(app.gpax, '3.62');
   assert.equal(app.hasStudentLoan, 'กู้ กยศ.');
+  assert.equal(app.currentlyLivingWith, 'อยู่ร่วมกับบิดาและมารดา');
   assert.equal(app.scholarshipNecessityDetail, 'ครอบครัวมีรายได้น้อยจากอาชีพเกษตรกรรม');
   assert.equal(app.expectedBenefitDetail, 'ใช้เป็นค่าอุปกรณ์การเรียนและค่าหอพัก');
 });

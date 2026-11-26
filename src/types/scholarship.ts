@@ -105,7 +105,7 @@ export interface BasicInfoData {
   parentsMaritalStatusOther: string;
   guardian: GuardianInfo;
   familyMemberCount: string;
-  livingWith: 'พ่อ' | 'แม่' | 'ปู่ ย่า ตา ยาย' | 'อื่นๆ';
+  livingWith: 'อยู่ร่วมกับบิดาและมารดา' | 'พ่อ' | 'แม่' | 'ปู่ ย่า ตา ยาย' | 'อื่นๆ';
   livingWithOther: string;
   // Part 4: Necessity
   necessityReason: string;

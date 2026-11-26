@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, Download, FileCheck2, Loader2, Printer, X } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import type { StudentFullRecord, UserAccount } from '../types/scholarship';
 import { exportElementToPdf, exportElementToPdfBlobUrl } from '../utils/pdfExport';
 import {
@@ -47,12 +48,21 @@ export function StudentProfilePrintView({
     text: string;
   } | null>(null);
 
+  const prefersReducedMotion = useReducedMotion();
+
   useEffect(() => {
     document.body.classList.add('printing-profile-modal');
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !directPrintData) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
     return () => {
       document.body.classList.remove('printing-profile-modal');
+      window.removeEventListener('keydown', onKeyDown);
     };
-  }, []);
+  }, [directPrintData, onClose]);
 
   const { user, basicInfo, application, grades, volunteers } = record;
   const statusMeta = getApplicationStatusMeta(application?.status);
@@ -228,15 +238,25 @@ export function StudentProfilePrintView({
   };
 
   const modalContent = (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
       aria-label="ตัวอย่างหน้าก่อนพิมพ์เอกสารสรุปประวัตินักศึกษาขอรับทุนการศึกษา"
-      className="printing-profile-root fixed inset-0 z-50 overflow-y-auto bg-black/65 p-3 sm:p-5 print:static print:bg-white print:p-0"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: prefersReducedMotion ? 0.01 : 0.16, ease: 'easeOut' }}
+      style={{ willChange: 'opacity' }}
+      className="printing-profile-root fixed inset-0 z-50 overflow-y-auto bg-black/60 p-3 sm:p-5 print:static print:bg-white print:p-0"
     >
       <style>{`@media print { @page { size: A4 ${orientation}; margin: 10mm; } }`}</style>
 
-      <div className="mx-auto max-w-[1140px] rounded-2xl bg-[#FAF6EE] dark:bg-[#16171B] p-4 sm:p-6 shadow-2xl border border-[#DFD1BA] dark:border-[#343842] print:max-w-none print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none space-y-4">
+      <motion.div
+        initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 8 }}
+        animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: prefersReducedMotion ? 0.01 : 0.18, ease: [0.16, 1, 0.3, 1] }}
+        style={{ willChange: 'transform, opacity' }}
+        className="mx-auto max-w-[1140px] rounded-2xl bg-[#FAF6EE] dark:bg-[#16171B] p-4 sm:p-6 shadow-2xl border border-[#DFD1BA] dark:border-[#343842] print:max-w-none print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none space-y-4"
+      >
         <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] px-4 py-3.5">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -645,7 +665,7 @@ export function StudentProfilePrintView({
                 )}
                 <p className="text-xs mt-1.5 text-[#374151]">
                   <strong>ไฟล์แนบ:</strong> ภาพบ้าน (ข้อมูลพื้นฐาน) {basicInfo.housePhotos.length}{' '}
-                  ภาพ, เอกสารรับรอง {basicInfo.supportingDocs.length} ไฟล์
+                  ภาพ
                   {application &&
                     `, ภาพประกอบคำร้อง ${
                       application.indoorHousePhotos.length +
@@ -654,11 +674,6 @@ export function StudentProfilePrintView({
                       application.outdoorFamilyPhotos.length
                     } ภาพ`}
                 </p>
-                {basicInfo.documentNote && (
-                  <p className="text-xs text-[#4B5563]">
-                    <strong>หมายเหตุเอกสาร:</strong> {basicInfo.documentNote}
-                  </p>
-                )}
               </div>
             </section>
 
@@ -703,7 +718,7 @@ export function StudentProfilePrintView({
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {directPrintData && (
         <DirectPrintModal
@@ -715,7 +730,7 @@ export function StudentProfilePrintView({
           onClose={() => setDirectPrintData(null)}
         />
       )}
-    </div>
+    </motion.div>
   );
 
   if (typeof document !== 'undefined') {

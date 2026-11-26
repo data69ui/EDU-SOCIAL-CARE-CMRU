@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Award, ChevronRight, Search, Users, X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { ScholarshipCategorySummary } from '../types/scholarship';
 
 interface ScholarshipSummarySectionProps {
@@ -13,6 +14,7 @@ export function ScholarshipSummarySection({
   loading = false,
   onSelectRecipientUser,
 }: ScholarshipSummarySectionProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [selectedCategory, setSelectedCategory] = useState<ScholarshipCategorySummary | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -171,19 +173,35 @@ export function ScholarshipSummarySection({
       )}
 
       {/* Recipient List Modal */}
-      {selectedCategory && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="scholarship-recipients-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setSelectedCategory(null);
-            }
-          }}
-        >
-          <div className="w-full max-w-2xl rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+      <AnimatePresence>
+        {selectedCategory && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="scholarship-recipients-modal-title"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.15, ease: 'easeOut' }}
+            style={{ willChange: 'opacity' }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setSelectedCategory(null);
+              }
+            }}
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 4 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.17,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              style={{ willChange: 'transform, opacity' }}
+              className="w-full max-w-2xl rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] shadow-xl overflow-hidden flex flex-col max-h-[85vh]"
+            >
             <div className="flex items-start justify-between gap-4 border-b border-[#EFE5D4] bg-[#FAF6EE] dark:border-[#343842] dark:bg-[#1B1D23] px-6 py-4">
               <div className="space-y-1 min-w-0">
                 <p className="text-[11px] font-semibold text-[#7A1629] dark:text-[#E8C97A]">
@@ -282,9 +300,10 @@ export function ScholarshipSummarySection({
                 ปิดหน้าต่าง
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

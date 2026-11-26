@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type SetStateAction } from 'react';
 import { Edit3, Award, CheckCircle2, X, Trash2, AlertTriangle, Plus } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { api } from '../services/api';
 import type { BasicInfoData, ParentInfo, ReceivedScholarshipItem } from '../types/scholarship';
 import {
@@ -179,6 +180,7 @@ export function StudentBasicInfoForm({
   }, [form]);
 
   const { showSaveSuccess } = useSaveSuccess();
+  const prefersReducedMotion = useReducedMotion();
   const [isEditing, setIsEditing] = useState<boolean>(
     Boolean(draftBasicInfo) || basicInfo.isDraft || !basicInfo.savedAt
   );
@@ -189,6 +191,18 @@ export function StudentBasicInfoForm({
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
   );
+
+  useEffect(() => {
+    if (!showGpaModal && !showDeleteConfirm) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showGpaModal) setShowGpaModal(false);
+        else if (showDeleteConfirm && !deletingAccount) setShowDeleteConfirm(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showGpaModal, showDeleteConfirm, deletingAccount]);
 
   const createEmptyScholarshipItem = (): ReceivedScholarshipItem => ({
     id: `sch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
@@ -266,60 +280,81 @@ export function StudentBasicInfoForm({
       </section>
     ) : null;
 
-  const renderSelfDeleteModal = () =>
-    showDeleteConfirm && onDeleteAccount ? (
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="ยืนยันการลบบัญชีผู้ใช้ของฉัน"
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4"
-      >
-        <div className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-red-900/70 bg-white dark:bg-[#22242B] p-6 space-y-4 shadow-xl">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] dark:bg-red-950/60 text-[#B91C1C] dark:text-red-300">
-              <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+  const renderSelfDeleteModal = () => (
+    <AnimatePresence>
+      {showDeleteConfirm && onDeleteAccount && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label="ยืนยันการลบบัญชีผู้ใช้ของฉัน"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0.01 : 0.15, ease: 'easeOut' }}
+          style={{ willChange: 'opacity' }}
+          onClick={(e) => {
+            if (!deletingAccount && e.target === e.currentTarget) setShowDeleteConfirm(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+        >
+          <motion.div
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 4 }}
+            transition={{
+              duration: prefersReducedMotion ? 0.01 : 0.17,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            style={{ willChange: 'transform, opacity' }}
+            className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-red-900/70 bg-white dark:bg-[#22242B] p-6 space-y-4 shadow-xl"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] dark:bg-red-950/60 text-[#B91C1C] dark:text-red-300">
+                <AlertTriangle className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-[#991B1B] dark:text-red-300">
+                  ยืนยันการลบบัญชีผู้ใช้
+                </h3>
+                <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1 leading-relaxed">
+                  ข้อมูลพื้นฐาน ใบสมัครทุน ผลการเรียน และชั่วโมงจิตอาสาของคุณจะถูกลบออกจากระบบถาวร และไม่สามารถกู้คืนได้
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-display text-lg font-bold text-[#991B1B] dark:text-red-300">
-                ยืนยันการลบบัญชีผู้ใช้
-              </h3>
-              <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1 leading-relaxed">
-                ข้อมูลพื้นฐาน ใบสมัครทุน ผลการเรียน และชั่วโมงจิตอาสาของคุณจะถูกลบออกจากระบบถาวร และไม่สามารถกู้คืนได้
-              </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={deletingAccount}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-4 py-2 text-sm text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="button"
+                disabled={deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  try {
+                    await onDeleteAccount();
+                  } catch (err) {
+                    setFeedback({ type: 'error', text: (err as Error).message });
+                    setShowDeleteConfirm(false);
+                  } finally {
+                    setDeletingAccount(false);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#B91C1C] px-4 py-2 text-sm font-medium text-white hover:bg-[#991B1B] disabled:opacity-60"
+              >
+                <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>{deletingAccount ? 'กำลังลบบัญชี...' : 'ยืนยันลบบัญชี'}</span>
+              </button>
             </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              disabled={deletingAccount}
-              onClick={() => setShowDeleteConfirm(false)}
-              className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-4 py-2 text-sm text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="button"
-              disabled={deletingAccount}
-              onClick={async () => {
-                setDeletingAccount(true);
-                try {
-                  await onDeleteAccount();
-                } catch (err) {
-                  setFeedback({ type: 'error', text: (err as Error).message });
-                  setShowDeleteConfirm(false);
-                } finally {
-                  setDeletingAccount(false);
-                }
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#B91C1C] px-4 py-2 text-sm font-medium text-white hover:bg-[#991B1B] disabled:opacity-60"
-            >
-              <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span>{deletingAccount ? 'กำลังลบบัญชี...' : 'ยืนยันลบบัญชี'}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    ) : null;
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   if (!form.pdpaConsented) {
     return (
@@ -581,7 +616,7 @@ export function StudentBasicInfoForm({
             <p><span className="font-medium text-[#23181A] dark:text-[#F2EFEA]">ความจำเป็น:</span> {form.necessityReason || '-'}</p>
             <p><span className="font-medium text-[#23181A] dark:text-[#F2EFEA]">แผนการใช้เงินทุน:</span> {form.spendingPlan || '-'}</p>
             <p className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
-              รูปบ้านที่แนบ: {form.housePhotos.length} รูป · เอกสารประกอบ: {form.supportingDocs.length} ไฟล์
+              รูปบ้านที่แนบ: {form.housePhotos.length} รูป
             </p>
           </div>
         </section>
@@ -1100,6 +1135,7 @@ export function StudentBasicInfoForm({
                   }
                   className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 >
+                  <option value="อยู่ร่วมกับบิดาและมารดา">อยู่ร่วมกับบิดาและมารดา</option>
                   <option value="พ่อ">พ่อ</option>
                   <option value="แม่">แม่</option>
                   <option value="ปู่ ย่า ตา ยาย">ปู่ ย่า ตา ยาย</option>
@@ -1186,13 +1222,13 @@ export function StudentBasicInfoForm({
                 ส่วนที่ 5 เอกสารประกอบการขอรับทุน
               </h3>
               <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1">
-                ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีเอกสาร
-                สามารถบันทึกฉบับร่างไว้ก่อนและแนบเอกสารภายหลังได้
+                ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีภาพถ่าย
+                สามารถบันทึกฉบับร่างไว้ก่อนและแนบภายหลังได้
               </p>
             </div>
 
             <FileUploadField
-              label="1. แนบรูปบ้าน อย่างน้อย 2 รูป (เห็นรูปภายในบริเวณบ้าน และ นอกบ้าน พร้อมผู้ปกครองทุกรูป)"
+              label="แนบรูปบ้าน อย่างน้อย 2 รูป (เห็นรูปภายในบริเวณบ้าน และ นอกบ้าน พร้อมผู้ปกครองทุกรูป)"
               helperText="รองรับไฟล์ภาพ JPG, PNG, WEBP หรือ PDF สูงสุด 5 MB ต่อไฟล์"
               files={form.housePhotos}
               onChange={(housePhotos) => setForm({ ...form, housePhotos })}
@@ -1200,27 +1236,6 @@ export function StudentBasicInfoForm({
               allowPdf={true}
               minCount={2}
             />
-
-            <FileUploadField
-              label="2. อัปโหลดไฟล์เอกสารประกอบอื่น ๆ"
-              helperText="เช่น สำเนาบัตรประชาชน สำเนาทะเบียนบ้าน หนังสือรับรองรายได้ (สูงสุด 5 MB)"
-              files={form.supportingDocs}
-              onChange={(supportingDocs) => setForm({ ...form, supportingDocs })}
-              maxSizeMB={5}
-              allowPdf={true}
-            />
-
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
-                3. หมายเหตุเพิ่มเติมเกี่ยวกับเอกสาร (ถ้ามี)
-              </label>
-              <textarea
-                rows={2}
-                value={form.documentNote}
-                onChange={(e) => setForm({ ...form, documentNote: e.target.value })}
-                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
-              />
-            </div>
           </section>
 
           <div className="flex flex-wrap items-center justify-end gap-3">
@@ -1243,85 +1258,105 @@ export function StudentBasicInfoForm({
         </form>
       )}
 
-      {/* Separate Sub-Window Modal for GPA Entry (ทำหน้าต่างแยกออกมา) */}
-      {showGpaModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="gpa-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4"
-        >
-          <div className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5 shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
-              <h3 id="gpa-modal-title" className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F3B9C3]">
-                หน้าต่างบันทึกเกรดเฉลี่ย
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowGpaModal(false)}
-                aria-label="ปิดหน้าต่างเกรดเฉลี่ย"
-                className="rounded-lg p-1 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <label htmlFor="gpa-gpax" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
-                  เกรดเฉลี่ยสะสม (GPAX) *
-                </label>
-                <input
-                  id="gpa-gpax"
-                  type="text"
-                  value={form.gpax}
-                  onChange={(e) => setForm({ ...form, gpax: e.target.value })}
-                  placeholder="เช่น 3.55"
-                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
-                />
+      {/* Separate Sub-Window Modal for GPA Entry */}
+      <AnimatePresence>
+        {showGpaModal && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="gpa-modal-title"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.15, ease: 'easeOut' }}
+            style={{ willChange: 'opacity' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowGpaModal(false);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+          >
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 4 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.17,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              style={{ willChange: 'transform, opacity' }}
+              className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5 shadow-xl"
+            >
+              <div className="flex items-center justify-between border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+                <h3 id="gpa-modal-title" className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F3B9C3]">
+                  หน้าต่างบันทึกเกรดเฉลี่ย
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowGpaModal(false)}
+                  aria-label="ปิดหน้าต่างเกรดเฉลี่ย"
+                  className="rounded-lg p-1 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
+                >
+                  <X className="h-5 w-5" />
+                </button>
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="gpa-t1" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
-                  เกรดเฉลี่ยภาคเรียนที่ 1 ที่ผ่านมา *
-                </label>
-                <input
-                  id="gpa-t1"
-                  type="text"
-                  value={form.gpaTerm1}
-                  onChange={(e) => setForm({ ...form, gpaTerm1: e.target.value })}
-                  placeholder="เช่น 3.50"
-                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
-                />
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <label htmlFor="gpa-gpax" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
+                    เกรดเฉลี่ยสะสม (GPAX) *
+                  </label>
+                  <input
+                    id="gpa-gpax"
+                    type="text"
+                    value={form.gpax}
+                    onChange={(e) => setForm({ ...form, gpax: e.target.value })}
+                    placeholder="เช่น 3.55"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="gpa-t1" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
+                    เกรดเฉลี่ยภาคเรียนที่ 1 ที่ผ่านมา *
+                  </label>
+                  <input
+                    id="gpa-t1"
+                    type="text"
+                    value={form.gpaTerm1}
+                    onChange={(e) => setForm({ ...form, gpaTerm1: e.target.value })}
+                    placeholder="เช่น 3.50"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="gpa-t2" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
+                    เกรดเฉลี่ยภาคเรียนที่ 2 ที่ผ่านมา *
+                  </label>
+                  <input
+                    id="gpa-t2"
+                    type="text"
+                    value={form.gpaTerm2}
+                    onChange={(e) => setForm({ ...form, gpaTerm2: e.target.value })}
+                    placeholder="เช่น 3.60"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label htmlFor="gpa-t2" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
-                  เกรดเฉลี่ยภาคเรียนที่ 2 ที่ผ่านมา *
-                </label>
-                <input
-                  id="gpa-t2"
-                  type="text"
-                  value={form.gpaTerm2}
-                  onChange={(e) => setForm({ ...form, gpaTerm2: e.target.value })}
-                  placeholder="เช่น 3.60"
-                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
-                />
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowGpaModal(false)}
+                  className="rounded-lg bg-[#7A1629] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B0F1D]"
+                >
+                  ตกลงและบันทึกค่าเกรด
+                </button>
               </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowGpaModal(false)}
-                className="rounded-lg bg-[#7A1629] px-5 py-2 text-sm font-medium text-white hover:bg-[#5B0F1D]"
-              >
-                ตกลงและบันทึกค่าเกรด
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* PDPA Self-Service Account Deletion */}
       {renderSelfDeleteSection()}

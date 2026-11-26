@@ -26,7 +26,7 @@ import {
   Wallet,
   XCircle,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import {
   api,
   downloadStudentImportTemplateExcel,
@@ -116,6 +116,7 @@ export function StaffDashboard({
 }: StaffDashboardProps) {
   const { isDark } = useTheme();
   const { showSaveSuccess } = useSaveSuccess();
+  const prefersReducedMotion = useReducedMotion();
   const isAdmin = currentUser.role === 'admin';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [students, setStudents] = useState<StudentFullRecord[]>([]);
@@ -190,8 +191,11 @@ export function StaffDashboard({
   const [newFullName, setNewFullName] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (options?: { silent?: boolean }) => {
+    const silent = Boolean(options?.silent);
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const res = await api.getAllStudents();
@@ -209,9 +213,23 @@ export function StaffDashboard({
     } catch (err) {
       setError((err as Error).message);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
+
+  useEffect(() => {
+    if (!resetTargetUser && !deleteTargetUser) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (resetTargetUser) setResetTargetUser(null);
+        else if (deleteTargetUser && !deletingUser) setDeleteTargetUser(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [resetTargetUser, deleteTargetUser, deletingUser]);
 
   const handleDownloadSummaryPdf = async () => {
     if (!reportSheetRef.current) return;
@@ -340,7 +358,7 @@ export function StaffDashboard({
       const msg = 'บันทึกผลการพิจารณาทุนและความคิดเห็นอาจารย์เรียบร้อยแล้ว';
       setToast(msg);
       showSaveSuccess(msg, 'บันทึกผลการพิจารณาเสร็จสิ้นแล้ว');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -366,7 +384,7 @@ export function StaffDashboard({
           : 'บันทึกการไม่อนุมัติรายการจิตอาสาแล้ว';
       setToast(msg);
       showSaveSuccess(msg, 'บันทึกการตรวจสอบจิตอาสาเสร็จสิ้นแล้ว');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -391,7 +409,7 @@ export function StaffDashboard({
       const msg = 'อาจารย์/ผู้ดูแลระบบบันทึกผลการเรียนให้นักศึกษาเรียบร้อยแล้ว';
       setToast(msg);
       showSaveSuccess(msg, 'บันทึกผลการเรียนเสร็จสิ้นแล้ว');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -439,7 +457,7 @@ export function StaffDashboard({
       setParsedExcelErrors([]);
       setExcelFileName('');
       if (excelInputRef.current) excelInputRef.current.value = '';
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -488,7 +506,7 @@ export function StaffDashboard({
       setQuickEmail('');
       setQuickGpax('');
       setQuickPhone('');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -522,7 +540,7 @@ export function StaffDashboard({
       showSaveSuccess(msg, 'บันทึกรหัสผ่านเสร็จสิ้นแล้ว');
       setResetTargetUser(null);
       setNewPasswordInput('');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -544,7 +562,7 @@ export function StaffDashboard({
       setNewUsername('');
       setNewFullName('');
       setNewUserPassword('');
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     }
@@ -563,7 +581,7 @@ export function StaffDashboard({
       setToast(msg);
       showSaveSuccess(msg, 'ดำเนินการเสร็จสิ้นแล้ว');
       setDeleteTargetUser(null);
-      await loadData();
+      await loadData({ silent: true });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -2874,10 +2892,10 @@ export function StaffDashboard({
                 currentUserName={currentUser.fullName}
                 isAdmin={isAdmin}
                 onImportedFromSheet={async () => {
-                  await loadData();
+                  await loadData({ silent: true });
                 }}
                 onRestoredSnapshot={async () => {
-                  await loadData();
+                  await loadData({ silent: true });
                 }}
                 onDownloadJsonBackup={() => {
                   void handleDownloadJsonBackup();
@@ -2889,20 +2907,34 @@ export function StaffDashboard({
       </div>
 
       {/* Password Reset Modal */}
-      {resetTargetUser && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="รีเซ็ตรหัสผ่านผู้ใช้งาน"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
-        >
-          <motion.form
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            onSubmit={handleResetPasswordSubmit}
-            className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#3A3E4A] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
+      <AnimatePresence>
+        {resetTargetUser && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="รีเซ็ตรหัสผ่านผู้ใช้งาน"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.15, ease: 'easeOut' }}
+            style={{ willChange: 'opacity' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setResetTargetUser(null);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
           >
+            <motion.form
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 4 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.17,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              style={{ willChange: 'transform, opacity' }}
+              onSubmit={handleResetPasswordSubmit}
+              className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#3A3E4A] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
+            >
             <h3 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
               {resetTargetUser.role === 'student' ? 'รีเซ็ตรหัสผ่านนักศึกษา' : 'แก้ไขรหัสผ่าน'}:{' '}
               {resetTargetUser.fullName}
@@ -2997,23 +3029,38 @@ export function StaffDashboard({
               </button>
             </div>
           </motion.form>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete User Confirmation Modal */}
-      {deleteTargetUser && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="ยืนยันการลบบัญชีผู้ใช้งาน"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
-        >
+      <AnimatePresence>
+        {deleteTargetUser && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
+            role="dialog"
+            aria-modal="true"
+            aria-label="ยืนยันการลบบัญชีผู้ใช้งาน"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0.01 : 0.15, ease: 'easeOut' }}
+            style={{ willChange: 'opacity' }}
+            onClick={(e) => {
+              if (!deletingUser && e.target === e.currentTarget) setDeleteTargetUser(null);
+            }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
           >
+            <motion.div
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 4 }}
+              transition={{
+                duration: prefersReducedMotion ? 0.01 : 0.17,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              style={{ willChange: 'transform, opacity' }}
+              className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
+            >
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] dark:bg-[#2F1519] text-[#B91C1C] dark:text-[#FCA5A5]">
                 <AlertTriangle className="h-5 w-5" aria-hidden="true" />
@@ -3065,8 +3112,9 @@ export function StaffDashboard({
               </button>
             </div>
           </motion.div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Individual Student Print Modal */}
       {printStudent && (

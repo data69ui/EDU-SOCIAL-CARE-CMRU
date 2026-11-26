@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Download, ExternalLink, Printer, X } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import type { PdfOrientation } from '../utils/pdfHelpers';
 
 interface DirectPrintModalProps {
@@ -22,16 +23,22 @@ export function DirectPrintModal({
 }: DirectPrintModalProps) {
   const printFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [printHint, setPrintHint] = useState<string | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
     return () => {
+      window.removeEventListener('keydown', onKeyDown);
       try {
         URL.revokeObjectURL(blobUrl);
       } catch {
         // Ignore cleanup errors
       }
     };
-  }, [blobUrl]);
+  }, [blobUrl, onClose]);
 
   const printableSrcDoc = useMemo(() => {
     const pagesHtml = pageImages
@@ -78,12 +85,16 @@ export function DirectPrintModal({
   };
 
   const modalContent = (
-    <div
+    <motion.div
       id="direct-print-screen-modal"
       role="dialog"
       aria-modal="true"
       aria-label={`หน้าจอสั่งพิมพ์เอกสารจริง ${filename}`}
-      className="no-print fixed inset-0 z-[70] flex flex-col bg-[#1F1719]/92 backdrop-blur-xs"
+      initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.985 }}
+      animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+      transition={{ duration: prefersReducedMotion ? 0.01 : 0.16, ease: [0.16, 1, 0.3, 1] }}
+      style={{ willChange: 'transform, opacity' }}
+      className="no-print fixed inset-0 z-[70] flex flex-col bg-[#1F1719]/92"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D8CBB8] dark:border-[#343842] bg-white dark:bg-[#22242B] px-4 py-3 sm:px-6 shadow-sm">
         <div className="min-w-0">
@@ -194,7 +205,7 @@ export function DirectPrintModal({
           aria-hidden="true"
         />
       )}
-    </div>
+    </motion.div>
   );
 
   if (typeof document !== 'undefined') {
