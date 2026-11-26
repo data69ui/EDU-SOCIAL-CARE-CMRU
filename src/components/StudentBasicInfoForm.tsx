@@ -11,6 +11,7 @@ import {
 import { FileUploadField } from './FileUploadField';
 import { DriveImage } from './DriveMedia';
 import { PdpaConsentModal } from './PdpaConsentModal';
+import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 
 interface StudentBasicInfoFormProps {
   basicInfo: BasicInfoData;
@@ -39,22 +40,22 @@ function ParentFieldsGroup({
   onRelationshipChange?: (val: string) => void;
 }) {
   return (
-    <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-5 space-y-4">
-      <h4 className="font-display text-sm font-semibold text-[#7A1629]">{title}</h4>
+    <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-5 space-y-4">
+      <h4 className="font-display text-sm font-semibold text-[#7A1629] dark:text-[#F3B9C3]">{title}</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             ชื่อ-นามสกุล {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.fullName}
             onChange={(e) => onChange({ ...value, fullName: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             สถานภาพ {required ? '*' : ''}
           </label>
           <select
@@ -65,7 +66,7 @@ function ParentFieldsGroup({
                 status: e.target.value as ParentInfo['status'],
               })
             }
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           >
             <option value="">-- เลือก --</option>
             <option value="ยังมีชีวิตอยู่">ยังมีชีวิตอยู่</option>
@@ -75,7 +76,7 @@ function ParentFieldsGroup({
 
         {showRelationship && (
           <div className="space-y-1">
-            <label className="block text-xs font-medium text-[#23181A]">
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
               ความสัมพันธ์กับผู้ปกครอง
             </label>
             <input
@@ -83,64 +84,64 @@ function ParentFieldsGroup({
               value={relationshipValue}
               onChange={(e) => onRelationshipChange?.(e.target.value)}
               placeholder="เช่น ป้า, ลุง, ยาย"
-              className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
             />
           </div>
         )}
 
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             อายุ {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.age}
             onChange={(e) => onChange({ ...value, age: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             อาชีพ {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.occupation}
             onChange={(e) => onChange({ ...value, occupation: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             สถานที่ทำงาน {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.workplace}
             onChange={(e) => onChange({ ...value, workplace: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             รายได้ต่อเดือน (บาท) {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.monthlyIncome}
             onChange={(e) => onChange({ ...value, monthlyIncome: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-[#23181A]">
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
             เบอร์โทรศัพท์ {required ? '*' : ''}
           </label>
           <input
             type="text"
             value={value.phone}
             onChange={(e) => onChange({ ...value, phone: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
           />
         </div>
       </div>
@@ -177,6 +178,7 @@ export function StudentBasicInfoForm({
     }
   }, [form]);
 
+  const { showSaveSuccess } = useSaveSuccess();
   const [isEditing, setIsEditing] = useState<boolean>(
     Boolean(draftBasicInfo) || basicInfo.isDraft || !basicInfo.savedAt
   );
@@ -231,6 +233,12 @@ export function StudentBasicInfoForm({
       setFormState(merged);
       onDraftChange?.(null);
       onUpdated(merged);
+      showSaveSuccess(
+        consented
+          ? 'บันทึกความยินยอม PDPA เรียบร้อยแล้ว สามารถกรอกข้อมูลพื้นฐานได้ทันที'
+          : 'บันทึกผลการพิจารณา PDPA เรียบร้อยแล้ว',
+        'บันทึกข้อมูลเสร็จสิ้นแล้ว'
+      );
     } catch (err) {
       setFeedback({ type: 'error', text: (err as Error).message });
     }
@@ -238,19 +246,19 @@ export function StudentBasicInfoForm({
 
   const renderSelfDeleteSection = () =>
     onDeleteAccount ? (
-      <section className="rounded-2xl border border-[#FCA5A5]/70 bg-white p-5 flex flex-wrap items-center justify-between gap-4">
+      <section className="rounded-2xl border border-[#FCA5A5]/70 dark:border-red-900/60 bg-white dark:bg-[#22242B] p-5 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-0.5">
-          <h3 className="font-display text-sm font-bold text-[#991B1B]">
+          <h3 className="font-display text-sm font-bold text-[#991B1B] dark:text-red-300">
             การลบบัญชีผู้ใช้และข้อมูลส่วนบุคคล (PDPA)
           </h3>
-          <p className="text-xs text-[#66585B]">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
             หากต้องการยกเลิกการใช้งาน สามารถลบบัญชีและข้อมูลทั้งหมดออกจากระบบได้ถาวร
           </p>
         </div>
         <button
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-2 text-xs font-semibold text-[#991B1B] hover:bg-[#FEE2E2] transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/40 px-4 py-2 text-xs font-semibold text-[#991B1B] dark:text-red-300 hover:bg-[#FEE2E2] dark:hover:bg-red-950/70 transition-colors"
         >
           <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>ลบบัญชีผู้ใช้ของฉัน</span>
@@ -264,18 +272,18 @@ export function StudentBasicInfoForm({
         role="dialog"
         aria-modal="true"
         aria-label="ยืนยันการลบบัญชีผู้ใช้ของฉัน"
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4"
       >
-        <div className="w-full max-w-md rounded-2xl border border-[#FCA5A5] bg-white p-6 space-y-4 shadow-xl">
+        <div className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-red-900/70 bg-white dark:bg-[#22242B] p-6 space-y-4 shadow-xl">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] text-[#B91C1C]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] dark:bg-red-950/60 text-[#B91C1C] dark:text-red-300">
               <AlertTriangle className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="font-display text-lg font-bold text-[#991B1B]">
+              <h3 className="font-display text-lg font-bold text-[#991B1B] dark:text-red-300">
                 ยืนยันการลบบัญชีผู้ใช้
               </h3>
-              <p className="text-xs text-[#66585B] mt-1 leading-relaxed">
+              <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1 leading-relaxed">
                 ข้อมูลพื้นฐาน ใบสมัครทุน ผลการเรียน และชั่วโมงจิตอาสาของคุณจะถูกลบออกจากระบบถาวร และไม่สามารถกู้คืนได้
               </p>
             </div>
@@ -285,7 +293,7 @@ export function StudentBasicInfoForm({
               type="button"
               disabled={deletingAccount}
               onClick={() => setShowDeleteConfirm(false)}
-              className="rounded-xl border border-[#D8CBB8] px-4 py-2 text-sm text-[#5A4B4E] hover:bg-[#FAF6EE]"
+              className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-4 py-2 text-sm text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
             >
               ยกเลิก
             </button>
@@ -321,8 +329,8 @@ export function StudentBasicInfoForm({
             role={feedback.type === 'error' ? 'alert' : 'status'}
             className={`rounded-xl border px-4 py-3 text-sm ${
               feedback.type === 'error'
-                ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-                : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+                ? 'border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/50 text-[#991B1B] dark:text-red-300'
+                : 'border-[#86EFAC] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 text-[#166534] dark:text-emerald-300'
             }`}
           >
             {feedback.text}
@@ -393,12 +401,17 @@ export function StudentBasicInfoForm({
       if (!asDraft) {
         setIsEditing(false);
       }
+      const successMessage = asDraft
+        ? 'บันทึกฉบับร่างข้อมูลพื้นฐานเรียบร้อยแล้ว'
+        : 'บันทึกข้อมูลพื้นฐานเรียบร้อยแล้ว ระบบแสดงข้อมูลทั้งหมดด้านล่างและสามารถแก้ไขได้ตลอดเวลา';
       setFeedback({
         type: 'success',
-        text: asDraft
-          ? 'บันทึกฉบับร่างข้อมูลพื้นฐานเรียบร้อยแล้ว'
-          : 'บันทึกข้อมูลพื้นฐานเรียบร้อยแล้ว ระบบแสดงข้อมูลทั้งหมดด้านล่างและสามารถแก้ไขได้ตลอดเวลา',
+        text: successMessage,
       });
+      showSaveSuccess(
+        successMessage,
+        asDraft ? 'บันทึกฉบับร่างเสร็จสิ้นแล้ว' : 'บันทึกข้อมูลเสร็จสิ้นแล้ว'
+      );
     } catch (err) {
       setFeedback({ type: 'error', text: (err as Error).message });
     } finally {
@@ -408,12 +421,12 @@ export function StudentBasicInfoForm({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6">
         <div>
-          <h2 className="font-display text-xl font-bold text-[#7A1629]">
+          <h2 className="font-display text-xl font-bold text-[#7A1629] dark:text-[#F3B9C3]">
             1. ข้อมูลพื้นฐานนักศึกษา
           </h2>
-          <p className="text-sm text-[#66585B]">
+          <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
             ยินยอม PDPA เมื่อ{' '}
             {form.pdpaConsentedAt
               ? new Date(form.pdpaConsentedAt).toLocaleDateString('th-TH')
@@ -427,7 +440,7 @@ export function StudentBasicInfoForm({
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#7A1629] bg-white px-4 py-2 text-sm font-medium text-[#7A1629] hover:bg-[#FAF6EE]"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#7A1629] dark:border-[#E8C97A]/50 bg-white dark:bg-[#1B1D23] px-4 py-2 text-sm font-medium text-[#7A1629] dark:text-[#F8E7B8] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
             >
               <Edit3 className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span>แก้ไขข้อมูลพื้นฐาน</span>
@@ -448,8 +461,8 @@ export function StudentBasicInfoForm({
           role={feedback.type === 'error' ? 'alert' : 'status'}
           className={`rounded-xl border px-4 py-3 text-sm ${
             feedback.type === 'error'
-              ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-              : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+              ? 'border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/50 text-[#991B1B] dark:text-red-300'
+              : 'border-[#86EFAC] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 text-[#166534] dark:text-emerald-300'
           }`}
         >
           {feedback.text}
@@ -458,60 +471,60 @@ export function StudentBasicInfoForm({
 
       {/* Summary View after Saving */}
       {!isEditing && (
-        <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 lg:p-8 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] pb-5">
+        <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 lg:p-8 space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] dark:border-[#343842] pb-5">
             <div className="flex items-center gap-4">
               {form.profilePhoto ? (
                 <DriveImage
                   src={form.profilePhoto.url}
                   driveFileId={form.profilePhoto.driveFileId}
                   alt="รูปติดบัตรนักศึกษา 1.5 นิ้ว"
-                  className="h-24 w-20 rounded-lg border border-[#D8C6A6] object-cover"
+                  className="h-24 w-20 rounded-lg border border-[#D8C6A6] dark:border-[#434856] object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-20 items-center justify-center rounded-lg border border-dashed border-[#D8C6A6] bg-[#FAF6EE] text-xs text-[#66585B]">
+                <div className="flex h-24 w-20 items-center justify-center rounded-lg border border-dashed border-[#D8C6A6] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1B1D23] text-xs text-[#66585B] dark:text-[#A19B91]">
                   ไม่มีรูป 1.5&quot;
                 </div>
               )}
               <div>
-                <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#166534]">
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#166534] dark:text-emerald-400">
                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                   <span>บันทึกข้อมูลพื้นฐานแล้ว</span>
                 </div>
-                <h3 className="font-display text-lg font-bold text-[#23181A] mt-0.5">
+                <h3 className="font-display text-lg font-bold text-[#23181A] dark:text-[#F2EFEA] mt-0.5">
                   {form.fullName || '-'}
                 </h3>
-                <p className="text-sm text-[#66585B] tabular-nums">
+                <p className="text-sm text-[#66585B] dark:text-[#A19B91] tabular-nums">
                   รหัสนักศึกษา {form.studentId || '-'} · {form.yearLevel} · ปีการศึกษา {form.academicYear}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 rounded-xl bg-[#FAF6EE] px-5 py-3 border border-[#EAE0CE] text-center">
+            <div className="grid grid-cols-3 gap-4 rounded-xl bg-[#FAF6EE] dark:bg-[#1B1D23] px-5 py-3 border border-[#EAE0CE] dark:border-[#343842] text-center">
               <div>
-                <p className="text-[11px] text-[#66585B]">GPAX</p>
-                <p className="font-display text-base font-bold text-[#7A1629] tabular-nums">
+                <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">GPAX</p>
+                <p className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] tabular-nums">
                   {form.gpax || '-'}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-[#66585B]">ภาคเรียนที่ 1</p>
-                <p className="font-display text-base font-bold text-[#23181A] tabular-nums">
+                <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">ภาคเรียนที่ 1</p>
+                <p className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                   {form.gpaTerm1 || '-'}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-[#66585B]">ภาคเรียนที่ 2</p>
-                <p className="font-display text-base font-bold text-[#23181A] tabular-nums">
+                <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">ภาคเรียนที่ 2</p>
+                <p className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                   {form.gpaTerm2 || '-'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-[#23181A] dark:text-[#D1CBC2]">
             <div className="space-y-2">
-              <h4 className="font-display font-semibold text-[#7A1629]">ข้อมูลส่วนตัวและการติดต่อ</h4>
+              <h4 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">ข้อมูลส่วนตัวและการติดต่อ</h4>
               <p>เบอร์โทรศัพท์: <span className="tabular-nums">{form.phone || '-'}</span></p>
               <p>อีเมล: {form.email || '-'}</p>
               <p>Facebook: {form.facebook || '-'}</p>
@@ -523,18 +536,18 @@ export function StudentBasicInfoForm({
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-display font-semibold text-[#7A1629]">ทุนการศึกษา สุขภาพ และครอบครัว</h4>
+              <h4 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">ทุนการศึกษา สุขภาพ และครอบครัว</h4>
               <p>โรคประจำตัว: {form.hasChronicDisease} {form.hasChronicDisease === 'มี' ? `(${form.chronicDiseaseDetail})` : ''}</p>
               <p>กยศ.: {form.hasStudentLoan} {form.hasStudentLoan === 'กู้' ? `(ปีการศึกษา ${form.studentLoanYear})` : ''}</p>
               <div>
                 <p>
                   ทุนการศึกษาที่ได้รับ:{' '}
-                  <span className="font-medium text-[#23181A]">
+                  <span className="font-medium text-[#23181A] dark:text-[#F2EFEA]">
                     {form.hasOtherScholarship}
                   </span>
                 </p>
                 {form.hasOtherScholarship === 'ได้รับทุน' && (
-                  <ul className="mt-1.5 space-y-1 pl-4 list-disc text-xs text-[#4B3F42]">
+                  <ul className="mt-1.5 space-y-1 pl-4 list-disc text-xs text-[#4B3F42] dark:text-[#C5BEB3]">
                     {sanitizeReceivedScholarships(
                       form.receivedScholarships,
                       form.otherScholarshipDetail
@@ -544,9 +557,9 @@ export function StudentBasicInfoForm({
                         form.otherScholarshipDetail
                       ).map((item) => (
                         <li key={item.id}>
-                          <span className="font-semibold text-[#7A1629]">{item.name}</span>
+                          <span className="font-semibold text-[#7A1629] dark:text-[#F3B9C3]">{item.name}</span>
                           {item.provider ? (
-                            <span className="text-[#66585B]"> ({item.provider})</span>
+                            <span className="text-[#66585B] dark:text-[#A19B91]"> ({item.provider})</span>
                           ) : null}
                         </li>
                       ))
@@ -563,11 +576,11 @@ export function StudentBasicInfoForm({
             </div>
           </div>
 
-          <div className="border-t border-[#EAE0CE] pt-4 space-y-2 text-sm">
-            <h4 className="font-display font-semibold text-[#7A1629]">ความจำเป็นและแผนการใช้ทุน</h4>
-            <p><span className="font-medium">ความจำเป็น:</span> {form.necessityReason || '-'}</p>
-            <p><span className="font-medium">แผนการใช้เงินทุน:</span> {form.spendingPlan || '-'}</p>
-            <p className="text-xs text-[#66585B] tabular-nums">
+          <div className="border-t border-[#EAE0CE] dark:border-[#343842] pt-4 space-y-2 text-sm text-[#23181A] dark:text-[#D1CBC2]">
+            <h4 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">ความจำเป็นและแผนการใช้ทุน</h4>
+            <p><span className="font-medium text-[#23181A] dark:text-[#F2EFEA]">ความจำเป็น:</span> {form.necessityReason || '-'}</p>
+            <p><span className="font-medium text-[#23181A] dark:text-[#F2EFEA]">แผนการใช้เงินทุน:</span> {form.spendingPlan || '-'}</p>
+            <p className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
               รูปบ้านที่แนบ: {form.housePhotos.length} รูป · เอกสารประกอบ: {form.supportingDocs.length} ไฟล์
             </p>
           </div>
@@ -584,8 +597,8 @@ export function StudentBasicInfoForm({
           className="space-y-6"
         >
           {/* Photo Upload */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4">
-            <h3 className="font-display text-base font-bold text-[#7A1629]">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4">
+            <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3]">
               รูปถ่ายประจำตัวนักศึกษา (1.5 นิ้ว)
             </h3>
             <FileUploadField
@@ -600,15 +613,15 @@ export function StudentBasicInfoForm({
           </section>
 
           {/* Part 1: Education Info */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAE0CE] pb-3">
-              <h3 className="font-display text-base font-bold text-[#7A1629]">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+              <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3]">
                 ส่วนที่ 1 ข้อมูลการศึกษา
               </h3>
               <button
                 type="button"
                 onClick={() => setShowGpaModal(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB]"
+                className="inline-flex items-center gap-2 rounded-lg border border-[#C6922C] dark:border-[#E8C97A]/50 bg-[#FDF8EC] dark:bg-[#2B2518] px-4 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F8E7B8] hover:bg-[#F7EBCB] dark:hover:bg-[#38301E]"
               >
                 <Award className="h-4 w-4 shrink-0" aria-hidden="true" />
                 <span>เปิดหน้าต่างกรอกเกรดเฉลี่ย (GPAX / ภาคเรียน) *</span>
@@ -617,7 +630,7 @@ export function StudentBasicInfoForm({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <label htmlFor="bi-year" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-year" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   ปีการศึกษา (พ.ศ.) *
                 </label>
                 <select
@@ -626,7 +639,7 @@ export function StudentBasicInfoForm({
                   onChange={(e) =>
                     setForm({ ...form, academicYear: e.target.value as BasicInfoData['academicYear'] })
                   }
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 >
                   {ACADEMIC_YEARS.map((y) => (
                     <option key={y} value={y}>
@@ -637,7 +650,7 @@ export function StudentBasicInfoForm({
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="bi-level" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-level" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   ชั้นปี *
                 </label>
                 <select
@@ -646,7 +659,7 @@ export function StudentBasicInfoForm({
                   onChange={(e) =>
                     setForm({ ...form, yearLevel: e.target.value as BasicInfoData['yearLevel'] })
                   }
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 >
                   {YEAR_LEVELS.map((lvl) => (
                     <option key={lvl} value={lvl}>
@@ -657,7 +670,7 @@ export function StudentBasicInfoForm({
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="bi-stuid" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-stuid" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   รหัสนักศึกษา *
                 </label>
                 <input
@@ -666,12 +679,12 @@ export function StudentBasicInfoForm({
                   required
                   value={form.studentId}
                   onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
                 />
               </div>
 
               <div className="md:col-span-2 space-y-1">
-                <label htmlFor="bi-name" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-name" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   ชื่อ-นามสกุล *
                 </label>
                 <input
@@ -680,12 +693,12 @@ export function StudentBasicInfoForm({
                   required
                   value={form.fullName}
                   onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="bi-cohort" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-cohort" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   รุ่น/รหัสเข้าศึกษา
                 </label>
                 <input
@@ -694,12 +707,12 @@ export function StudentBasicInfoForm({
                   value={form.cohort}
                   onChange={(e) => setForm({ ...form, cohort: e.target.value })}
                   placeholder="เช่น 67"
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                 />
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="bi-phone" className="block text-xs font-medium text-[#23181A]">
+                <label htmlFor="bi-phone" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   เบอร์โทรศัพท์ *
                 </label>
                 <input
@@ -708,11 +721,11 @@ export function StudentBasicInfoForm({
                   required
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
                 />
               </div>
 
-              <div className="md:col-span-2 flex items-center justify-between gap-4 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] px-4 py-2.5 text-sm">
+              <div className="md:col-span-2 flex items-center justify-between gap-4 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1B1D23] px-4 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA]">
                 <div className="flex flex-wrap gap-6 tabular-nums">
                   <span>GPAX: <strong>{form.gpax || 'ยังไม่กรอก'}</strong></span>
                   <span>ภาคเรียนที่ 1: <strong>{form.gpaTerm1 || 'ยังไม่กรอก'}</strong></span>
@@ -721,7 +734,7 @@ export function StudentBasicInfoForm({
                 <button
                   type="button"
                   onClick={() => setShowGpaModal(true)}
-                  className="text-xs font-semibold text-[#7A1629] hover:underline whitespace-nowrap"
+                  className="text-xs font-semibold text-[#7A1629] dark:text-[#E8C97A] hover:underline whitespace-nowrap"
                 >
                   แก้ไขเกรด
                 </button>
@@ -730,108 +743,108 @@ export function StudentBasicInfoForm({
           </section>
 
           {/* Part 2: Personal Info */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-            <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+            <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
               ส่วนที่ 2 ข้อมูลส่วนตัว
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">วันเดือนปีเกิด *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">วันเดือนปีเกิด *</label>
                 <input
                   type="date"
                   value={form.birthDate}
                   onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">อายุ *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">อายุ *</label>
                 <input
                   type="text"
                   value={form.age}
                   onChange={(e) => setForm({ ...form, age: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">สัญชาติ *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">สัญชาติ *</label>
                 <input
                   type="text"
                   value={form.nationality}
                   onChange={(e) => setForm({ ...form, nationality: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">เชื้อชาติ *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">เชื้อชาติ *</label>
                 <input
                   type="text"
                   value={form.ethnicity}
                   onChange={(e) => setForm({ ...form, ethnicity: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">ศาสนา *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">ศาสนา *</label>
                 <input
                   type="text"
                   value={form.religion}
                   onChange={(e) => setForm({ ...form, religion: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">Email *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">Email *</label>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">Facebook *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">Facebook *</label>
                 <input
                   type="text"
                   value={form.facebook}
                   onChange={(e) => setForm({ ...form, facebook: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">จำนวนเงินที่ได้รับต่อเดือน (บาท)</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">จำนวนเงินที่ได้รับต่อเดือน (บาท)</label>
                 <input
                   type="text"
                   value={form.monthlyAllowance}
                   onChange={(e) => setForm({ ...form, monthlyAllowance: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
                 />
               </div>
               <div className="md:col-span-3 space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">ที่อยู่ตามทะเบียนบ้าน *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">ที่อยู่ตามทะเบียนบ้าน *</label>
                 <textarea
                   rows={2}
                   value={form.registeredAddress}
                   onChange={(e) => setForm({ ...form, registeredAddress: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
               <div className="md:col-span-3 space-y-1">
-                <label className="block text-xs font-medium text-[#23181A]">ที่อยู่ปัจจุบัน *</label>
+                <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">ที่อยู่ปัจจุบัน *</label>
                 <textarea
                   rows={2}
                   value={form.currentAddress}
                   onChange={(e) => setForm({ ...form, currentAddress: e.target.value })}
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 />
               </div>
             </div>
 
             {/* Conditional fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#EAE0CE]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#EAE0CE] dark:border-[#343842] text-[#23181A] dark:text-[#F2EFEA]">
               <div className="space-y-2">
-                <span className="block text-xs font-semibold text-[#23181A]">มีโรคประจำตัวหรือไม่</span>
+                <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">มีโรคประจำตัวหรือไม่</span>
                 <div className="flex gap-4 text-sm">
                   {(['ไม่มี', 'มี'] as const).map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-1.5">
@@ -850,13 +863,13 @@ export function StudentBasicInfoForm({
                     value={form.chronicDiseaseDetail}
                     onChange={(e) => setForm({ ...form, chronicDiseaseDetail: e.target.value })}
                     placeholder="ระบุรายละเอียดโรคประจำตัว"
-                    className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                   />
                 )}
               </div>
 
               <div className="space-y-2">
-                <span className="block text-xs font-semibold text-[#23181A]">กู้ยืมเงิน กยศ. หรือไม่</span>
+                <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">กู้ยืมเงิน กยศ. หรือไม่</span>
                 <div className="flex gap-4 text-sm">
                   {(['กู้', 'ไม่กู้'] as const).map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-1.5">
@@ -875,13 +888,13 @@ export function StudentBasicInfoForm({
                     value={form.studentLoanYear}
                     onChange={(e) => setForm({ ...form, studentLoanYear: e.target.value })}
                     placeholder="ระบุปีการศึกษาที่กู้ เช่น 2569"
-                    className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                   />
                 )}
               </div>
 
               <div className="space-y-2">
-                <span className="block text-xs font-semibold text-[#23181A]">ทำงานพิเศษหรือไม่</span>
+                <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">ทำงานพิเศษหรือไม่</span>
                 <div className="flex gap-4 text-sm">
                   {(['ทำ', 'ไม่ทำ'] as const).map((opt) => (
                     <label key={opt} className="inline-flex items-center gap-1.5">
@@ -900,18 +913,18 @@ export function StudentBasicInfoForm({
                     value={form.partTimeJobDetail}
                     onChange={(e) => setForm({ ...form, partTimeJobDetail: e.target.value })}
                     placeholder="ระบุรายละเอียดงานพิเศษ"
-                    className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                   />
                 )}
               </div>
 
-              <div className="md:col-span-2 space-y-3 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-4">
+              <div className="md:col-span-2 space-y-3 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <span className="block text-xs font-semibold text-[#7A1629]">
+                    <span className="block text-xs font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
                       ทุนการศึกษาที่ได้รับ (สามารถเพิ่มได้หลายทุน ไม่จำกัดจำนวน)
                     </span>
-                    <p className="text-[11px] text-[#66585B] mt-0.5">
+                    <p className="text-[11px] text-[#66585B] dark:text-[#A19B91] mt-0.5">
                       พิมพ์ชื่อทุนการศึกษาได้เองอย่างอิสระ รองรับทุนจากหลายหน่วยงาน · เมื่อกด &quot;บันทึกข้อมูลพื้นฐาน&quot; ข้อมูลจะสรุปบนหน้า Dashboard โดยอัตโนมัติ
                     </p>
                   </div>
@@ -943,19 +956,19 @@ export function StudentBasicInfoForm({
                 {form.hasOtherScholarship === 'ได้รับทุน' && (
                   <div className="space-y-3 pt-1">
                     {(form.receivedScholarships || []).length === 0 && (
-                      <p className="rounded-lg border border-dashed border-[#DFD1BA] bg-white px-3 py-2 text-xs text-[#66585B]">
+                      <p className="rounded-lg border border-dashed border-[#DFD1BA] dark:border-[#434856] bg-white dark:bg-[#22242B] px-3 py-2 text-xs text-[#66585B] dark:text-[#A19B91]">
                         ยังไม่มีรายการทุนการศึกษา กดปุ่ม &quot;เพิ่มทุนการศึกษา&quot; ด้านล่างเพื่อระบุชื่อทุนที่ได้รับ
                       </p>
                     )}
                     {(form.receivedScholarships || []).map((item, idx) => (
                       <div
                         key={item.id}
-                        className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end rounded-xl border border-[#DFD1BA] bg-white p-3"
+                        className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-end rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-3"
                       >
                         <div className="md:col-span-6 space-y-1">
                           <label
                             htmlFor={`scholarship-name-${idx}`}
-                            className="block text-[11px] font-medium text-[#23181A]"
+                            className="block text-[11px] font-medium text-[#23181A] dark:text-[#F2EFEA]"
                           >
                             ชื่อทุนการศึกษา รายการที่ {idx + 1} *
                           </label>
@@ -967,14 +980,14 @@ export function StudentBasicInfoForm({
                               handleUpdateScholarship(idx, { name: e.target.value })
                             }
                             placeholder="พิมพ์ชื่อทุนอย่างอิสระ เช่น ทุน CYF, ทุนผู้ช่วยศาสตราจารย์ ดร. กิตติกร"
-                            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                           />
                         </div>
 
                         <div className="md:col-span-4 space-y-1">
                           <label
                             htmlFor={`scholarship-provider-${idx}`}
-                            className="block text-[11px] font-medium text-[#23181A]"
+                            className="block text-[11px] font-medium text-[#23181A] dark:text-[#F2EFEA]"
                           >
                             หน่วยงาน / แหล่งทุน (ไม่บังคับ)
                           </label>
@@ -986,7 +999,7 @@ export function StudentBasicInfoForm({
                               handleUpdateScholarship(idx, { provider: e.target.value })
                             }
                             placeholder="เช่น มูลนิธิ, มหาวิทยาลัย, คณะ"
-                            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                           />
                         </div>
 
@@ -995,7 +1008,7 @@ export function StudentBasicInfoForm({
                             type="button"
                             onClick={() => handleRemoveScholarship(idx)}
                             aria-label={`ลบทุนการศึกษา รายการที่ ${idx + 1}${item.name ? ` (${item.name})` : ''}`}
-                            className="w-full md:w-auto inline-flex items-center justify-center gap-1 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-3 py-2 text-xs font-medium text-[#991B1B] hover:bg-[#FEE2E2] transition-colors"
+                            className="w-full md:w-auto inline-flex items-center justify-center gap-1 rounded-lg border border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/40 px-3 py-2 text-xs font-medium text-[#991B1B] dark:text-red-300 hover:bg-[#FEE2E2] dark:hover:bg-red-950/70 transition-colors"
                           >
                             <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                             <span>ลบ</span>
@@ -1008,7 +1021,7 @@ export function StudentBasicInfoForm({
                       <button
                         type="button"
                         onClick={handleAddScholarship}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] dark:border-[#E8C97A]/50 bg-[#FDF8EC] dark:bg-[#2B2518] px-4 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F8E7B8] hover:bg-[#F7EBCB] dark:hover:bg-[#38301E] transition-colors"
                       >
                         <Plus className="h-4 w-4 shrink-0" aria-hidden="true" />
                         <span>เพิ่มทุนการศึกษา</span>
@@ -1021,8 +1034,8 @@ export function StudentBasicInfoForm({
           </section>
 
           {/* Part 3: Family */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-            <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+            <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
               ส่วนที่ 3 ข้อมูลบิดา มารดา ผู้ปกครอง และที่อยู่อาศัย
             </h3>
 
@@ -1038,9 +1051,9 @@ export function StudentBasicInfoForm({
               onChange={(mother) => setForm({ ...form, mother })}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-[#EAE0CE] p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/40 dark:bg-[#1B1D23] p-4">
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#23181A]">
+                <label className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                   3.3 สถานภาพสมรสของบิดามารดา
                 </label>
                 <select
@@ -1051,7 +1064,7 @@ export function StudentBasicInfoForm({
                       parentsMaritalStatus: e.target.value as BasicInfoData['parentsMaritalStatus'],
                     })
                   }
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 >
                   <option value="อยู่ด้วยกัน">อยู่ด้วยกัน</option>
                   <option value="แยกกันอยู่">แยกกันอยู่</option>
@@ -1068,13 +1081,13 @@ export function StudentBasicInfoForm({
                       setForm({ ...form, parentsMaritalStatusOther: e.target.value })
                     }
                     placeholder="โปรดระบุสถานภาพสมรส"
-                    className="mt-2 w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                    className="mt-2 w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                   />
                 )}
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-[#23181A]">
+                <label className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                   3.5 ลักษณะที่อยู่อาศัย (พักอาศัยอยู่กับใคร)
                 </label>
                 <select
@@ -1085,7 +1098,7 @@ export function StudentBasicInfoForm({
                       livingWith: e.target.value as BasicInfoData['livingWith'],
                     })
                   }
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
                 >
                   <option value="พ่อ">พ่อ</option>
                   <option value="แม่">แม่</option>
@@ -1098,7 +1111,7 @@ export function StudentBasicInfoForm({
                     value={form.livingWithOther}
                     onChange={(e) => setForm({ ...form, livingWithOther: e.target.value })}
                     placeholder="โปรดระบุผู้ที่พักอาศัยอยู่ด้วย"
-                    className="mt-2 w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                    className="mt-2 w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
                   />
                 )}
               </div>
@@ -1125,54 +1138,54 @@ export function StudentBasicInfoForm({
             />
 
             <div className="max-w-xs space-y-1">
-              <label className="block text-xs font-medium text-[#23181A]">
+              <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                 จำนวนสมาชิกในครอบครัว (ไม่รวมนักศึกษา)
               </label>
               <input
                 type="text"
                 value={form.familyMemberCount}
                 onChange={(e) => setForm({ ...form, familyMemberCount: e.target.value })}
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
               />
             </div>
           </section>
 
           {/* Part 4: Necessity */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4">
-            <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4">
+            <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
               ส่วนที่ 4 ความจำเป็นในการขอรับทุนการศึกษา
             </h3>
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-[#23181A]">
+              <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                 1. อธิบายความจำเป็นในการขอรับทุนการศึกษา
               </label>
               <textarea
                 rows={3}
                 value={form.necessityReason}
                 onChange={(e) => setForm({ ...form, necessityReason: e.target.value })}
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-xs font-medium text-[#23181A]">
+              <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                 2. แผนการใช้เงินทุนการศึกษา
               </label>
               <textarea
                 rows={3}
                 value={form.spendingPlan}
                 onChange={(e) => setForm({ ...form, spendingPlan: e.target.value })}
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
               />
             </div>
           </section>
 
           {/* Part 5: Documents */}
-          <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-            <div className="border-b border-[#EAE0CE] pb-3">
-              <h3 className="font-display text-base font-bold text-[#7A1629]">
+          <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+            <div className="border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+              <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3]">
                 ส่วนที่ 5 เอกสารประกอบการขอรับทุน
               </h3>
-              <p className="text-xs text-[#66585B] mt-1">
+              <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1">
                 ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีเอกสาร
                 สามารถบันทึกฉบับร่างไว้ก่อนและแนบเอกสารภายหลังได้
               </p>
@@ -1198,14 +1211,14 @@ export function StudentBasicInfoForm({
             />
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-[#23181A]">
+              <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                 3. หมายเหตุเพิ่มเติมเกี่ยวกับเอกสาร (ถ้ามี)
               </label>
               <textarea
                 rows={2}
                 value={form.documentNote}
                 onChange={(e) => setForm({ ...form, documentNote: e.target.value })}
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
               />
             </div>
           </section>
@@ -1215,7 +1228,7 @@ export function StudentBasicInfoForm({
               type="button"
               disabled={saving}
               onClick={() => handleSave(true)}
-              className="rounded-lg border border-[#D8CBB8] bg-white px-5 py-2.5 text-sm font-medium text-[#23181A] hover:bg-[#FAF6EE]"
+              className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#22242B] px-5 py-2.5 text-sm font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
             >
               บันทึกฉบับร่าง
             </button>
@@ -1236,18 +1249,18 @@ export function StudentBasicInfoForm({
           role="dialog"
           aria-modal="true"
           aria-labelledby="gpa-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[1px] p-4"
         >
-          <div className="w-full max-w-md rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-[#EAE0CE] pb-3">
-              <h3 id="gpa-modal-title" className="font-display text-lg font-bold text-[#7A1629]">
+          <div className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+              <h3 id="gpa-modal-title" className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F3B9C3]">
                 หน้าต่างบันทึกเกรดเฉลี่ย
               </h3>
               <button
                 type="button"
                 onClick={() => setShowGpaModal(false)}
                 aria-label="ปิดหน้าต่างเกรดเฉลี่ย"
-                className="rounded-lg p-1 text-[#66585B] hover:bg-[#FAF6EE]"
+                className="rounded-lg p-1 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1255,7 +1268,7 @@ export function StudentBasicInfoForm({
 
             <div className="space-y-4">
               <div className="space-y-1">
-                <label htmlFor="gpa-gpax" className="block text-sm font-medium text-[#23181A]">
+                <label htmlFor="gpa-gpax" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   เกรดเฉลี่ยสะสม (GPAX) *
                 </label>
                 <input
@@ -1264,12 +1277,12 @@ export function StudentBasicInfoForm({
                   value={form.gpax}
                   onChange={(e) => setForm({ ...form, gpax: e.target.value })}
                   placeholder="เช่น 3.55"
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3.5 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
                 />
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="gpa-t1" className="block text-sm font-medium text-[#23181A]">
+                <label htmlFor="gpa-t1" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   เกรดเฉลี่ยภาคเรียนที่ 1 ที่ผ่านมา *
                 </label>
                 <input
@@ -1278,12 +1291,12 @@ export function StudentBasicInfoForm({
                   value={form.gpaTerm1}
                   onChange={(e) => setForm({ ...form, gpaTerm1: e.target.value })}
                   placeholder="เช่น 3.50"
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3.5 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
                 />
               </div>
 
               <div className="space-y-1">
-                <label htmlFor="gpa-t2" className="block text-sm font-medium text-[#23181A]">
+                <label htmlFor="gpa-t2" className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   เกรดเฉลี่ยภาคเรียนที่ 2 ที่ผ่านมา *
                 </label>
                 <input
@@ -1292,7 +1305,7 @@ export function StudentBasicInfoForm({
                   value={form.gpaTerm2}
                   onChange={(e) => setForm({ ...form, gpaTerm2: e.target.value })}
                   placeholder="เช่น 3.60"
-                  className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3.5 py-2 text-sm tabular-nums"
+                  className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3.5 py-2 text-sm tabular-nums"
                 />
               </div>
             </div>

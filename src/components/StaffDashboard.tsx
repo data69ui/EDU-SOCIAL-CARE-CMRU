@@ -62,6 +62,8 @@ import {
   validateStrongPassword,
   validateStudentId,
 } from '../utils/scholarshipLogic';
+import { useTheme } from '../contexts/ThemeContext';
+import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 import { DashboardShell, type SidebarNavGroup } from './DashboardShell';
 import { DirectPrintModal } from './DirectPrintModal';
 import { DriveImage } from './DriveMedia';
@@ -112,6 +114,8 @@ export function StaffDashboard({
   onSelectSection,
   onLogout,
 }: StaffDashboardProps) {
+  const { isDark } = useTheme();
+  const { showSaveSuccess } = useSaveSuccess();
   const isAdmin = currentUser.role === 'admin';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [students, setStudents] = useState<StudentFullRecord[]>([]);
@@ -333,7 +337,9 @@ export function StaffDashboard({
         status: reviewStatus,
         advisorComment,
       });
-      setToast('บันทึกผลการพิจารณาทุนและความคิดเห็นอาจารย์เรียบร้อยแล้ว');
+      const msg = 'บันทึกผลการพิจารณาทุนและความคิดเห็นอาจารย์เรียบร้อยแล้ว';
+      setToast(msg);
+      showSaveSuccess(msg, 'บันทึกผลการพิจารณาเสร็จสิ้นแล้ว');
       await loadData();
     } catch (err) {
       setError((err as Error).message);
@@ -354,11 +360,12 @@ export function StaffDashboard({
             ? `อนุมัติชั่วโมงจิตอาสา ${hours} ชั่วโมง โดย ${currentUser.fullName}`
             : `ไม่อนุมัติรายการจิตอาสา โดย ${currentUser.fullName}`,
       });
-      setToast(
+      const msg =
         approvalStatus === 'approved'
           ? `อนุมัติ ${hours} ชั่วโมงจิตอาสาเรียบร้อยแล้ว`
-          : 'บันทึกการไม่อนุมัติรายการจิตอาสาแล้ว'
-      );
+          : 'บันทึกการไม่อนุมัติรายการจิตอาสาแล้ว';
+      setToast(msg);
+      showSaveSuccess(msg, 'บันทึกการตรวจสอบจิตอาสาเสร็จสิ้นแล้ว');
       await loadData();
     } catch (err) {
       setError((err as Error).message);
@@ -381,7 +388,9 @@ export function StaffDashboard({
       });
       setGradeGpa('');
       setGradeFiles([]);
-      setToast('อาจารย์/ผู้ดูแลระบบบันทึกผลการเรียนให้นักศึกษาเรียบร้อยแล้ว');
+      const msg = 'อาจารย์/ผู้ดูแลระบบบันทึกผลการเรียนให้นักศึกษาเรียบร้อยแล้ว';
+      setToast(msg);
+      showSaveSuccess(msg, 'บันทึกผลการเรียนเสร็จสิ้นแล้ว');
       await loadData();
     } catch (err) {
       setError((err as Error).message);
@@ -423,9 +432,9 @@ export function StaffDashboard({
     try {
       const res = await api.importStudentsExcel(parsedExcelRows);
       setImportSummary(res.result);
-      setToast(
-        `นำเข้าข้อมูลสำเร็จ: เพิ่มใหม่ ${res.result.createdCount} คน, อัปเดต ${res.result.updatedCount} คน`
-      );
+      const msg = `นำเข้าข้อมูลสำเร็จ: เพิ่มใหม่ ${res.result.createdCount} คน, อัปเดต ${res.result.updatedCount} คน`;
+      setToast(msg);
+      showSaveSuccess(msg, 'นำเข้าและบันทึกข้อมูลเสร็จสิ้นแล้ว');
       setParsedExcelRows([]);
       setParsedExcelErrors([]);
       setExcelFileName('');
@@ -468,11 +477,12 @@ export function StaffDashboard({
         phone: quickPhone.trim() || undefined,
         hasStudentLoan: quickLoan,
       });
-      setToast(
+      const msg =
         res.result.createdCount > 0
           ? `เพิ่มรายชื่อนักศึกษา ${trimmedName} (${idCheck.normalized}) เข้าสู่ระบบเรียบร้อยแล้ว`
-          : `อัปเดตข้อมูลนักศึกษา ${trimmedName} (${idCheck.normalized}) เรียบร้อยแล้ว`
-      );
+          : `อัปเดตข้อมูลนักศึกษา ${trimmedName} (${idCheck.normalized}) เรียบร้อยแล้ว`;
+      setToast(msg);
+      showSaveSuccess(msg, 'บันทึกรายชื่อนักศึกษาเสร็จสิ้นแล้ว');
       setQuickStudentId('');
       setQuickFullName('');
       setQuickEmail('');
@@ -505,10 +515,11 @@ export function StaffDashboard({
           ? { resetToDefault: true }
           : { resetToDefault: false, newPassword: newPasswordInput }
       );
-      setToast(
+      const msg =
         res.message ||
-          `รีเซ็ตรหัสผ่านของ ${resetTargetUser.fullName} (${resetTargetUser.username}) เรียบร้อยแล้ว`
-      );
+        `รีเซ็ตรหัสผ่านของ ${resetTargetUser.fullName} (${resetTargetUser.username}) เรียบร้อยแล้ว`;
+      setToast(msg);
+      showSaveSuccess(msg, 'บันทึกรหัสผ่านเสร็จสิ้นแล้ว');
       setResetTargetUser(null);
       setNewPasswordInput('');
       await loadData();
@@ -527,7 +538,9 @@ export function StaffDashboard({
         password: newUserPassword.trim() || undefined,
         fullName: newFullName.trim(),
       });
-      setToast(`สร้างบัญชี ${newFullName} (${newUsername}) เรียบร้อยแล้ว`);
+      const msg = `สร้างบัญชี ${newFullName} (${newUsername}) เรียบร้อยแล้ว`;
+      setToast(msg);
+      showSaveSuccess(msg, 'สร้างบัญชีและบันทึกเสร็จสิ้นแล้ว');
       setNewUsername('');
       setNewFullName('');
       setNewUserPassword('');
@@ -546,9 +559,9 @@ export function StaffDashboard({
       if (selectedStudentId === deleteTargetUser.id) setSelectedStudentId(null);
       if (gradeTargetStudentId === deleteTargetUser.id) setGradeTargetStudentId('');
       if (resetTargetUser?.id === deleteTargetUser.id) setResetTargetUser(null);
-      setToast(
-        `ลบบัญชีผู้ใช้ ${deleteTargetUser.fullName} (${deleteTargetUser.username}) เรียบร้อยแล้ว`
-      );
+      const msg = `ลบบัญชีผู้ใช้ ${deleteTargetUser.fullName} (${deleteTargetUser.username}) เรียบร้อยแล้ว`;
+      setToast(msg);
+      showSaveSuccess(msg, 'ดำเนินการเสร็จสิ้นแล้ว');
       setDeleteTargetUser(null);
       await loadData();
     } catch (err) {
@@ -627,9 +640,21 @@ export function StaffDashboard({
   const draftCount =
     dashboardOverview.draftOrNoAppCount + dashboardOverview.needsRevisionOrRejectedCount;
   const donutSegments = [
-    { label: 'อนุมัติทุนแล้ว', count: dashboardOverview.approvedCount, color: '#16A34A' },
-    { label: 'รอพิจารณา', count: dashboardOverview.pendingCount, color: '#D97706' },
-    { label: 'ฉบับร่าง / ขอแก้ไข', count: draftCount, color: '#CBD5E1' },
+    {
+      label: 'อนุมัติทุนแล้ว',
+      count: dashboardOverview.approvedCount,
+      color: isDark ? '#22C55E' : '#16A34A',
+    },
+    {
+      label: 'รอพิจารณา',
+      count: dashboardOverview.pendingCount,
+      color: isDark ? '#F59E0B' : '#D97706',
+    },
+    {
+      label: 'ฉบับร่าง / ขอแก้ไข',
+      count: draftCount,
+      color: isDark ? '#64748B' : '#CBD5E1',
+    },
   ];
   let cumulative = 0;
   const donutArcs = donutSegments.map((seg) => {
@@ -655,28 +680,28 @@ export function StaffDashboard({
       title: 'นักศึกษาทั้งหมด',
       value: `${stats.total.toLocaleString()} คน`,
       meta: `ยืนยัน PDPA แล้ว ${dashboardOverview.pdpaConsentedCount} คน`,
-      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8]',
+      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#192844] dark:text-[#60A5FA]',
       icon: Users,
     },
     {
       title: 'อนุมัติทุนแล้ว',
       value: `${stats.approved.toLocaleString()} คน`,
       meta: `คิดเป็น ${stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}% ของนักศึกษาทั้งหมด`,
-      iconBg: 'bg-[#ECFDF5] text-[#15803D]',
+      iconBg: 'bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]',
       icon: UserCheck,
     },
     {
       title: 'รอพิจารณาทุน / จิตอาสา',
       value: `${stats.pendingReview.toLocaleString()} รายการ`,
       meta: `จิตอาสารออนุมัติ ${stats.pendingVol} รายการ`,
-      iconBg: 'bg-[#FFFBEB] text-[#B45309]',
+      iconBg: 'bg-[#FFFBEB] text-[#B45309] dark:bg-[#332713] dark:text-[#FBBF24]',
       icon: Clock,
     },
     {
       title: 'กู้ยืม กยศ. / GPAX เฉลี่ย',
       value: `${stats.loanCount.toLocaleString()} คน`,
       meta: `เกรดเฉลี่ยรวม ${dashboardOverview.averageGpax}`,
-      iconBg: 'bg-[#F8ECED] text-[#7A1629]',
+      iconBg: 'bg-[#F8ECED] text-[#7A1629] dark:bg-[#3A1B23] dark:text-[#F493A4]',
       icon: Wallet,
     },
   ];
@@ -704,7 +729,7 @@ export function StaffDashboard({
             id="staff-top-year"
             value={filterYear}
             onChange={(e) => setFilterYear(e.target.value as AcademicYear | 'all')}
-            className="rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] px-3 py-1.5 text-xs font-medium text-[#23181A]"
+            className="rounded-xl border border-[#DFD1BA] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-1.5 text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]"
           >
             <option value="all">ทุกปีการศึกษา ({students.length} คน)</option>
             {ACADEMIC_YEARS.map((y) => (
@@ -717,7 +742,7 @@ export function StaffDashboard({
           <button
             type="button"
             onClick={() => onSelectSection('pdf-reports')}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] bg-white px-3 py-1.5 text-xs font-semibold text-[#7A1629] hover:bg-[#FAF6EE] transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 bg-white dark:bg-[#1A1C21] px-3 py-1.5 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors whitespace-nowrap"
           >
             <Printer className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span className="hidden sm:inline">พิมพ์ PDF</span>
@@ -740,7 +765,7 @@ export function StaffDashboard({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             role="status"
-            className="no-print flex items-center justify-between rounded-xl border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm text-[#166534]"
+            className="no-print flex items-center justify-between rounded-xl border border-[#86EFAC] dark:border-[#166534] bg-[#F0FDF4] dark:bg-[#143322] px-4 py-3 text-sm text-[#166534] dark:text-[#86EFAC]"
           >
             <span>{toast}</span>
             <button
@@ -756,7 +781,7 @@ export function StaffDashboard({
         {error && (
           <div
             role="alert"
-            className="no-print flex items-center justify-between rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-sm text-[#991B1B]"
+            className="no-print flex items-center justify-between rounded-xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#2F1519] px-4 py-3 text-sm text-[#991B1B] dark:text-[#FCA5A5]"
           >
             <span>{error}</span>
             <button
@@ -783,7 +808,7 @@ export function StaffDashboard({
                 {isAdmin && !loading && students.length === 0 && !hideOnboarding && (
                   <section
                     aria-label="เริ่มต้นใช้งานสำหรับผู้ดูแลระบบครั้งแรก"
-                    className="rounded-2xl border border-[#C6922C]/70 bg-gradient-to-br from-[#FFFDF9] via-white to-[#FDF6E4] p-5 sm:p-6 space-y-4 surface-card"
+                    className="rounded-2xl border border-[#C6922C]/70 dark:border-[#C6922C]/45 bg-gradient-to-br from-[#FFFDF9] via-white to-[#FDF6E4] dark:from-[#262119] dark:via-[#22242B] dark:to-[#1E1C19] p-5 sm:p-6 space-y-4 surface-card"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-start gap-3">
@@ -791,10 +816,10 @@ export function StaffDashboard({
                           <ShieldCheck className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div>
-                          <h2 className="font-display text-base sm:text-lg font-bold text-[#7A1629]">
+                          <h2 className="font-display text-base sm:text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                             ยินดีต้อนรับผู้ดูแลระบบ — เริ่มต้นใช้งานระบบ 3 ขั้นตอน
                           </h2>
-                          <p className="text-xs sm:text-sm text-[#5A4B4E]">
+                          <p className="text-xs sm:text-sm text-[#5A4B4E] dark:text-[#CEC8BE]">
                             ระบบพร้อมใช้งานจริงแล้ว สามารถเพิ่มรายชื่อนักศึกษาจาก Excel หรือจัดการบัญชีผู้ใช้งานได้ทันที
                           </p>
                         </div>
@@ -802,7 +827,7 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => setHideOnboarding(true)}
-                        className="text-xs font-medium text-[#66585B] hover:text-[#7A1629] underline"
+                        className="text-xs font-medium text-[#66585B] dark:text-[#A19B91] hover:text-[#7A1629] dark:hover:text-[#F4D98A] underline"
                       >
                         ซ่อนคำแนะนำ
                       </button>
@@ -812,15 +837,15 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => onSelectSection('excel-import')}
-                        className="rounded-xl border border-[#DFD1BA] bg-white p-4 text-left hover:border-[#7A1629] hover:shadow-xs transition-all space-y-1.5"
+                        className="rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#1A1C21] p-4 text-left hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:shadow-xs transition-all space-y-1.5"
                       >
-                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629]">
+                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629] dark:text-[#F4D98A]">
                           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#7A1629] text-[11px] text-white">
                             1
                           </span>
                           <span>นำเข้าจาก Excel / เพิ่มนักศึกษา</span>
                         </div>
-                        <p className="text-xs text-[#5A4B4E] leading-relaxed">
+                        <p className="text-xs text-[#5A4B4E] dark:text-[#A19B91] leading-relaxed">
                           ระบบสร้างรหัสผ่านเริ่มต้น (รหัสนักศึกษา 8 หลัก) และบังคับเปลี่ยนรหัสครั้งแรกให้อัตโนมัติ
                         </p>
                       </button>
@@ -828,15 +853,15 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => onSelectSection('admin-users')}
-                        className="rounded-xl border border-[#DFD1BA] bg-white p-4 text-left hover:border-[#7A1629] hover:shadow-xs transition-all space-y-1.5"
+                        className="rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#1A1C21] p-4 text-left hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:shadow-xs transition-all space-y-1.5"
                       >
-                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629]">
+                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629] dark:text-[#F4D98A]">
                           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#C6922C] text-[11px] text-white">
                             2
                           </span>
                           <span>เพิ่มบัญชีอาจารย์ &amp; จัดการผู้ใช้</span>
                         </div>
-                        <p className="text-xs text-[#5A4B4E] leading-relaxed">
+                        <p className="text-xs text-[#5A4B4E] dark:text-[#A19B91] leading-relaxed">
                           สร้างบัญชีอาจารย์ประจำสาขา ผู้ดูแลระบบเพิ่มเติม และรีเซ็ตรหัสผ่านได้ตลอดเวลา
                         </p>
                       </button>
@@ -844,15 +869,15 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => onSelectSection('integrations')}
-                        className="rounded-xl border border-[#DFD1BA] bg-white p-4 text-left hover:border-[#7A1629] hover:shadow-xs transition-all space-y-1.5"
+                        className="rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#1A1C21] p-4 text-left hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:shadow-xs transition-all space-y-1.5"
                       >
-                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629]">
+                        <div className="flex items-center gap-2 text-xs font-bold text-[#7A1629] dark:text-[#F4D98A]">
                           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#15803D] text-[11px] text-white">
                             3
                           </span>
                           <span>เชื่อมต่อ Google Sheets &amp; Drive</span>
                         </div>
-                        <p className="text-xs text-[#5A4B4E] leading-relaxed">
+                        <p className="text-xs text-[#5A4B4E] dark:text-[#A19B91] leading-relaxed">
                           ซิงก์ข้อมูลนักศึกษาลง Google Sheets และเก็บไฟล์/รูปภาพบน Google Drive โดยตรง
                         </p>
                       </button>
@@ -867,7 +892,7 @@ export function StaffDashboard({
                     return (
                       <div
                         key={card.title}
-                        className="rounded-2xl border border-[#DFD1BA] bg-white p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
+                        className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
                       >
                         <div
                           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${card.iconBg}`}
@@ -875,11 +900,11 @@ export function StaffDashboard({
                           <Icon className="h-6 w-6" aria-hidden="true" />
                         </div>
                         <div className="min-w-0 space-y-1">
-                          <p className="text-xs font-medium text-[#66585B]">{card.title}</p>
-                          <p className="font-display text-2xl font-bold text-[#23181A] tabular-nums">
+                          <p className="text-xs font-medium text-[#66585B] dark:text-[#A19B91]">{card.title}</p>
+                          <p className="font-display text-2xl font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                             {loading ? '—' : card.value}
                           </p>
-                          <p className="text-xs text-[#66585B] leading-snug">{card.meta}</p>
+                          <p className="text-xs text-[#66585B] dark:text-[#A19B91] leading-snug">{card.meta}</p>
                         </div>
                       </div>
                     );
@@ -889,33 +914,33 @@ export function StaffDashboard({
                 {/* Row 2: Bar Chart (5) + Donut Chart (4) + Recent Students (3) */}
                 <section className="grid grid-cols-1 xl:grid-cols-12 gap-5">
                   {/* Bar Chart: Year Level */}
-                  <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                  <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-[#7A1629]">
+                      <div className="flex items-center gap-2 text-[#7A1629] dark:text-[#F4D98A]">
                         <BarChart3 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                           กราฟจำนวนนักศึกษาแยกตามชั้นปี
                         </h2>
                       </div>
-                      <span className="text-xs text-[#66585B]">คลิกเพื่อดูรายชื่อ</span>
+                      <span className="text-xs text-[#66585B] dark:text-[#A19B91]">คลิกเพื่อดูรายชื่อ</span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#5A4B4E]">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[#5A4B4E] dark:text-[#CEC8BE]">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-xs bg-[#16A34A]" />
+                        <span className="h-2.5 w-2.5 rounded-xs bg-[#16A34A] dark:bg-[#22C55E]" />
                         <span>อนุมัติแล้ว</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-xs bg-[#D97706]" />
+                        <span className="h-2.5 w-2.5 rounded-xs bg-[#D97706] dark:bg-[#F59E0B]" />
                         <span>รอพิจารณา</span>
                       </span>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2.5 w-2.5 rounded-xs bg-[#CBD5E1]" />
+                        <span className="h-2.5 w-2.5 rounded-xs bg-[#CBD5E1] dark:bg-[#64748B]" />
                         <span>ฉบับร่าง</span>
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-3 items-end h-48 border-b border-[#E6DAC5] pt-4 px-2">
+                    <div className="grid grid-cols-4 gap-3 items-end h-48 border-b border-[#E6DAC5] dark:border-[#343842] pt-4 px-2">
                       {dashboardOverview.byYearLevel.map((bucket) => {
                         const heightPct = Math.round((bucket.total / maxBucketTotal) * 100);
                         const approvedPct =
@@ -936,7 +961,7 @@ export function StaffDashboard({
                             }}
                             className="group flex flex-col items-center justify-end h-full gap-1.5 rounded-lg"
                           >
-                            <span className="text-xs font-semibold text-[#23181A] tabular-nums">
+                            <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                               {bucket.total}
                             </span>
                             <div className="w-full max-w-[44px] h-32 flex items-end justify-center">
@@ -948,24 +973,24 @@ export function StaffDashboard({
                                   {bucket.approved > 0 && (
                                     <div
                                       style={{ height: `${approvedPct}%` }}
-                                      className="w-full bg-[#16A34A]"
+                                      className="w-full bg-[#16A34A] dark:bg-[#22C55E]"
                                     />
                                   )}
                                   {bucket.pending > 0 && (
                                     <div
                                       style={{ height: `${pendingPct}%` }}
-                                      className="w-full bg-[#D97706]"
+                                      className="w-full bg-[#D97706] dark:bg-[#F59E0B]"
                                     />
                                   )}
                                   {bucket.draft > 0 && (
-                                    <div className="w-full flex-1 bg-[#CBD5E1]" />
+                                    <div className="w-full flex-1 bg-[#CBD5E1] dark:bg-[#64748B]" />
                                   )}
                                 </div>
                               ) : (
-                                <div className="w-full h-1.5 rounded-t bg-[#EFE5D4]" />
+                                <div className="w-full h-1.5 rounded-t bg-[#EFE5D4] dark:bg-[#323642]" />
                               )}
                             </div>
-                            <span className="pb-2 text-xs font-medium text-[#5A4B4E]">
+                            <span className="pb-2 text-xs font-medium text-[#5A4B4E] dark:text-[#A19B91]">
                               {bucket.yearLevel}
                             </span>
                           </button>
@@ -975,10 +1000,10 @@ export function StaffDashboard({
                   </div>
 
                   {/* Donut Chart: Status Distribution */}
-                  <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
-                    <div className="flex items-center gap-2 text-[#7A1629]">
+                  <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
+                    <div className="flex items-center gap-2 text-[#7A1629] dark:text-[#F4D98A]">
                       <PieChart className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                      <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                         จำนวนนักศึกษาแยกตามสถานะทุน
                       </h2>
                     </div>
@@ -991,7 +1016,7 @@ export function StaffDashboard({
                             cy="66"
                             r={radius}
                             fill="transparent"
-                            stroke="#F2E9D8"
+                            stroke={isDark ? '#323642' : '#F2E9D8'}
                             strokeWidth="18"
                           />
                           {dashboardOverview.filteredTotal > 0 &&
@@ -1013,24 +1038,24 @@ export function StaffDashboard({
                             )}
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                          <span className="font-display text-2xl font-bold text-[#23181A] tabular-nums">
+                          <span className="font-display text-2xl font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                             {dashboardOverview.filteredTotal}
                           </span>
-                          <span className="text-[11px] text-[#66585B]">คน</span>
+                          <span className="text-[11px] text-[#66585B] dark:text-[#A19B91]">คน</span>
                         </div>
                       </div>
 
                       <div className="w-full space-y-3">
                         {donutArcs.map((arc) => (
                           <div key={arc.label} className="flex items-center justify-between text-xs">
-                            <span className="inline-flex items-center gap-2 text-[#4B3F42]">
+                            <span className="inline-flex items-center gap-2 text-[#4B3F42] dark:text-[#CEC8BE]">
                               <span
                                 className="h-2.5 w-2.5 rounded-full shrink-0"
                                 style={{ backgroundColor: arc.color }}
                               />
                               <span>{arc.label}</span>
                             </span>
-                            <span className="font-semibold text-[#23181A] tabular-nums">
+                            <span className="font-semibold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                               {arc.count} คน ({arc.pct}%)
                             </span>
                           </div>
@@ -1040,24 +1065,24 @@ export function StaffDashboard({
                   </div>
 
                   {/* Recent Students List Card */}
-                  <div className="xl:col-span-3 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 flex flex-col justify-between gap-4 surface-card">
+                  <div className="xl:col-span-3 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 flex flex-col justify-between gap-4 surface-card">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                           รายชื่อนักศึกษาล่าสุด
                         </h2>
                         <button
                           type="button"
                           onClick={() => onSelectSection('applications')}
-                          className="text-xs font-medium text-[#7A1629] hover:underline"
+                          className="text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:underline"
                         >
                           ดูทั้งหมด
                         </button>
                       </div>
 
                       {students.length === 0 ? (
-                        <div className="rounded-xl border border-dashed border-[#DFD1BA] bg-[#FAF6EE]/70 p-4 text-center space-y-2.5">
-                          <p className="text-xs text-[#66585B]">
+                        <div className="rounded-xl border border-dashed border-[#DFD1BA] dark:border-[#434856] bg-[#FAF6EE]/70 dark:bg-[#1A1C21] p-4 text-center space-y-2.5">
+                          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                             ยังไม่มีรายชื่อนักศึกษาในระบบ
                           </p>
                           <button
@@ -1076,25 +1101,25 @@ export function StaffDashboard({
                               key={rec.user.id}
                               type="button"
                               onClick={() => openStudentReview(rec)}
-                              className="w-full flex items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-[#FAF6EE] transition-colors"
+                              className="w-full flex items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-[#FAF6EE] dark:hover:bg-[#2A2D36] transition-colors"
                             >
                               {rec.basicInfo.profilePhoto?.url ? (
                                 <DriveImage
                                   src={rec.basicInfo.profilePhoto.url}
                                   driveFileId={rec.basicInfo.profilePhoto.driveFileId}
                                   alt={rec.basicInfo.fullName || rec.user.fullName}
-                                  className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#DFD1BA]"
+                                  className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#DFD1BA] dark:border-[#434856]"
                                 />
                               ) : (
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F8ECED] font-display text-xs font-bold text-[#7A1629]">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F8ECED] dark:bg-[#3A1B23] font-display text-xs font-bold text-[#7A1629] dark:text-[#F493A4]">
                                   {getInitials(rec.basicInfo.fullName || rec.user.fullName)}
                                 </div>
                               )}
                               <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs font-semibold text-[#23181A]">
+                                <p className="truncate text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                                   {rec.basicInfo.fullName || rec.user.fullName}
                                 </p>
-                                <p className="truncate text-[11px] text-[#66585B] tabular-nums">
+                                <p className="truncate text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums">
                                   {rec.basicInfo.studentId || rec.user.studentId || '-'} ·{' '}
                                   {rec.basicInfo.yearLevel}
                                 </p>
@@ -1109,23 +1134,23 @@ export function StaffDashboard({
 
                 {/* Row 3: Compact Roster Table (8 cols) + 6-Tile Quick Actions (4 cols) */}
                 <section className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-                  <div className="xl:col-span-8 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                  <div className="xl:col-span-8 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <h2 className="font-display text-base font-bold text-[#23181A]">
+                      <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                         ข้อมูลนักศึกษาล่าสุด
                       </h2>
                       <button
                         type="button"
                         onClick={() => onSelectSection('applications')}
-                        className="text-xs font-medium text-[#7A1629] hover:underline"
+                        className="text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:underline"
                       >
                         ดูทั้งหมด ({filteredStudents.length} คน)
                       </button>
                     </div>
 
                     {filteredStudents.length === 0 ? (
-                      <div className="rounded-xl border border-dashed border-[#DFD1BA] bg-[#FAF6EE]/60 p-8 text-center space-y-3">
-                        <p className="text-sm text-[#66585B]">
+                      <div className="rounded-xl border border-dashed border-[#DFD1BA] dark:border-[#434856] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-8 text-center space-y-3">
+                        <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
                           ยังไม่มีรายชื่อนักศึกษาในระบบสำหรับตัวกรองที่เลือก
                         </p>
                         <div className="flex flex-wrap justify-center gap-2">
@@ -1143,7 +1168,7 @@ export function StaffDashboard({
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs sm:text-sm border-collapse">
                           <thead>
-                            <tr className="border-b border-[#EAE0CE] text-xs text-[#66585B]">
+                            <tr className="border-b border-[#EAE0CE] dark:border-[#343842] text-xs text-[#66585B] dark:text-[#A19B91]">
                               <th className="py-2.5 pr-3 font-semibold">รหัสนักศึกษา</th>
                               <th className="py-2.5 pr-3 font-semibold">ชื่อ-นามสกุล</th>
                               <th className="py-2.5 pr-3 font-semibold">ชั้นปี</th>
@@ -1152,22 +1177,22 @@ export function StaffDashboard({
                               <th className="py-2.5 text-right font-semibold">จัดการ</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#F0E8D8]">
+                          <tbody className="divide-y divide-[#F0E8D8] dark:divide-[#2D313B]">
                             {filteredStudents.slice(0, 6).map((rec) => {
                               const statusMeta = getApplicationStatusMeta(rec.application?.status);
                               return (
-                                <tr key={rec.user.id} className="hover:bg-[#FAF6EE]/70">
-                                  <td className="py-3 pr-3 tabular-nums font-medium">
+                                <tr key={rec.user.id} className="hover:bg-[#FAF6EE]/70 dark:hover:bg-[#2A2D36] transition-colors">
+                                  <td className="py-3 pr-3 tabular-nums font-medium text-[#23181A] dark:text-[#F2EFEA]">
                                     {rec.basicInfo.studentId || rec.user.studentId || '-'}
                                   </td>
-                                  <td className="py-3 pr-3 font-medium text-[#23181A]">
+                                  <td className="py-3 pr-3 font-medium text-[#23181A] dark:text-[#F2EFEA]">
                                     {rec.basicInfo.fullName || rec.user.fullName}
                                   </td>
-                                  <td className="py-3 pr-3">{rec.basicInfo.yearLevel}</td>
-                                  <td className="py-3 pr-3 tabular-nums font-semibold text-[#7A1629]">
+                                  <td className="py-3 pr-3 text-[#4B3F42] dark:text-[#CEC8BE]">{rec.basicInfo.yearLevel}</td>
+                                  <td className="py-3 pr-3 tabular-nums font-semibold text-[#7A1629] dark:text-[#F4D98A]">
                                     {rec.application?.gpax || rec.basicInfo.gpax || '-'}
                                   </td>
-                                  <td className="py-3 pr-3 text-xs font-medium">
+                                  <td className="py-3 pr-3 text-xs font-medium text-[#4B3F42] dark:text-[#CEC8BE]">
                                     {statusMeta.label}
                                   </td>
                                   <td className="py-3 text-right">
@@ -1176,7 +1201,7 @@ export function StaffDashboard({
                                         type="button"
                                         onClick={() => openStudentReview(rec)}
                                         aria-label={`ดูโปรไฟล์ ${rec.basicInfo.fullName || rec.user.fullName}`}
-                                        className="rounded-lg border border-[#DFD1BA] bg-white p-1.5 text-[#7A1629] hover:bg-[#FAF6EE]"
+                                        className="rounded-lg border border-[#DFD1BA] dark:border-[#434856] bg-white dark:bg-[#1A1C21] p-1.5 text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
                                       >
                                         <Eye className="h-3.5 w-3.5" />
                                       </button>
@@ -1184,7 +1209,7 @@ export function StaffDashboard({
                                         type="button"
                                         onClick={() => setPrintStudent(rec)}
                                         aria-label={`พิมพ์ PDF ${rec.basicInfo.fullName || rec.user.fullName}`}
-                                        className="rounded-lg border border-[#DFD1BA] bg-white p-1.5 text-[#23181A] hover:bg-[#FAF6EE]"
+                                        className="rounded-lg border border-[#DFD1BA] dark:border-[#434856] bg-white dark:bg-[#1A1C21] p-1.5 text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
                                       >
                                         <Printer className="h-3.5 w-3.5" />
                                       </button>
@@ -1200,62 +1225,62 @@ export function StaffDashboard({
                   </div>
 
                   {/* 6-Tile Quick Actions (Matching Reference Image Bottom-Right Grid) */}
-                  <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
-                    <h2 className="font-display text-base font-bold text-[#23181A]">เมนูด่วน</h2>
+                  <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
+                    <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">เมนูด่วน</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => onSelectSection('excel-import')}
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#1D4ED8]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#192844] dark:text-[#60A5FA]">
                           <UserPlus className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">เพิ่มนักศึกษา</span>
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">เพิ่มนักศึกษา</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => onSelectSection('applications')}
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ECFDF5] text-[#15803D]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]">
                           <Search className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">ค้นหา &amp; พิจารณา</span>
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">ค้นหา &amp; พิจารณา</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => onSelectSection('excel-import')}
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ECFDF5] text-[#166534]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ECFDF5] text-[#166534] dark:bg-[#143322] dark:text-[#4ADE80]">
                           <FileUp className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">นำเข้า Excel</span>
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">นำเข้า Excel</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => onSelectSection('pdf-reports')}
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F5F3FF] text-[#6D28D9]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F5F3FF] text-[#6D28D9] dark:bg-[#281E42] dark:text-[#C4B5FD]">
                           <Printer className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">พิมพ์รายงาน PDF</span>
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">พิมพ์รายงาน PDF</span>
                       </button>
 
                       <button
                         type="button"
                         onClick={() => exportStudentsToExcel(filteredStudents)}
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFFBEB] text-[#B45309]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFFBEB] text-[#B45309] dark:bg-[#332713] dark:text-[#FBBF24]">
                           <FileSpreadsheet className="h-5 w-5" aria-hidden="true" />
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">ส่งออก Excel</span>
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">ส่งออก Excel</span>
                       </button>
 
                       <button
@@ -1263,16 +1288,16 @@ export function StaffDashboard({
                         onClick={() =>
                           onSelectSection(isAdmin ? 'admin-users' : 'volunteers')
                         }
-                        className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                        className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-3.5 flex flex-col items-center justify-center gap-2 text-center hover:border-[#7A1629] dark:hover:border-[#C6922C] hover:bg-white dark:hover:bg-[#2A2D36] transition-all"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F8ECED] text-[#7A1629]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F8ECED] text-[#7A1629] dark:bg-[#3A1B23] dark:text-[#F493A4]">
                           {isAdmin ? (
                             <KeyRound className="h-5 w-5" aria-hidden="true" />
                           ) : (
                             <HeartHandshake className="h-5 w-5" aria-hidden="true" />
                           )}
                         </div>
-                        <span className="text-xs font-semibold text-[#23181A]">
+                        <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                           {isAdmin ? 'จัดการผู้ใช้' : 'ตรวจจิตอาสา'}
                         </span>
                       </button>
@@ -1297,16 +1322,16 @@ export function StaffDashboard({
             {/* SECTION 1: Scholarship Applications Roster & Review */}
             {activeSection === 'applications' && (
               <div className="space-y-6">
-                <section className="no-print rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                <section className="no-print rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                   <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                    <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                       รายชื่อขอทุนการศึกษา ({filteredStudents.length} คน)
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => onSelectSection('excel-import')}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-3.5 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] dark:border-[#C6922C]/70 bg-[#FDF8EC] dark:bg-[#2D2414] px-3.5 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#F7EBCB] dark:hover:bg-[#3A2E19] transition-colors"
                       >
                         <FileUp className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <span>นำเข้าจาก Excel</span>
@@ -1314,7 +1339,7 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => onSelectSection('pdf-reports')}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] bg-white px-3.5 py-2 text-xs font-medium text-[#7A1629] hover:bg-[#FAF6EE] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 bg-white dark:bg-[#1A1C21] px-3.5 py-2 text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors"
                       >
                         <Printer className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <span>ดาวน์โหลด / พิมพ์ PDF</span>
@@ -1330,7 +1355,7 @@ export function StaffDashboard({
                       <button
                         type="button"
                         onClick={() => exportStudentsToCsv(filteredStudents)}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3.5 py-2 text-xs font-medium text-[#23181A] hover:bg-[#EFE5D1] transition-colors"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#2B2F3A] px-3.5 py-2 text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#EFE5D1] dark:hover:bg-[#343946] transition-colors"
                       >
                         <Download className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                         <span>CSV</span>
@@ -1340,14 +1365,14 @@ export function StaffDashboard({
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
-                      <label htmlFor="flt-year" className="block text-xs font-medium text-[#66585B] mb-1">
+                      <label htmlFor="flt-year" className="block text-xs font-medium text-[#66585B] dark:text-[#A19B91] mb-1">
                         ปีการศึกษา
                       </label>
                       <select
                         id="flt-year"
                         value={filterYear}
                         onChange={(e) => setFilterYear(e.target.value as AcademicYear | 'all')}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                       >
                         <option value="all">ทุกปีการศึกษา</option>
                         {ACADEMIC_YEARS.map((y) => (
@@ -1359,14 +1384,14 @@ export function StaffDashboard({
                     </div>
 
                     <div>
-                      <label htmlFor="flt-level" className="block text-xs font-medium text-[#66585B] mb-1">
+                      <label htmlFor="flt-level" className="block text-xs font-medium text-[#66585B] dark:text-[#A19B91] mb-1">
                         ชั้นปี
                       </label>
                       <select
                         id="flt-level"
                         value={filterLevel}
                         onChange={(e) => setFilterLevel(e.target.value as YearLevel | 'all')}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                       >
                         <option value="all">ทุกชั้นปี</option>
                         {YEAR_LEVELS.map((l) => (
@@ -1378,14 +1403,14 @@ export function StaffDashboard({
                     </div>
 
                     <div>
-                      <label htmlFor="flt-status" className="block text-xs font-medium text-[#66585B] mb-1">
+                      <label htmlFor="flt-status" className="block text-xs font-medium text-[#66585B] dark:text-[#A19B91] mb-1">
                         สถานะการสมัคร
                       </label>
                       <select
                         id="flt-status"
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value as ApplicationStatus | 'all')}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                       >
                         <option value="all">ทุกสถานะ</option>
                         <option value="submitted">ยื่นใบสมัครแล้ว</option>
@@ -1398,18 +1423,18 @@ export function StaffDashboard({
                     </div>
 
                     <div>
-                      <label htmlFor="flt-q" className="block text-xs font-medium text-[#66585B] mb-1">
+                      <label htmlFor="flt-q" className="block text-xs font-medium text-[#66585B] dark:text-[#A19B91] mb-1">
                         ค้นหาชื่อ / รหัสนักศึกษา
                       </label>
                       <div className="relative">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#66585B]" aria-hidden="true" />
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#66585B] dark:text-[#A19B91]" aria-hidden="true" />
                         <input
                           id="flt-q"
                           type="text"
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
                           placeholder="รหัส หรือ ชื่อนักศึกษา"
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] pl-9 pr-3 py-2 text-sm"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] pl-9 pr-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                         />
                       </div>
                     </div>
@@ -1417,7 +1442,7 @@ export function StaffDashboard({
                 </section>
 
                 {/* Roster Table */}
-                <section className="rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 surface-card">
+                <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 surface-card">
                   <div className="hidden print:block mb-4 border-b-2 border-[#7A1629] pb-3">
                     <h2 className="font-display text-lg font-bold text-[#7A1629]">
                       รายชื่อนักศึกษาผู้ขอรับทุนการศึกษา — สาขาวิชาสังคมศึกษา มหาวิทยาลัยราชภัฏเชียงใหม่
@@ -1430,10 +1455,10 @@ export function StaffDashboard({
                   </div>
 
                   {loading ? (
-                    <p className="py-8 text-center text-sm text-[#66585B]">กำลังโหลดข้อมูลนักศึกษา...</p>
+                    <p className="py-8 text-center text-sm text-[#66585B] dark:text-[#A19B91]">กำลังโหลดข้อมูลนักศึกษา...</p>
                   ) : filteredStudents.length === 0 ? (
                     <div className="py-10 text-center space-y-3">
-                      <p className="text-sm text-[#66585B]">
+                      <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
                         ไม่พบรายชื่อนักศึกษาตามเงื่อนไขที่เลือก
                       </p>
                       <button
@@ -1449,7 +1474,7 @@ export function StaffDashboard({
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm border-collapse">
                         <thead>
-                          <tr className="border-b border-[#EAE0CE] text-xs text-[#66585B]">
+                          <tr className="border-b border-[#EAE0CE] dark:border-[#343842] text-xs text-[#66585B] dark:text-[#A19B91]">
                             <th className="py-3 pr-3 font-semibold">รหัสนักศึกษา</th>
                             <th className="py-3 pr-3 font-semibold">ชื่อ-นามสกุล</th>
                             <th className="py-3 pr-3 font-semibold">ปีการศึกษา</th>
@@ -1460,7 +1485,7 @@ export function StaffDashboard({
                             <th className="no-print py-3 font-semibold text-right">จัดการ</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F0E8D8]">
+                        <tbody className="divide-y divide-[#F0E8D8] dark:divide-[#2D313B]">
                           {filteredStudents.map((rec) => {
                             const statusMeta = getApplicationStatusMeta(rec.application?.status);
                             const vol = calculateApprovedVolunteerHours(rec.volunteers);
@@ -1469,28 +1494,30 @@ export function StaffDashboard({
                               <tr
                                 key={rec.user.id}
                                 className={`transition-colors ${
-                                  isSelected ? 'bg-[#FDF8EC]' : 'hover:bg-[#FAF6EE]/80'
+                                  isSelected
+                                    ? 'bg-[#FDF8EC] dark:bg-[#2E2517]'
+                                    : 'hover:bg-[#FAF6EE]/80 dark:hover:bg-[#2A2D36]'
                                 }`}
                               >
-                                <td className="py-3.5 pr-3 tabular-nums font-medium">
+                                <td className="py-3.5 pr-3 tabular-nums font-medium text-[#23181A] dark:text-[#F2EFEA]">
                                   {rec.basicInfo.studentId || rec.user.studentId || '-'}
                                 </td>
-                                <td className="py-3.5 pr-3 font-medium text-[#23181A]">
+                                <td className="py-3.5 pr-3 font-medium text-[#23181A] dark:text-[#F2EFEA]">
                                   {rec.basicInfo.fullName || rec.user.fullName}
                                 </td>
-                                <td className="py-3.5 pr-3 tabular-nums">
+                                <td className="py-3.5 pr-3 tabular-nums text-[#4B3F42] dark:text-[#CEC8BE]">
                                   {rec.application?.academicYear || rec.basicInfo.academicYear}
                                 </td>
-                                <td className="py-3.5 pr-3">
+                                <td className="py-3.5 pr-3 text-[#4B3F42] dark:text-[#CEC8BE]">
                                   {rec.application?.yearLevel || rec.basicInfo.yearLevel}
                                 </td>
-                                <td className="py-3.5 pr-3 tabular-nums font-semibold text-[#7A1629]">
+                                <td className="py-3.5 pr-3 tabular-nums font-semibold text-[#7A1629] dark:text-[#F4D98A]">
                                   {rec.application?.gpax || rec.basicInfo.gpax || '-'}
                                 </td>
-                                <td className="py-3.5 pr-3 text-xs font-medium">
+                                <td className="py-3.5 pr-3 text-xs font-medium text-[#4B3F42] dark:text-[#CEC8BE]">
                                   {statusMeta.label}
                                 </td>
-                                <td className="py-3.5 pr-3 tabular-nums text-xs">
+                                <td className="py-3.5 pr-3 tabular-nums text-xs text-[#4B3F42] dark:text-[#CEC8BE]">
                                   {vol.approvedHours} ชม. (รอ {vol.pendingHours} ชม.)
                                 </td>
                                 <td className="no-print py-3.5 text-right">
@@ -1506,7 +1533,7 @@ export function StaffDashboard({
                                     <button
                                       type="button"
                                       onClick={() => setPrintStudent(rec)}
-                                      className="inline-flex items-center gap-1 rounded-lg border border-[#D8CBB8] bg-white px-2.5 py-1.5 text-xs font-medium text-[#23181A] hover:bg-[#FAF6EE] transition-colors"
+                                      className="inline-flex items-center gap-1 rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-2.5 py-1.5 text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors"
                                     >
                                       <Printer className="h-3.5 w-3.5" aria-hidden="true" />
                                       <span>PDF</span>
@@ -1531,24 +1558,24 @@ export function StaffDashboard({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 6 }}
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="no-print rounded-2xl border-2 border-[#C6922C] bg-white p-6 space-y-6 surface-elevated"
+                      className="no-print rounded-2xl border-2 border-[#C6922C] dark:border-[#C6922C]/75 bg-white dark:bg-[#22242B] p-6 space-y-6 surface-elevated"
                     >
-                      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EAE0CE] pb-4">
+                      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EAE0CE] dark:border-[#343842] pb-4">
                         <div className="flex items-center gap-4">
                           {selectedStudent.basicInfo.profilePhoto && (
                             <DriveImage
                               src={selectedStudent.basicInfo.profilePhoto.url}
                               driveFileId={selectedStudent.basicInfo.profilePhoto.driveFileId}
                               alt="รูปประจำตัวนักศึกษา"
-                              className="h-20 w-16 rounded-xl border border-[#D8C6A6] object-cover"
+                              className="h-20 w-16 rounded-xl border border-[#D8C6A6] dark:border-[#434856] object-cover"
                             />
                           )}
                           <div>
-                            <h3 className="font-display text-xl font-bold text-[#7A1629]">
+                            <h3 className="font-display text-xl font-bold text-[#7A1629] dark:text-[#F4D98A]">
                               รายละเอียดโปรไฟล์:{' '}
                               {selectedStudent.basicInfo.fullName || selectedStudent.user.fullName}
                             </h3>
-                            <p className="text-sm text-[#66585B] tabular-nums">
+                            <p className="text-sm text-[#66585B] dark:text-[#A19B91] tabular-nums">
                               รหัสนักศึกษา {selectedStudent.basicInfo.studentId || '-'} ·{' '}
                               {selectedStudent.basicInfo.yearLevel} · GPAX{' '}
                               {selectedStudent.basicInfo.gpax || '-'} · โทร{' '}
@@ -1561,7 +1588,7 @@ export function StaffDashboard({
                           <button
                             type="button"
                             onClick={() => setPrintStudent(selectedStudent)}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] px-3.5 py-2 text-xs font-medium text-[#7A1629] hover:bg-[#FAF6EE]"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 px-3.5 py-2 text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
                           >
                             <Printer className="h-3.5 w-3.5" aria-hidden="true" />
                             <span>พิมพ์ PDF โปรไฟล์นี้</span>
@@ -1569,16 +1596,16 @@ export function StaffDashboard({
                           <button
                             type="button"
                             onClick={() => setSelectedStudentId(null)}
-                            className="rounded-xl border border-[#D8CBB8] px-3 py-2 text-xs text-[#66585B] hover:bg-[#FAF6EE]"
+                            className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] px-3 py-2 text-xs text-[#66585B] dark:text-[#CEC8BE] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
                           >
                             ปิดรายละเอียด
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm">
-                        <div className="space-y-2.5 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 p-5">
-                          <h4 className="font-display font-bold text-[#7A1629]">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-sm text-[#23181A] dark:text-[#E5E0D8]">
+                        <div className="space-y-2.5 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/70 dark:bg-[#1A1C21] p-5">
+                          <h4 className="font-display font-bold text-[#7A1629] dark:text-[#F4D98A]">
                             ข้อมูลครอบครัว ทุนการศึกษา และความจำเป็นทั้งหมด
                           </h4>
                           <p>
@@ -1624,8 +1651,8 @@ export function StaffDashboard({
                               '-'}{' '}
                             บ./ด.
                           </p>
-                          <div className="rounded-lg border border-[#EAE0CE] bg-white px-3 py-2 space-y-1 text-xs">
-                            <p className="font-semibold text-[#7A1629]">
+                          <div className="rounded-lg border border-[#EAE0CE] dark:border-[#343842] bg-white dark:bg-[#22242B] px-3 py-2 space-y-1 text-xs">
+                            <p className="font-semibold text-[#7A1629] dark:text-[#F4D98A]">
                               ทุนการศึกษาที่ได้รับทั้งหมด:
                             </p>
                             {selectedStudent.basicInfo.hasOtherScholarship === 'ได้รับทุน' ? (
@@ -1635,7 +1662,7 @@ export function StaffDashboard({
                                   selectedStudent.basicInfo.otherScholarshipDetail
                                 );
                                 return items.length > 0 ? (
-                                  <ol className="list-decimal pl-4 space-y-0.5 text-[#23181A]">
+                                  <ol className="list-decimal pl-4 space-y-0.5 text-[#23181A] dark:text-[#F2EFEA]">
                                     {items.map((item) => (
                                       <li key={item.id}>
                                         {item.name}
@@ -1648,10 +1675,10 @@ export function StaffDashboard({
                                 );
                               })()
                             ) : (
-                              <p className="text-[#66585B]">ไม่ได้รับทุนอื่น</p>
+                              <p className="text-[#66585B] dark:text-[#A19B91]">ไม่ได้รับทุนอื่น</p>
                             )}
                             {selectedStudent.application?.otherScholarshipNameAmount && (
-                              <p className="text-[#5A4B4E] pt-1 border-t border-[#F0E8D8]">
+                              <p className="text-[#5A4B4E] dark:text-[#CEC8BE] pt-1 border-t border-[#F0E8D8] dark:border-[#343842]">
                                 <strong>ในแบบคำร้อง:</strong>{' '}
                                 {selectedStudent.application.hasOtherScholarship} —{' '}
                                 {selectedStudent.application.otherScholarshipNameAmount}
@@ -1676,12 +1703,12 @@ export function StaffDashboard({
                           </p>
                         </div>
 
-                        <div className="space-y-4 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 p-5">
-                          <h4 className="font-display font-bold text-[#7A1629]">
+                        <div className="space-y-4 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/70 dark:bg-[#1A1C21] p-5">
+                          <h4 className="font-display font-bold text-[#7A1629] dark:text-[#F4D98A]">
                             พิจารณาทุนการศึกษาและแสดงความคิดเห็น
                           </h4>
                           {!selectedStudent.application ? (
-                            <p className="text-sm text-[#92400E]">
+                            <p className="text-sm text-[#92400E] dark:text-[#FBBF24]">
                               นักศึกษายังไม่ได้บันทึกใบสมัครทุนการศึกษา (กรอกไว้เฉพาะข้อมูลพื้นฐาน)
                             </p>
                           ) : (
@@ -1689,7 +1716,7 @@ export function StaffDashboard({
                               <div>
                                 <label
                                   htmlFor="rev-status"
-                                  className="block text-xs font-medium text-[#23181A] mb-1"
+                                  className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                                 >
                                   ผลการพิจารณาทุนการศึกษา
                                 </label>
@@ -1699,7 +1726,7 @@ export function StaffDashboard({
                                   onChange={(e) =>
                                     setReviewStatus(e.target.value as ApplicationStatus)
                                   }
-                                  className="w-full rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                                  className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                                 >
                                   <option value="submitted">ยื่นใบสมัครแล้ว</option>
                                   <option value="reviewing">กำลังพิจารณา</option>
@@ -1714,7 +1741,7 @@ export function StaffDashboard({
                               <div>
                                 <label
                                   htmlFor="rev-comment"
-                                  className="block text-xs font-medium text-[#23181A] mb-1"
+                                  className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                                 >
                                   ความคิดเห็นถึงนักศึกษา
                                 </label>
@@ -1724,7 +1751,7 @@ export function StaffDashboard({
                                   value={advisorComment}
                                   onChange={(e) => setAdvisorComment(e.target.value)}
                                   placeholder="พิมพ์ความคิดเห็นหรือข้อเสนอแนะถึงนักศึกษา..."
-                                  className="w-full rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                                  className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                                 />
                               </div>
 
@@ -1748,28 +1775,28 @@ export function StaffDashboard({
             {/* SECTION 2: All Basic Profiles & Staff Grade Attachment */}
             {activeSection === 'grades' && (
               <div className="no-print grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <section className="lg:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] pb-3">
-                    <Upload className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                <section className="lg:col-span-5 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+                    <Upload className="h-5 w-5 text-[#7A1629] dark:text-[#F4D98A]" aria-hidden="true" />
+                    <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                       อาจารย์แนบผลการเรียนให้นักศึกษา
                     </h2>
                   </div>
 
                   {students.length === 0 ? (
-                    <p className="text-sm text-[#66585B] py-4">
+                    <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-4">
                       ยังไม่มีรายชื่อนักศึกษาในระบบ กรุณานำเข้าข้อมูลนักศึกษาจาก Excel ก่อน
                     </p>
                   ) : (
                     <form onSubmit={handleStaffAttachGrade} className="space-y-4">
                       <div>
-                        <label className="block text-xs font-medium text-[#23181A] mb-1">
+                        <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                           เลือกนักศึกษา *
                         </label>
                         <select
                           value={gradeTargetStudentId}
                           onChange={(e) => setGradeTargetStudentId(e.target.value)}
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                         >
                           {students.map((s) => (
                             <option key={s.user.id} value={s.user.id}>
@@ -1782,13 +1809,13 @@ export function StaffDashboard({
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-[#23181A] mb-1">
+                          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                             ปีการศึกษา
                           </label>
                           <select
                             value={gradeYear}
                             onChange={(e) => setGradeYear(e.target.value as AcademicYear)}
-                            className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                           >
                             {ACADEMIC_YEARS.map((y) => (
                               <option key={y} value={y}>
@@ -1798,13 +1825,13 @@ export function StaffDashboard({
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-[#23181A] mb-1">
+                          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                             ชั้นปี
                           </label>
                           <select
                             value={gradeLevel}
                             onChange={(e) => setGradeLevel(e.target.value as YearLevel)}
-                            className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                           >
                             {YEAR_LEVELS.map((l) => (
                               <option key={l} value={l}>
@@ -1817,20 +1844,20 @@ export function StaffDashboard({
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium text-[#23181A] mb-1">
+                          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                             ภาคเรียน
                           </label>
                           <select
                             value={gradeSemester}
                             onChange={(e) => setGradeSemester(e.target.value as SemesterType)}
-                            className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                            className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                           >
                             <option value="ภาคเรียนที่ 1">ภาคเรียนที่ 1</option>
                             <option value="ภาคเรียนที่ 2">ภาคเรียนที่ 2</option>
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-[#23181A] mb-1">
+                          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                             เกรดเฉลี่ย *
                           </label>
                           <input
@@ -1838,7 +1865,7 @@ export function StaffDashboard({
                             value={gradeGpa}
                             onChange={(e) => setGradeGpa(e.target.value)}
                             placeholder="เช่น 3.70"
-                            className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                            className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] tabular-nums"
                           />
                         </div>
                       </div>
@@ -1862,29 +1889,29 @@ export function StaffDashboard({
                   )}
                 </section>
 
-                <section className="lg:col-span-7 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                  <h2 className="font-display text-lg font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+                <section className="lg:col-span-7 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                  <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
                     ข้อมูลพื้นฐานและประวัติผลการเรียนของนักศึกษาทั้งหมด
                   </h2>
 
                   {students.length === 0 ? (
-                    <p className="text-sm text-[#66585B] py-4">ยังไม่มีข้อมูลนักศึกษาในระบบ</p>
+                    <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-4">ยังไม่มีข้อมูลนักศึกษาในระบบ</p>
                   ) : (
                     <div className="space-y-4">
                       {students.map((s) => (
                         <div
                           key={s.user.id}
-                          className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 p-4 space-y-2 transition-colors hover:border-[#C6922C]"
+                          className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/70 dark:bg-[#1A1C21] p-4 space-y-2 transition-colors hover:border-[#C6922C]"
                         >
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
-                              <p className="font-display font-bold text-[#23181A]">
+                              <p className="font-display font-bold text-[#23181A] dark:text-[#F2EFEA]">
                                 {s.basicInfo.fullName || s.user.fullName}{' '}
-                                <span className="text-xs font-normal text-[#66585B] tabular-nums">
+                                <span className="text-xs font-normal text-[#66585B] dark:text-[#A19B91] tabular-nums">
                                   ({s.basicInfo.studentId || s.user.studentId})
                                 </span>
                               </p>
-                              <p className="text-xs text-[#66585B] tabular-nums">
+                              <p className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
                                 {s.basicInfo.yearLevel} · GPAX {s.basicInfo.gpax || '-'} · กยศ.:{' '}
                                 {s.basicInfo.hasStudentLoan} · โทร {s.basicInfo.phone || '-'}
                               </p>
@@ -1892,16 +1919,16 @@ export function StaffDashboard({
                             <button
                               type="button"
                               onClick={() => setPrintStudent(s)}
-                              className="text-xs font-medium text-[#7A1629] hover:underline"
+                              className="text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:underline"
                             >
                               ดูโปรไฟล์ PDF
                             </button>
                           </div>
 
                           {s.grades.length > 0 && (
-                            <div className="pt-2 border-t border-[#EAE0CE] flex flex-wrap gap-3 text-xs tabular-nums">
+                            <div className="pt-2 border-t border-[#EAE0CE] dark:border-[#343842] flex flex-wrap gap-3 text-xs tabular-nums">
                               {s.grades.map((g) => (
-                                <span key={g.id} className="text-[#23181A]">
+                                <span key={g.id} className="text-[#23181A] dark:text-[#F2EFEA]">
                                   ปี {g.academicYear} ({g.semester}): <strong>{g.gpa}</strong>
                                 </span>
                               ))}
@@ -1917,13 +1944,13 @@ export function StaffDashboard({
 
             {/* SECTION 3: Volunteer Progress & Hour Approval */}
             {activeSection === 'volunteers' && (
-              <section className="no-print rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                <h2 className="font-display text-lg font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+              <section className="no-print rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
                   ความคืบหน้าการทำจิตอาสาและการอนุมัติชั่วโมง
                 </h2>
 
                 {students.every((s) => s.volunteers.length === 0) ? (
-                  <p className="text-sm text-[#66585B] py-6">
+                  <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-6">
                     ยังไม่มีรายการบันทึกกิจกรรมจิตอาสาจากนักศึกษา
                   </p>
                 ) : (
@@ -1932,22 +1959,22 @@ export function StaffDashboard({
                       s.volunteers.map((vol) => (
                         <article
                           key={vol.id}
-                          className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 p-5 space-y-3"
+                          className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/70 dark:bg-[#1A1C21] p-5 space-y-3"
                         >
                           <div className="flex flex-wrap items-start justify-between gap-4">
                             <div>
-                              <p className="text-xs font-semibold text-[#7A1629] tabular-nums">
+                              <p className="text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] tabular-nums">
                                 {vol.studentName} ({vol.studentId}) · ปีการศึกษา {vol.academicYear} ·
                                 วันที่ {vol.activityDate}
                               </p>
-                              <h3 className="font-display text-base font-bold text-[#23181A] mt-0.5">
+                              <h3 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA] mt-0.5">
                                 {vol.activityTitle}
                               </h3>
                             </div>
 
                             <div className="flex items-center gap-2">
                               {vol.approvalStatus === 'approved' ? (
-                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#166534] tabular-nums">
+                                <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#166534] dark:text-[#4ADE80] tabular-nums">
                                   <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                                   อนุมัติแล้ว {vol.approvedHours} ชั่วโมง
                                 </span>
@@ -1966,7 +1993,7 @@ export function StaffDashboard({
                                   <button
                                     type="button"
                                     onClick={() => handleReviewVolunteer(vol.id, 'rejected', 0)}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-[#FCA5A5] bg-white px-3 py-1.5 text-xs font-medium text-[#991B1B] hover:bg-[#FEF2F2]"
+                                    className="inline-flex items-center gap-1 rounded-lg border border-[#FCA5A5] dark:border-[#7F1D1D] bg-white dark:bg-[#2F1519] px-3 py-1.5 text-xs font-medium text-[#991B1B] dark:text-[#FCA5A5] hover:bg-[#FEF2F2] dark:hover:bg-[#3E181E]"
                                   >
                                     <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                                     <span>ไม่อนุมัติ</span>
@@ -1976,8 +2003,8 @@ export function StaffDashboard({
                             </div>
                           </div>
 
-                          <p className="text-sm text-[#23181A]">{vol.activityDetail}</p>
-                          <p className="text-xs text-[#66585B]">
+                          <p className="text-sm text-[#23181A] dark:text-[#E5E0D8]">{vol.activityDetail}</p>
+                          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                             <strong>สิ่งที่ได้รับ:</strong> {vol.learnings} ·{' '}
                             <strong>การประยุกต์ใช้:</strong> {vol.dailyLifeApplication}
                           </p>
@@ -1996,7 +2023,7 @@ export function StaffDashboard({
                                     src={p.url}
                                     driveFileId={p.driveFileId}
                                     alt={p.name}
-                                    className="h-16 w-20 rounded-lg border border-[#D8C6A6] object-cover transition-transform hover:scale-105"
+                                    className="h-16 w-20 rounded-lg border border-[#D8C6A6] dark:border-[#434856] object-cover transition-transform hover:scale-105"
                                   />
                                 </a>
                               ))}
@@ -2014,37 +2041,37 @@ export function StaffDashboard({
             {activeSection === 'excel-import' && (
               <div className="no-print grid grid-cols-1 xl:grid-cols-12 gap-6">
                 {/* Left: Bulk Excel Upload */}
-                <section className="xl:col-span-7 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-5 surface-card">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAE0CE] pb-4">
+                <section className="xl:col-span-7 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5 surface-card">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EAE0CE] dark:border-[#343842] pb-4">
                     <div className="space-y-0.5">
-                      <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                      <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                         นำเข้ารายชื่อนักศึกษาจากไฟล์ Excel / CSV
                       </h2>
-                      <p className="text-xs text-[#66585B]">
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                         รองรับคอลัมน์: รหัสนักศึกษา, ชื่อ-นามสกุล, อีเมล (ไม่บังคับ), ปีการศึกษา, ชั้นปี, GPAX, เบอร์โทรศัพท์, กยศ.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => downloadStudentImportTemplateExcel()}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-3.5 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] dark:border-[#C6922C]/70 bg-[#FDF8EC] dark:bg-[#2D2414] px-3.5 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#F7EBCB] dark:hover:bg-[#3A2E19] transition-colors"
                     >
                       <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
                       <span>ดาวน์โหลดไฟล์แม่แบบ (.xlsx)</span>
                     </button>
                   </div>
 
-                  <div className="rounded-2xl border-2 border-dashed border-[#D8C6A6] bg-[#FAF6EE]/60 p-6 text-center space-y-3">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECFDF5] text-[#15803D]">
+                  <div className="rounded-2xl border-2 border-dashed border-[#D8C6A6] dark:border-[#434856] bg-[#FAF6EE]/60 dark:bg-[#1A1C21] p-6 text-center space-y-3">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]">
                       <FileUp className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <div className="space-y-1">
-                      <p className="font-display text-sm font-semibold text-[#23181A]">
+                      <p className="font-display text-sm font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                         {excelFileName
                           ? `ไฟล์ที่เลือก: ${excelFileName}`
                           : 'เลือกไฟล์ .xlsx, .xls หรือ .csv เพื่อตรวจสอบรายชื่อ'}
                       </p>
-                      <p className="text-xs text-[#66585B]">
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                         ระบุเพียงรหัสนักศึกษา 8 หลักและชื่อ-นามสกุล ระบบจะสร้างบัญชีพร้อมรหัสผ่านเริ่มต้น (รหัสนักศึกษา 8 หลัก) โดยอัตโนมัติ และให้นักศึกษาตั้งรหัสผ่านใหม่เมื่อเข้าสู่ระบบครั้งแรก
                       </p>
                     </div>
@@ -2064,7 +2091,7 @@ export function StaffDashboard({
                   </div>
 
                   {importSummary && (
-                    <div className="rounded-xl border border-[#86EFAC] bg-[#F0FDF4] p-4 text-xs sm:text-sm text-[#166534] space-y-1">
+                    <div className="rounded-xl border border-[#86EFAC] dark:border-[#166534] bg-[#F0FDF4] dark:bg-[#143322] p-4 text-xs sm:text-sm text-[#166534] dark:text-[#86EFAC] space-y-1">
                       <p className="font-semibold">นำเข้าข้อมูลลงฐานข้อมูลเรียบร้อยแล้ว</p>
                       <p className="tabular-nums">
                         สร้างบัญชีใหม่ {importSummary.createdCount} คน · อัปเดตข้อมูลเดิม{' '}
@@ -2074,11 +2101,11 @@ export function StaffDashboard({
                   )}
 
                   {parsedExcelErrors.length > 0 && (
-                    <div className="rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] p-4 space-y-1.5">
-                      <p className="text-xs font-bold text-[#991B1B]">
+                    <div className="rounded-xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#2F1519] p-4 space-y-1.5">
+                      <p className="text-xs font-bold text-[#991B1B] dark:text-[#FCA5A5]">
                         พบข้อผิดพลาด {parsedExcelErrors.length} แถว (จะไม่ถูกนำเข้า):
                       </p>
-                      <ul className="list-disc pl-5 text-xs text-[#991B1B] space-y-0.5 max-h-36 overflow-y-auto">
+                      <ul className="list-disc pl-5 text-xs text-[#991B1B] dark:text-[#FCA5A5] space-y-0.5 max-h-36 overflow-y-auto">
                         {parsedExcelErrors.map((errItem) => (
                           <li key={errItem.rowNumber}>{errItem.message}</li>
                         ))}
@@ -2089,7 +2116,7 @@ export function StaffDashboard({
                   {parsedExcelRows.length > 0 && (
                     <div className="space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-[#15803D] tabular-nums">
+                        <p className="text-xs font-semibold text-[#15803D] dark:text-[#4ADE80] tabular-nums">
                           พร้อมนำเข้าทั้งหมด {parsedExcelRows.length} รายการ
                         </p>
                         <button
@@ -2107,10 +2134,10 @@ export function StaffDashboard({
                         </button>
                       </div>
 
-                      <div className="overflow-x-auto max-h-72 border border-[#EAE0CE] rounded-xl">
+                      <div className="overflow-x-auto max-h-72 border border-[#EAE0CE] dark:border-[#343842] rounded-xl">
                         <table className="w-full text-left text-xs border-collapse">
-                          <thead className="bg-[#FAF6EE] sticky top-0">
-                            <tr className="border-b border-[#EAE0CE] text-[#66585B]">
+                          <thead className="bg-[#FAF6EE] dark:bg-[#1A1C21] sticky top-0">
+                            <tr className="border-b border-[#EAE0CE] dark:border-[#343842] text-[#66585B] dark:text-[#A19B91]">
                               <th className="py-2 px-3 font-semibold">รหัส</th>
                               <th className="py-2 px-3 font-semibold">ชื่อ-นามสกุล</th>
                               <th className="py-2 px-3 font-semibold">อีเมล</th>
@@ -2119,12 +2146,12 @@ export function StaffDashboard({
                               <th className="py-2 px-3 font-semibold">กยศ.</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#F0E8D8] tabular-nums">
+                          <tbody className="divide-y divide-[#F0E8D8] dark:divide-[#2D313B] tabular-nums text-[#23181A] dark:text-[#F2EFEA]">
                             {parsedExcelRows.map((row) => (
-                              <tr key={row.studentId}>
+                              <tr key={row.studentId} className="hover:bg-[#FAF6EE]/60 dark:hover:bg-[#2A2D36]">
                                 <td className="py-2 px-3 font-medium">{row.studentId}</td>
                                 <td className="py-2 px-3">{row.fullName}</td>
-                                <td className="py-2 px-3 text-[#5A4B4E]">{row.email || '-'}</td>
+                                <td className="py-2 px-3 text-[#5A4B4E] dark:text-[#A19B91]">{row.email || '-'}</td>
                                 <td className="py-2 px-3">
                                   {row.academicYear} / {row.yearLevel}
                                 </td>
@@ -2140,10 +2167,10 @@ export function StaffDashboard({
                 </section>
 
                 {/* Right: Single Quick-Add Student Form */}
-                <section className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] pb-3">
-                    <UserPlus className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                <section className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+                    <UserPlus className="h-5 w-5 text-[#7A1629] dark:text-[#F4D98A]" aria-hidden="true" />
+                    <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                       เพิ่มรายชื่อนักศึกษาทีละคน
                     </h2>
                   </div>
@@ -2153,7 +2180,7 @@ export function StaffDashboard({
                       <div>
                         <label
                           htmlFor="qa-id"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           รหัสนักศึกษา *
                         </label>
@@ -2169,13 +2196,13 @@ export function StaffDashboard({
                             setQuickStudentId(val);
                           }}
                           placeholder="ตัวเลข 8 หลัก (เช่น 69xxxxxx)"
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] tabular-nums"
                         />
                       </div>
                       <div>
                         <label
                           htmlFor="qa-gpax"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           GPAX (ถ้ามี)
                         </label>
@@ -2185,7 +2212,7 @@ export function StaffDashboard({
                           value={quickGpax}
                           onChange={(e) => setQuickGpax(e.target.value)}
                           placeholder="เช่น 3.50"
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] tabular-nums"
                         />
                       </div>
                     </div>
@@ -2193,7 +2220,7 @@ export function StaffDashboard({
                     <div>
                       <label
                         htmlFor="qa-name"
-                        className="block text-xs font-medium text-[#23181A] mb-1"
+                        className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                       >
                         ชื่อ-นามสกุล *
                       </label>
@@ -2204,14 +2231,14 @@ export function StaffDashboard({
                         value={quickFullName}
                         onChange={(e) => setQuickFullName(e.target.value)}
                         placeholder="เช่น นางสาวกานดา ใจดี"
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                       />
                     </div>
 
                     <div>
                       <label
                         htmlFor="qa-email"
-                        className="block text-xs font-medium text-[#23181A] mb-1"
+                        className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                       >
                         อีเมล (ไม่บังคับ)
                       </label>
@@ -2221,7 +2248,7 @@ export function StaffDashboard({
                         value={quickEmail}
                         onChange={(e) => setQuickEmail(e.target.value)}
                         placeholder="เว้นว่างได้ หรือกรอกอีเมลติดต่อ"
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                       />
                     </div>
 
@@ -2229,7 +2256,7 @@ export function StaffDashboard({
                       <div>
                         <label
                           htmlFor="qa-year"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           ปีการศึกษา
                         </label>
@@ -2237,7 +2264,7 @@ export function StaffDashboard({
                           id="qa-year"
                           value={quickAcademicYear}
                           onChange={(e) => setQuickAcademicYear(e.target.value as AcademicYear)}
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                         >
                           {ACADEMIC_YEARS.map((y) => (
                             <option key={y} value={y}>
@@ -2249,7 +2276,7 @@ export function StaffDashboard({
                       <div>
                         <label
                           htmlFor="qa-level"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           ชั้นปี
                         </label>
@@ -2257,7 +2284,7 @@ export function StaffDashboard({
                           id="qa-level"
                           value={quickYearLevel}
                           onChange={(e) => setQuickYearLevel(e.target.value as YearLevel)}
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                         >
                           {YEAR_LEVELS.map((l) => (
                             <option key={l} value={l}>
@@ -2272,7 +2299,7 @@ export function StaffDashboard({
                       <div>
                         <label
                           htmlFor="qa-phone"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           เบอร์โทรศัพท์
                         </label>
@@ -2282,13 +2309,13 @@ export function StaffDashboard({
                           value={quickPhone}
                           onChange={(e) => setQuickPhone(e.target.value)}
                           placeholder="08X-XXX-XXXX"
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] tabular-nums"
                         />
                       </div>
                       <div>
                         <label
                           htmlFor="qa-loan"
-                          className="block text-xs font-medium text-[#23181A] mb-1"
+                          className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                         >
                           การกู้ยืม กยศ.
                         </label>
@@ -2296,7 +2323,7 @@ export function StaffDashboard({
                           id="qa-loan"
                           value={quickLoan}
                           onChange={(e) => setQuickLoan(e.target.value as 'กู้' | 'ไม่กู้')}
-                          className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                          className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                         >
                           <option value="ไม่กู้">ไม่กู้</option>
                           <option value="กู้">กู้ กยศ.</option>
@@ -2323,18 +2350,18 @@ export function StaffDashboard({
                   <style>{`@media print { @page { size: A4 ${reportOrientation}; margin: 10mm; } }`}</style>
                 )}
 
-                <section className="no-print rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                <section className="no-print rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                   <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                        <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                           ตัวอย่างหน้าก่อนพิมพ์จริง &amp; ดาวน์โหลดรายงาน PDF
                         </h2>
-                        <span className="inline-flex items-center gap-1 rounded-md border border-[#E5CFA0] bg-[#FDF8EC] px-2.5 py-0.5 text-[11px] font-semibold text-[#7A1629]">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-[#E5CFA0] dark:border-[#6A5220] bg-[#FDF8EC] dark:bg-[#2D2414] px-2.5 py-0.5 text-[11px] font-semibold text-[#7A1629] dark:text-[#F4D98A]">
                           Fit All Columns on One Page
                         </span>
                       </div>
-                      <p className="text-xs text-[#66585B] mt-0.5">
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-0.5">
                         แสดงหน้ากระดาษ A4 จริงพร้อมทุกคอลัมน์ในหน้าเดียวก่อนสั่งพิมพ์หรือดาวน์โหลดไฟล์ .pdf
                       </p>
                     </div>
@@ -2342,7 +2369,7 @@ export function StaffDashboard({
                       <div
                         role="group"
                         aria-label="เลือกแนวกระดาษรายงาน A4"
-                        className="inline-flex rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] p-1 text-xs"
+                        className="inline-flex rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] p-1 text-xs"
                       >
                         <button
                           type="button"
@@ -2350,7 +2377,7 @@ export function StaffDashboard({
                           className={`rounded-lg px-3 py-1.5 font-medium transition-colors ${
                             reportOrientation === 'landscape'
                               ? 'bg-[#7A1629] text-white'
-                              : 'text-[#5A4B4E] hover:text-[#23181A]'
+                              : 'text-[#5A4B4E] dark:text-[#A19B91] hover:text-[#23181A] dark:hover:text-[#F2EFEA]'
                           }`}
                         >
                           A4 แนวนอน (แนะนำ)
@@ -2361,7 +2388,7 @@ export function StaffDashboard({
                           className={`rounded-lg px-3 py-1.5 font-medium transition-colors ${
                             reportOrientation === 'portrait'
                               ? 'bg-[#7A1629] text-white'
-                              : 'text-[#5A4B4E] hover:text-[#23181A]'
+                              : 'text-[#5A4B4E] dark:text-[#A19B91] hover:text-[#23181A] dark:hover:text-[#F2EFEA]'
                           }`}
                         >
                           A4 แนวตั้ง
@@ -2389,7 +2416,7 @@ export function StaffDashboard({
                         type="button"
                         disabled={preparingDirectPrint || downloadingSummaryPdf || filteredStudents.length === 0}
                         onClick={handleDirectPrintSummary}
-                        className="inline-flex items-center gap-2 rounded-xl border border-[#7A1629] bg-white px-4 py-2.5 text-xs font-semibold text-[#7A1629] hover:bg-[#FAF6EE] transition-colors disabled:opacity-55"
+                        className="inline-flex items-center gap-2 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 bg-white dark:bg-[#1A1C21] px-4 py-2.5 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors disabled:opacity-55"
                       >
                         {preparingDirectPrint ? (
                           <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden="true" />
@@ -2408,7 +2435,7 @@ export function StaffDashboard({
                       aria-label="ปีการศึกษา"
                       value={filterYear}
                       onChange={(e) => setFilterYear(e.target.value as AcademicYear | 'all')}
-                      className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                      className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                     >
                       <option value="all">ทุกปีการศึกษา</option>
                       {ACADEMIC_YEARS.map((y) => (
@@ -2421,7 +2448,7 @@ export function StaffDashboard({
                       aria-label="ชั้นปี"
                       value={filterLevel}
                       onChange={(e) => setFilterLevel(e.target.value as YearLevel | 'all')}
-                      className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                      className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                     >
                       <option value="all">ทุกชั้นปี</option>
                       {YEAR_LEVELS.map((l) => (
@@ -2434,7 +2461,7 @@ export function StaffDashboard({
                       aria-label="สถานะทุน"
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value as ApplicationStatus | 'all')}
-                      className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                      className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                     >
                       <option value="all">ทุกสถานะทุน</option>
                       <option value="approved">อนุมัติทุนการศึกษา</option>
@@ -2446,8 +2473,8 @@ export function StaffDashboard({
                 </section>
 
                 {/* Live A4 Paper Print Preview Desk */}
-                <div className="a4-preview-desk rounded-2xl border border-[#DFD1BA] bg-[#E8DFCE] p-3 sm:p-6 overflow-x-auto print:border-0 print:bg-white print:p-0">
-                  <div className="no-print mx-auto mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-[#5A4B4E] max-w-[1060px]">
+                <div className="a4-preview-desk rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-[#E8DFCE] dark:bg-[#1A1C22] p-3 sm:p-6 overflow-x-auto print:border-0 print:bg-white print:p-0">
+                  <div className="no-print mx-auto mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-medium text-[#5A4B4E] dark:text-[#A19B91] max-w-[1060px]">
                     <span>
                       หน้าต่างแสดงผลก่อนพิมพ์จริง (Print Preview) · ขนาด{' '}
                       {reportOrientation === 'landscape'
@@ -2462,7 +2489,7 @@ export function StaffDashboard({
                   <section
                     id="staff-pdf-report-sheet"
                     ref={reportSheetRef}
-                    className={`a4-paper-sheet mx-auto rounded-sm border border-[#D8CBB8] bg-white p-5 sm:p-8 shadow-xl print:border-0 print:shadow-none print:p-0 ${
+                    className={`a4-paper-sheet mx-auto rounded-sm border border-[#D8CBB8] bg-white text-[#23181A] p-5 sm:p-8 shadow-xl print:border-0 print:shadow-none print:p-0 ${
                       reportOrientation === 'landscape'
                         ? 'w-full max-w-[1060px]'
                         : 'w-full max-w-[794px]'
@@ -2650,10 +2677,10 @@ export function StaffDashboard({
             {/* SECTION 6: Admin User & Password Management */}
             {isAdmin && activeSection === 'admin-users' && (
               <div className="no-print grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <section className="lg:col-span-7 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] pb-3">
-                    <KeyRound className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                <section className="lg:col-span-7 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+                    <KeyRound className="h-5 w-5 text-[#7A1629] dark:text-[#F4D98A]" aria-hidden="true" />
+                    <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                       จัดการผู้ใช้งานและแก้ไขรหัสผ่าน ({allUsers.length} บัญชี)
                     </h2>
                   </div>
@@ -2661,14 +2688,14 @@ export function StaffDashboard({
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm border-collapse">
                       <thead>
-                        <tr className="border-b border-[#EAE0CE] text-xs text-[#66585B]">
+                        <tr className="border-b border-[#EAE0CE] dark:border-[#343842] text-xs text-[#66585B] dark:text-[#A19B91]">
                           <th className="py-2.5 pr-3 font-semibold">บทบาท</th>
                           <th className="py-2.5 pr-3 font-semibold">ชื่อ-นามสกุล</th>
                           <th className="py-2.5 pr-3 font-semibold">ชื่อผู้ใช้ / สถานะรหัสผ่าน</th>
                           <th className="py-2.5 font-semibold text-right">จัดการบัญชี</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#F0E8D8]">
+                      <tbody className="divide-y divide-[#F0E8D8] dark:divide-[#2D313B]">
                         {allUsers.map((u) => {
                           const adminCount = allUsers.filter((item) => item.role === 'admin').length;
                           const deletePermission = canDeleteUserAccount({
@@ -2683,29 +2710,29 @@ export function StaffDashboard({
                             lockedUntil: u.lockedUntil,
                           });
                           return (
-                            <tr key={u.id} className="hover:bg-[#FAF6EE]/60 transition-colors">
-                              <td className="py-2.5 pr-3 text-xs font-semibold text-[#7A1629]">
+                            <tr key={u.id} className="hover:bg-[#FAF6EE]/60 dark:hover:bg-[#2A2D36] transition-colors">
+                              <td className="py-2.5 pr-3 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A]">
                                 {u.role === 'student'
                                   ? 'นักศึกษา'
                                   : u.role === 'teacher'
                                     ? 'อาจารย์'
                                     : 'ผู้ดูแลระบบ'}
                               </td>
-                              <td className="py-2.5 pr-3 font-medium">{u.fullName}</td>
-                              <td className="py-2.5 pr-3 text-xs text-[#66585B]">
-                                <div className="font-mono tabular-nums">{u.username}</div>
+                              <td className="py-2.5 pr-3 font-medium text-[#23181A] dark:text-[#F2EFEA]">{u.fullName}</td>
+                              <td className="py-2.5 pr-3 text-xs text-[#66585B] dark:text-[#A19B91]">
+                                <div className="font-mono tabular-nums text-[#23181A] dark:text-[#E5E0D8]">{u.username}</div>
                                 <div className="mt-1 flex flex-wrap gap-1">
                                   {lockState.isLocked ? (
-                                    <span className="inline-flex items-center rounded-md border border-[#FCA5A5] bg-[#FEF2F2] px-1.5 py-0.5 text-[11px] font-medium text-[#991B1B]">
+                                    <span className="inline-flex items-center rounded-md border border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#2F1519] px-1.5 py-0.5 text-[11px] font-medium text-[#991B1B] dark:text-[#FCA5A5]">
                                       ระงับชั่วคราว (ผิดเกิน 5 ครั้ง)
                                     </span>
                                   ) : u.role === 'student' ? (
                                     u.mustChangePassword ? (
-                                      <span className="inline-flex items-center rounded-md border border-[#FCD34D] bg-[#FFFBEB] px-1.5 py-0.5 text-[11px] font-medium text-[#92400E]">
+                                      <span className="inline-flex items-center rounded-md border border-[#FCD34D] dark:border-[#854D0E] bg-[#FFFBEB] dark:bg-[#332713] px-1.5 py-0.5 text-[11px] font-medium text-[#92400E] dark:text-[#FBBF24]">
                                         รอเปลี่ยนรหัสผ่านครั้งแรก
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center rounded-md border border-[#86EFAC] bg-[#F0FDF4] px-1.5 py-0.5 text-[11px] font-medium text-[#166534]">
+                                      <span className="inline-flex items-center rounded-md border border-[#86EFAC] dark:border-[#166534] bg-[#F0FDF4] dark:bg-[#143322] px-1.5 py-0.5 text-[11px] font-medium text-[#166534] dark:text-[#86EFAC]">
                                         ตั้งรหัสผ่านส่วนตัวแล้ว
                                       </span>
                                     )
@@ -2726,7 +2753,7 @@ export function StaffDashboard({
                                       setResetMode(u.role === 'student' ? 'default' : 'custom');
                                       setNewPasswordInput('');
                                     }}
-                                    className="rounded-lg border border-[#C6922C] bg-[#FDF8EC] px-2.5 py-1 text-xs font-medium text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                                    className="rounded-lg border border-[#C6922C] dark:border-[#C6922C]/70 bg-[#FDF8EC] dark:bg-[#2D2414] px-2.5 py-1 text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#F7EBCB] dark:hover:bg-[#3A2E19] transition-colors"
                                   >
                                     {u.role === 'student' ? 'รีเซ็ตรหัสผ่าน' : 'แก้ไขรหัสผ่าน'}
                                   </button>
@@ -2736,7 +2763,7 @@ export function StaffDashboard({
                                     title={deletePermission.reason || `ลบบัญชี ${u.fullName}`}
                                     aria-label={`ลบบัญชี ${u.fullName}`}
                                     onClick={() => setDeleteTargetUser(u)}
-                                    className="inline-flex items-center gap-1 rounded-lg border border-[#FCA5A5] bg-[#FEF2F2] px-2.5 py-1 text-xs font-medium text-[#991B1B] hover:bg-[#FEE2E2] disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
+                                    className="inline-flex items-center gap-1 rounded-lg border border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#2F1519] px-2.5 py-1 text-xs font-medium text-[#991B1B] dark:text-[#FCA5A5] hover:bg-[#FEE2E2] dark:hover:bg-[#3E181E] disabled:opacity-45 disabled:cursor-not-allowed transition-colors"
                                   >
                                     <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                                     <span>ลบบัญชี</span>
@@ -2751,23 +2778,23 @@ export function StaffDashboard({
                   </div>
                 </section>
 
-                <section className="lg:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] pb-3">
-                    <UserPlus className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
+                <section className="lg:col-span-5 rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+                  <div className="flex items-center gap-2 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+                    <UserPlus className="h-5 w-5 text-[#7A1629] dark:text-[#F4D98A]" aria-hidden="true" />
+                    <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                       เพิ่มบัญชีผู้ใช้ใหม่โดยผู้ดูแลระบบ
                     </h2>
                   </div>
 
                   <form onSubmit={handleAdminCreateUser} className="space-y-3">
                     <div>
-                      <label className="block text-xs font-medium text-[#23181A] mb-1">
+                      <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                         ประเภทผู้ใช้
                       </label>
                       <select
                         value={newUserRole}
                         onChange={(e) => setNewUserRole(e.target.value as UserRole)}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                       >
                         <option value="student">นักศึกษา (รหัสนักศึกษา)</option>
                         <option value="teacher">อาจารย์</option>
@@ -2775,7 +2802,7 @@ export function StaffDashboard({
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#23181A] mb-1">
+                      <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                         ชื่อ-นามสกุล *
                       </label>
                       <input
@@ -2783,11 +2810,11 @@ export function StaffDashboard({
                         required
                         value={newFullName}
                         onChange={(e) => setNewFullName(e.target.value)}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA]"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#23181A] mb-1">
+                      <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                         {newUserRole === 'student'
                           ? 'รหัสนักศึกษา *'
                           : 'ชื่อผู้ใช้ (Username) *'}
@@ -2807,11 +2834,11 @@ export function StaffDashboard({
                         placeholder={
                           newUserRole === 'student' ? 'ตัวเลข 8 หลัก (เช่น 69xxxxxx)' : 'username'
                         }
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-[#23181A] mb-1">
+                      <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
                         {newUserRole === 'student'
                           ? 'รหัสผ่านเริ่มต้น (เว้นว่างเพื่อสร้างอัตโนมัติ)'
                           : 'รหัสผ่าน *'}
@@ -2826,7 +2853,7 @@ export function StaffDashboard({
                             ? 'เว้นว่างใช้รหัสนักศึกษา 8 หลัก (บังคับเปลี่ยนครั้งแรก)'
                             : 'อย่างน้อย 4 ตัวอักษร'
                         }
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                        className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                       />
                     </div>
                     <button
@@ -2867,34 +2894,34 @@ export function StaffDashboard({
           role="dialog"
           aria-modal="true"
           aria-label="รีเซ็ตรหัสผ่านผู้ใช้งาน"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
         >
           <motion.form
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             onSubmit={handleResetPasswordSubmit}
-            className="w-full max-w-md rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4 surface-elevated"
+            className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#3A3E4A] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
           >
-            <h3 className="font-display text-lg font-bold text-[#7A1629]">
+            <h3 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
               {resetTargetUser.role === 'student' ? 'รีเซ็ตรหัสผ่านนักศึกษา' : 'แก้ไขรหัสผ่าน'}:{' '}
               {resetTargetUser.fullName}
             </h3>
-            <p className="text-xs text-[#66585B] leading-relaxed">
-              บัญชี: <span className="font-mono font-semibold">{resetTargetUser.username}</span> ·{' '}
+            <p className="text-xs text-[#66585B] dark:text-[#A19B91] leading-relaxed">
+              บัญชี: <span className="font-mono font-semibold text-[#23181A] dark:text-[#F2EFEA]">{resetTargetUser.username}</span> ·{' '}
               ผู้ดูแลระบบไม่สามารถดูรหัสผ่านเดิมของนักศึกษาได้ เพื่อความปลอดภัยของข้อมูลส่วนตัว
             </p>
 
             {resetTargetUser.role === 'student' && (
               <div className="space-y-2.5">
-                <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] p-1">
+                <div className="grid grid-cols-2 gap-2 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1A1C21] p-1">
                   <button
                     type="button"
                     onClick={() => setResetMode('default')}
                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
                       resetMode === 'default'
                         ? 'bg-[#7A1629] text-white'
-                        : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                        : 'text-[#5A4B4E] dark:text-[#A19B91] hover:text-[#7A1629] dark:hover:text-[#F4D98A]'
                     }`}
                   >
                     รหัสผ่านเริ่มต้น (รหัสนักศึกษา)
@@ -2905,7 +2932,7 @@ export function StaffDashboard({
                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${
                       resetMode === 'custom'
                         ? 'bg-[#7A1629] text-white'
-                        : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                        : 'text-[#5A4B4E] dark:text-[#A19B91] hover:text-[#7A1629] dark:hover:text-[#F4D98A]'
                     }`}
                   >
                     กำหนดรหัสชั่วคราวเอง
@@ -2913,9 +2940,9 @@ export function StaffDashboard({
                 </div>
 
                 {resetMode === 'default' && (
-                  <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] p-3.5 text-xs text-[#5C410A] leading-relaxed">
+                  <div className="rounded-xl border border-[#DFC9A1] dark:border-[#6A5220] bg-[#FDF8EC] dark:bg-[#2D2414] p-3.5 text-xs text-[#5C410A] dark:text-[#E5CFA0] leading-relaxed">
                     ระบบจะรีเซ็ตรหัสผ่านกลับเป็นรหัสผ่านเริ่มต้น{' '}
-                    <span className="font-semibold text-[#7A1629]">รหัสนักศึกษา 8 หลัก</span>{' '}
+                    <span className="font-semibold text-[#7A1629] dark:text-[#F4D98A]">รหัสนักศึกษา 8 หลัก</span>{' '}
                     ปลดล็อกบัญชีหากถูกระงับชั่วคราว และบังคับให้นักศึกษาตั้งรหัสผ่านใหม่เมื่อเข้าสู่ระบบครั้งถัดไป
                   </div>
                 )}
@@ -2926,7 +2953,7 @@ export function StaffDashboard({
               <div>
                 <label
                   htmlFor="reset-pw-input"
-                  className="block text-sm font-medium text-[#23181A] mb-1"
+                  className="block text-sm font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1"
                 >
                   {resetTargetUser.role === 'student' ? 'รหัสผ่านชั่วคราวใหม่ *' : 'รหัสผ่านใหม่ *'}
                 </label>
@@ -2942,10 +2969,10 @@ export function StaffDashboard({
                       ? 'อย่างน้อย 10 ตัวอักษร (A-Z, a-z, 0-9)'
                       : 'อย่างน้อย 4 ตัวอักษร'
                   }
-                  className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3.5 py-2 text-sm"
+                  className="w-full rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] px-3.5 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594]"
                 />
                 {resetTargetUser.role === 'student' && (
-                  <p className="mt-1.5 text-[11px] text-[#66585B]">
+                  <p className="mt-1.5 text-[11px] text-[#66585B] dark:text-[#A19B91]">
                     นักศึกษาจะต้องเปลี่ยนรหัสผ่านใหม่ทันทีเมื่อเข้าสู่ระบบครั้งถัดไป และบัญชีจะถูกปลดล็อกหากถูกระงับชั่วคราว
                   </p>
                 )}
@@ -2956,7 +2983,7 @@ export function StaffDashboard({
               <button
                 type="button"
                 onClick={() => setResetTargetUser(null)}
-                className="rounded-xl border border-[#D8CBB8] px-4 py-2 text-sm text-[#5A4B4E] hover:bg-[#FAF6EE]"
+                className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] px-4 py-2 text-sm text-[#5A4B4E] dark:text-[#CEC8BE] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
               >
                 ยกเลิก
               </button>
@@ -2979,31 +3006,31 @@ export function StaffDashboard({
           role="dialog"
           aria-modal="true"
           aria-label="ยืนยันการลบบัญชีผู้ใช้งาน"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-md rounded-2xl border border-[#FCA5A5] bg-white p-6 space-y-4 surface-elevated"
+            className="w-full max-w-md rounded-2xl border border-[#FCA5A5] dark:border-[#7F1D1D] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-elevated"
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] text-[#B91C1C]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FEF2F2] dark:bg-[#2F1519] text-[#B91C1C] dark:text-[#FCA5A5]">
                 <AlertTriangle className="h-5 w-5" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="font-display text-lg font-bold text-[#991B1B]">
+                <h3 className="font-display text-lg font-bold text-[#991B1B] dark:text-[#FCA5A5]">
                   ยืนยันการลบบัญชีผู้ใช้
                 </h3>
-                <p className="text-xs text-[#66585B] mt-0.5">
+                <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-0.5">
                   การดำเนินการนี้ไม่สามารถย้อนกลับได้
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] p-3.5 text-sm space-y-1">
-              <p className="font-semibold text-[#23181A]">{deleteTargetUser.fullName}</p>
-              <p className="text-xs text-[#66585B]">
+            <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1A1C21] p-3.5 text-sm space-y-1">
+              <p className="font-semibold text-[#23181A] dark:text-[#F2EFEA]">{deleteTargetUser.fullName}</p>
+              <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                 บัญชี: {deleteTargetUser.username} · บทบาท:{' '}
                 {deleteTargetUser.role === 'student'
                   ? 'นักศึกษา'
@@ -3012,7 +3039,7 @@ export function StaffDashboard({
                     : 'ผู้ดูแลระบบ'}
               </p>
               {deleteTargetUser.role === 'student' && (
-                <p className="text-xs text-[#991B1B] pt-1">
+                <p className="text-xs text-[#991B1B] dark:text-[#FCA5A5] pt-1">
                   ข้อมูลพื้นฐาน ใบสมัครทุนการศึกษา ผลการเรียน และบันทึกจิตอาสาของนักศึกษาคนนี้จะถูกลบออกทั้งหมด
                 </p>
               )}
@@ -3023,7 +3050,7 @@ export function StaffDashboard({
                 type="button"
                 disabled={deletingUser}
                 onClick={() => setDeleteTargetUser(null)}
-                className="rounded-xl border border-[#D8CBB8] px-4 py-2 text-sm text-[#5A4B4E] hover:bg-[#FAF6EE]"
+                className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] px-4 py-2 text-sm text-[#5A4B4E] dark:text-[#CEC8BE] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B]"
               >
                 ยกเลิก
               </button>

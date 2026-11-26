@@ -12,17 +12,17 @@ export function PdpaConsentModal({
   onDecline,
 }: PdpaConsentModalProps) {
   return (
-    <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 lg:p-8 space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EAE0CE] pb-5">
+    <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 lg:p-8 space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EAE0CE] dark:border-[#343842] pb-5">
         <div className="flex items-start gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#7A1629]/10 text-[#7A1629]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#7A1629]/10 dark:bg-[#7A1629]/30 text-[#7A1629] dark:text-[#F3B9C3]">
             <ShieldCheck className="h-6 w-6" aria-hidden="true" />
           </div>
           <div>
-            <h2 className="font-display text-xl font-bold text-[#7A1629]">
+            <h2 className="font-display text-xl font-bold text-[#7A1629] dark:text-[#F3B9C3]">
               นโยบายการคุ้มครองข้อมูลส่วนบุคคล (Privacy Policy / PDPA)
             </h2>
-            <p className="text-sm text-[#66585B]">
+            <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
               EDU SOCIAL CARE CMRU โดยงานทุนการศึกษา &amp; กยศ. สาขาวิชาสังคมศึกษา
               คณะครุศาสตร์ มหาวิทยาลัยราชภัฏเชียงใหม่
             </p>
@@ -30,9 +30,9 @@ export function PdpaConsentModal({
         </div>
       </div>
 
-      <div className="max-h-[420px] overflow-y-auto rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] p-5 space-y-4 text-sm leading-relaxed text-[#23181A]">
+      <div className="max-h-[420px] overflow-y-auto rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1A1C22] p-5 space-y-4 text-sm leading-relaxed text-[#23181A] dark:text-[#E6E2DC]">
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             1. วัตถุประสงค์ในการเก็บรวบรวมข้อมูล
           </h3>
           <p className="mt-1">
@@ -45,7 +45,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             2. ข้อมูลส่วนบุคคลที่จัดเก็บ
           </h3>
           <ul className="mt-1 list-disc pl-5 space-y-1">
@@ -59,7 +59,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             3. วัตถุประสงค์ในการใช้ข้อมูล
           </h3>
           <ol className="mt-1 list-decimal pl-5 space-y-1">
@@ -74,7 +74,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             4. การเปิดเผยข้อมูลส่วนบุคคล
           </h3>
           <p className="mt-1">
@@ -87,7 +87,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             5. มาตรการรักษาความมั่นคงปลอดภัย
           </h3>
           <ul className="mt-1 list-disc pl-5 space-y-1">
@@ -100,7 +100,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             6. ระยะเวลาในการเก็บรักษาข้อมูล
           </h3>
           <p className="mt-1">
@@ -111,7 +111,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             7. สิทธิของเจ้าของข้อมูลส่วนบุคคล
           </h3>
           <ul className="mt-1 list-disc pl-5 space-y-1">
@@ -126,7 +126,7 @@ export function PdpaConsentModal({
         </div>
 
         <div>
-          <h3 className="font-display font-semibold text-[#7A1629]">
+          <h3 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">
             8. การติดต่อสอบถาม
           </h3>
           <p className="mt-1">
@@ -140,7 +140,7 @@ export function PdpaConsentModal({
       {declined && (
         <div
           role="alert"
-          className="rounded-xl border border-[#F59E0B] bg-[#FFFBEB] p-4 text-sm text-[#92400E] space-y-2"
+          className="rounded-xl border border-[#F59E0B] dark:border-amber-700/70 bg-[#FFFBEB] dark:bg-amber-950/40 p-4 text-sm text-[#92400E] dark:text-amber-200 space-y-2"
         >
           <p className="font-display font-semibold">
             ท่านเลือกไม่ยินยอมในการประมวลผลข้อมูลส่วนบุคคล
@@ -166,7 +166,7 @@ export function PdpaConsentModal({
         <button
           type="button"
           onClick={onDecline}
-          className="rounded-lg border border-[#D8CBB8] bg-white px-5 py-2.5 text-sm font-medium text-[#5A4B4E] hover:bg-[#FAF6EE] transition-colors"
+          className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1B1D23] px-5 py-2.5 text-sm font-medium text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A] transition-colors"
         >
           ไม่ยินยอม
         </button>

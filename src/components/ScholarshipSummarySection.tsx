@@ -61,23 +61,23 @@ export function ScholarshipSummarySection({
   return (
     <section
       aria-label="สรุปผู้ได้รับทุนการศึกษาตามประเภททุน"
-      className="rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card"
+      className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#EFE5D4] pb-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#EFE5D4] dark:border-[#343842] pb-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-[#7A1629]">
+          <div className="flex items-center gap-2 text-[#7A1629] dark:text-[#E8C97A]">
             <Award className="h-5 w-5 shrink-0" aria-hidden="true" />
-            <h2 className="font-display text-base sm:text-lg font-bold text-[#23181A]">
+            <h2 className="font-display text-base sm:text-lg font-bold text-[#23181A] dark:text-[#F2EFEA]">
               สรุปผู้ได้รับทุนการศึกษาตามประเภททุน
             </h2>
           </div>
-          <p className="text-xs text-[#66585B]">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
             รวบรวมและจัดกลุ่มอัตโนมัติจากหัวข้อ &quot;ทุนการศึกษาที่ได้รับ&quot; ที่นักศึกษายืนยันข้อมูลแล้ว · คลิกชื่อทุนเพื่อดูรายชื่อผู้ได้รับทุน
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] px-3 py-1.5 text-xs font-semibold text-[#7A1629] tabular-nums">
+          <span className="inline-flex items-center gap-1.5 rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-3 py-1.5 text-xs font-semibold text-[#7A1629] dark:text-[#E8C97A] tabular-nums">
             <Users className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>
               {summary.length} ประเภททุน · ผู้ได้รับทุน {uniqueRecipientTotal} คน
@@ -87,7 +87,7 @@ export function ScholarshipSummarySection({
           {summary.length > 3 && (
             <div className="relative">
               <Search
-                className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#66585B]"
+                className="absolute left-2.5 top-2 h-3.5 w-3.5 text-[#66585B] dark:text-[#A19B91]"
                 aria-hidden="true"
               />
               <input
@@ -96,7 +96,7 @@ export function ScholarshipSummarySection({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ค้นหาชื่อทุนหรือนักศึกษา..."
                 aria-label="ค้นหาชื่อทุนการศึกษาหรือนักศึกษา"
-                className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] pl-8 pr-3 py-1.5 text-xs text-[#23181A] placeholder:text-[#8E7D7F]"
+                className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] dark:border-[#434856] dark:bg-[#1A1C21] pl-8 pr-3 py-1.5 text-xs text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#8E7D7F] dark:placeholder:text-[#7E8594]"
               />
             </div>
           )}
@@ -104,50 +104,52 @@ export function ScholarshipSummarySection({
       </div>
 
       {loading ? (
-        <p className="py-6 text-center text-xs sm:text-sm text-[#66585B]">
+        <p className="py-6 text-center text-xs sm:text-sm text-[#66585B] dark:text-[#A19B91]">
           กำลังรวบรวมข้อมูลทุนการศึกษา...
         </p>
       ) : summary.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-[#DFD1BA] bg-[#FAF6EE]/60 p-6 text-center space-y-1.5">
-          <p className="text-sm font-medium text-[#23181A]">
+        <div className="rounded-xl border border-dashed border-[#DFD1BA] bg-[#FAF6EE]/60 dark:border-[#3A3E4A] dark:bg-[#1B1D23] p-6 text-center space-y-1.5">
+          <p className="text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
             ยังไม่มีข้อมูลทุนการศึกษาที่นักศึกษายืนยันแล้ว
           </p>
-          <p className="text-xs text-[#66585B]">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
             เมื่อนักศึกษาเพิ่มชื่อทุนการศึกษาในรายละเอียดข้อมูลส่วนตัวและกดบันทึกข้อมูล ระบบจะจำแนกประเภททุนและนับจำนวนผู้ได้รับทุนให้อัตโนมัติ
           </p>
         </div>
       ) : filteredSummary.length === 0 ? (
-        <p className="py-6 text-center text-xs sm:text-sm text-[#66585B]">
+        <p className="py-6 text-center text-xs sm:text-sm text-[#66585B] dark:text-[#A19B91]">
           ไม่พบประเภททุนการศึกษาที่ตรงกับคำค้นหา &quot;{searchQuery}&quot;
         </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm border-collapse">
             <thead>
-              <tr className="border-b border-[#E6DAC5] text-xs text-[#66585B]">
+              <tr className="border-b border-[#E6DAC5] dark:border-[#343842] text-xs text-[#66585B] dark:text-[#A19B91]">
                 <th className="py-2.5 pr-3 font-semibold w-12">ลำดับ</th>
                 <th className="py-2.5 pr-3 font-semibold">ประเภททุนการศึกษา</th>
                 <th className="py-2.5 px-3 font-semibold text-right">จำนวนผู้ได้รับทุน</th>
                 <th className="py-2.5 pl-3 font-semibold text-right">รายละเอียด</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EFE5D4]">
+            <tbody className="divide-y divide-[#EFE5D4] dark:divide-[#2E323D]">
               {filteredSummary.map((category, idx) => (
                 <tr
                   key={category.scholarshipKey}
-                  className="hover:bg-[#FAF6EE]/80 transition-colors"
+                  className="hover:bg-[#FAF6EE]/80 dark:hover:bg-[#2B2E37] transition-colors"
                 >
-                  <td className="py-3 pr-3 tabular-nums text-[#66585B]">{idx + 1}</td>
-                  <td className="py-3 pr-3 font-semibold text-[#23181A]">
+                  <td className="py-3 pr-3 tabular-nums text-[#66585B] dark:text-[#A19B91]">
+                    {idx + 1}
+                  </td>
+                  <td className="py-3 pr-3 font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                     <button
                       type="button"
                       onClick={() => setSelectedCategory(category)}
-                      className="text-left text-[#7A1629] hover:underline focus-visible:outline-2 focus-visible:outline-[#7A1629] rounded"
+                      className="text-left text-[#7A1629] dark:text-[#E8C97A] hover:underline focus-visible:outline-2 focus-visible:outline-[#7A1629] dark:focus-visible:outline-[#E8C97A] rounded"
                     >
                       {category.scholarshipName}
                     </button>
                   </td>
-                  <td className="py-3 px-3 text-right font-bold text-[#23181A] tabular-nums whitespace-nowrap">
+                  <td className="py-3 px-3 text-right font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums whitespace-nowrap">
                     {category.recipientCount.toLocaleString()} คน
                   </td>
                   <td className="py-3 pl-3 text-right">
@@ -155,7 +157,7 @@ export function ScholarshipSummarySection({
                       type="button"
                       onClick={() => setSelectedCategory(category)}
                       aria-label={`ดูรายชื่อผู้ได้รับ ${category.scholarshipName}`}
-                      className="inline-flex items-center gap-1 rounded-lg border border-[#C6922C] bg-[#FDF8EC] px-3 py-1.5 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors whitespace-nowrap"
+                      className="inline-flex items-center gap-1 rounded-lg border border-[#C6922C] bg-[#FDF8EC] px-3 py-1.5 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] dark:border-[#8D6B2A] dark:bg-[#2A2316] dark:text-[#E8C97A] dark:hover:bg-[#352C1B] transition-colors whitespace-nowrap"
                     >
                       <span>ดูรายชื่อ</span>
                       <ChevronRight className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -174,26 +176,26 @@ export function ScholarshipSummarySection({
           role="dialog"
           aria-modal="true"
           aria-labelledby="scholarship-recipients-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedCategory(null);
             }
           }}
         >
-          <div className="w-full max-w-2xl rounded-2xl border border-[#DFD1BA] bg-white shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="flex items-start justify-between gap-4 border-b border-[#EFE5D4] bg-[#FAF6EE] px-6 py-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-start justify-between gap-4 border-b border-[#EFE5D4] bg-[#FAF6EE] dark:border-[#343842] dark:bg-[#1B1D23] px-6 py-4">
               <div className="space-y-1 min-w-0">
-                <p className="text-[11px] font-semibold text-[#7A1629]">
+                <p className="text-[11px] font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                   รายชื่อผู้ได้รับทุนการศึกษา
                 </p>
                 <h3
                   id="scholarship-recipients-modal-title"
-                  className="font-display text-lg font-bold text-[#23181A] break-words"
+                  className="font-display text-lg font-bold text-[#23181A] dark:text-[#F2EFEA] break-words"
                 >
                   {selectedCategory.scholarshipName}
                 </h3>
-                <p className="text-xs text-[#66585B] tabular-nums">
+                <p className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
                   จำนวนผู้ได้รับทุนทั้งหมด {selectedCategory.recipientCount.toLocaleString()} คน
                 </p>
               </div>
@@ -201,7 +203,7 @@ export function ScholarshipSummarySection({
                 type="button"
                 onClick={() => setSelectedCategory(null)}
                 aria-label="ปิดหน้าต่างรายชื่อผู้ได้รับทุน"
-                className="rounded-lg border border-[#D8CBB8] bg-white p-1.5 text-[#5A4B4E] hover:bg-[#FAF6EE]"
+                className="rounded-lg border border-[#D8CBB8] bg-white p-1.5 text-[#5A4B4E] hover:bg-[#FAF6EE] dark:border-[#3A3E4A] dark:bg-[#282B33] dark:text-[#CEC8BE] dark:hover:bg-[#323640]"
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -210,7 +212,7 @@ export function ScholarshipSummarySection({
             <div className="overflow-y-auto p-6">
               <table className="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-[#E6DAC5] text-xs text-[#66585B]">
+                  <tr className="border-b border-[#E6DAC5] dark:border-[#343842] text-xs text-[#66585B] dark:text-[#A19B91]">
                     <th className="py-2 pr-2 font-semibold w-10">ที่</th>
                     <th className="py-2 pr-3 font-semibold">รหัสนักศึกษา</th>
                     <th className="py-2 pr-3 font-semibold">ชื่อ-นามสกุล</th>
@@ -224,22 +226,29 @@ export function ScholarshipSummarySection({
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EFE5D4]">
+                <tbody className="divide-y divide-[#EFE5D4] dark:divide-[#2E323D]">
                   {selectedCategory.recipients.map((recipient, idx) => (
-                    <tr key={recipient.studentUserId} className="hover:bg-[#FAF6EE]/70">
-                      <td className="py-2.5 pr-2 tabular-nums text-[#66585B]">{idx + 1}</td>
-                      <td className="py-2.5 pr-3 tabular-nums font-medium text-[#23181A]">
+                    <tr
+                      key={recipient.studentUserId}
+                      className="hover:bg-[#FAF6EE]/70 dark:hover:bg-[#2B2E37]"
+                    >
+                      <td className="py-2.5 pr-2 tabular-nums text-[#66585B] dark:text-[#A19B91]">
+                        {idx + 1}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums font-medium text-[#23181A] dark:text-[#F2EFEA]">
                         {recipient.studentId}
                       </td>
-                      <td className="py-2.5 pr-3 font-semibold text-[#23181A]">
+                      <td className="py-2.5 pr-3 font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                         {recipient.fullName}
                       </td>
-                      <td className="py-2.5 pr-3 text-[#5A4B4E]">{recipient.yearLevel}</td>
-                      <td className="py-2.5 pr-3 tabular-nums text-[#5A4B4E]">
+                      <td className="py-2.5 pr-3 text-[#5A4B4E] dark:text-[#CEC8BE]">
+                        {recipient.yearLevel}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums text-[#5A4B4E] dark:text-[#CEC8BE]">
                         {recipient.academicYear}
                       </td>
                       {selectedCategory.recipients.some((r) => r.provider) && (
-                        <td className="py-2.5 pr-3 text-[#5A4B4E]">
+                        <td className="py-2.5 pr-3 text-[#5A4B4E] dark:text-[#CEC8BE]">
                           {recipient.provider || '-'}
                         </td>
                       )}
@@ -252,7 +261,7 @@ export function ScholarshipSummarySection({
                               setSelectedCategory(null);
                               onSelectRecipientUser(recipient.studentUserId);
                             }}
-                            className="rounded-lg bg-[#7A1629] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#5B0F1D]"
+                            className="rounded-lg bg-[#7A1629] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#5B0F1D] dark:bg-[#C6922C] dark:text-[#1D1416] dark:hover:bg-[#DDA83F]"
                           >
                             ดูโปรไฟล์
                           </button>
@@ -264,11 +273,11 @@ export function ScholarshipSummarySection({
               </table>
             </div>
 
-            <div className="flex justify-end border-t border-[#EFE5D4] bg-[#FAF6EE]/60 px-6 py-3">
+            <div className="flex justify-end border-t border-[#EFE5D4] bg-[#FAF6EE]/60 dark:border-[#343842] dark:bg-[#1B1D23] px-6 py-3">
               <button
                 type="button"
                 onClick={() => setSelectedCategory(null)}
-                className="rounded-xl border border-[#D8CBB8] bg-white px-4 py-2 text-xs font-semibold text-[#23181A] hover:bg-[#FAF6EE]"
+                className="rounded-xl border border-[#D8CBB8] bg-white px-4 py-2 text-xs font-semibold text-[#23181A] hover:bg-[#FAF6EE] dark:border-[#3A3E4A] dark:bg-[#282B33] dark:text-[#F2EFEA] dark:hover:bg-[#323640]"
               >
                 ปิดหน้าต่าง
               </button>

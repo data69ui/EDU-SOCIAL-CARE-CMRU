@@ -6,6 +6,7 @@ import {
   Hash,
   HelpCircle,
   KeyRound,
+  LayoutDashboard,
   LogIn,
   RefreshCw,
   ShieldCheck,
@@ -42,6 +43,7 @@ export function LoginPortal({
   adminInitialized,
   initialRole = 'student',
   initialStudentMode = 'login',
+  onBackToOverview,
   onAuthenticated,
   onAdminInitialized,
 }: LoginPortalProps) {
@@ -305,28 +307,28 @@ export function LoginPortal({
 
   const renderVerificationChallenge = () => (
     <div className="space-y-2">
-      <label htmlFor="login-captcha-input" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+      <label htmlFor="login-captcha-input" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
         รหัสยืนยันตัวตน
       </label>
       <div className="flex items-center gap-3">
         <div
           aria-label={`รหัสยืนยันตัวตน ${captchaCode}`}
-          className="inline-flex min-w-[116px] items-center justify-center rounded-xl border border-[#DFC9A1] bg-gradient-to-br from-[#FBF5E8] via-[#F2E5CB] to-[#EAD7B2] px-4 py-2 font-mono text-lg font-bold tracking-[0.26em] text-[#5B0F1D] italic select-none shadow-2xs tabular-nums"
+          className="inline-flex min-w-[116px] items-center justify-center rounded-xl border border-[#DFC9A1] bg-gradient-to-br from-[#FBF5E8] via-[#F2E5CB] to-[#EAD7B2] dark:border-[#4A4E5D] dark:from-[#282B34] dark:via-[#22252E] dark:to-[#1D2028] px-4 py-2 font-mono text-lg font-bold tracking-[0.26em] text-[#5B0F1D] dark:text-[#E8C97A] italic select-none shadow-2xs tabular-nums"
         >
           {captchaCode}
         </div>
         <button
           type="button"
           onClick={refreshCaptcha}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2D4BC] bg-[#FAF6EE] px-3 py-2 text-xs font-medium text-[#5A4B4E] hover:border-[#C6922C] hover:text-[#7A1629] transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#E2D4BC] bg-[#FAF6EE] px-3 py-2 text-xs font-medium text-[#5A4B4E] hover:border-[#C6922C] hover:text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#282B33] dark:text-[#CEC8BE] dark:hover:border-[#E8C97A] dark:hover:text-[#E8C97A] transition-colors"
           title="สุ่มรหัสยืนยันตัวตนใหม่"
         >
           <RefreshCw className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>ตัวเลข 5 หลัก</span>
         </button>
       </div>
-      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-        <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+        <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
           <Hash className="h-4 w-4" aria-hidden="true" />
         </span>
         <input
@@ -338,17 +340,17 @@ export function LoginPortal({
           value={captchaInput}
           onChange={(e) => setCaptchaInput(e.target.value.replace(/\D/g, '').slice(0, 5))}
           placeholder="ป้อนตัวเลขที่เห็นในภาพ"
-          className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none tabular-nums"
+          className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none tabular-nums"
         />
       </div>
     </div>
   );
 
   return (
-    <main className="relative min-h-[calc(100vh-132px)] flex flex-col items-center justify-center px-4 py-3 sm:py-4 overflow-hidden bg-[radial-gradient(circle_at_15%_12%,rgba(122,22,41,0.10),transparent_40%),radial-gradient(circle_at_85%_18%,rgba(198,146,44,0.14),transparent_42%),radial-gradient(circle_at_50%_92%,rgba(22,163,74,0.06),transparent_45%)]">
+    <main className="relative min-h-[calc(100vh-132px)] flex flex-col items-center justify-center px-4 py-4 sm:py-6 overflow-hidden bg-[radial-gradient(circle_at_15%_12%,rgba(122,22,41,0.10),transparent_40%),radial-gradient(circle_at_85%_18%,rgba(198,146,44,0.14),transparent_42%),radial-gradient(circle_at_50%_92%,rgba(22,163,74,0.06),transparent_45%)] dark:bg-[radial-gradient(circle_at_15%_12%,rgba(122,22,41,0.25),transparent_42%),radial-gradient(circle_at_85%_18%,rgba(198,146,44,0.12),transparent_42%)]">
       {/* Top Brand Lockup */}
       <div className="w-full max-w-[460px] text-center space-y-1.5 mb-3">
-        <div className="inline-flex items-center justify-center rounded-2xl border border-[#DFD1BA] bg-white px-3.5 py-1 shadow-sm">
+        <div className="inline-flex items-center justify-center rounded-2xl border border-[#DFD1BA] dark:border-[#3A3E4A] bg-white px-3.5 py-1 shadow-sm">
           <img
             src="/assets/aistudio/image_7437b452.png"
             alt="ตราสัญลักษณ์สาขาวิชาสังคมศึกษา CMRU"
@@ -357,10 +359,10 @@ export function LoginPortal({
           />
         </div>
         <div className="space-y-0.5">
-          <h1 className="font-display text-lg font-bold tracking-tight text-[#6B1022]">
+          <h1 className="font-display text-lg font-bold tracking-tight text-[#6B1022] dark:text-[#E8C97A]">
             ระบบงานทุนการศึกษา &amp; กยศ.
           </h1>
-          <p className="text-xs text-[#5A4B4E]">
+          <p className="text-xs text-[#5A4B4E] dark:text-[#A19B91]">
             สาขาวิชาสังคมศึกษา คณะครุศาสตร์ มหาวิทยาลัยราชภัฏเชียงใหม่
           </p>
         </div>
@@ -368,7 +370,7 @@ export function LoginPortal({
       </div>
 
       {/* Centered Authentication Card */}
-      <section className="w-full max-w-[460px] rounded-2xl border border-[#DFD1BA] bg-white shadow-xl shadow-[#7A1629]/10 overflow-hidden">
+      <section className="w-full max-w-[460px] rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] shadow-xl shadow-[#7A1629]/10 dark:shadow-black/50 overflow-hidden">
         {/* Colored Card Header Bar */}
         <div
           className={`bg-gradient-to-r ${headerMeta.gradient} border-b-2 border-[#C6922C] px-5 py-3 text-white transition-all duration-300`}
@@ -384,8 +386,8 @@ export function LoginPortal({
         {/* Card Body */}
         <div className="p-5 sm:p-6 space-y-4">
           {!adminInitialized && activeRole !== 'admin' && (
-            <div className="rounded-xl border border-[#C6922C]/70 bg-[#FDF8EC] px-4 py-3 text-xs text-[#5C410A]">
-              <p className="font-display font-semibold text-[#7A1629]">
+            <div className="rounded-xl border border-[#C6922C]/70 bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-4 py-3 text-xs text-[#5C410A] dark:text-[#F2D590]">
+              <p className="font-display font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                 เปิดใช้งานระบบครั้งแรก: กรุณาลงทะเบียนผู้ดูแลระบบก่อน
               </p>
               <p className="mt-0.5 leading-relaxed">
@@ -396,7 +398,7 @@ export function LoginPortal({
                     setActiveRole('admin');
                     setError(null);
                   }}
-                  className="font-semibold underline text-[#7A1629]"
+                  className="font-semibold underline text-[#7A1629] dark:text-[#F5D98E]"
                 >
                   ผู้ดูแลระบบ
                 </button>{' '}
@@ -409,7 +411,7 @@ export function LoginPortal({
           <div
             role="tablist"
             aria-label="ประเภทผู้ใช้งาน"
-            className="grid grid-cols-3 gap-1 rounded-xl border border-[#E8DBC6] bg-[#F4ECE0] p-1"
+            className="grid grid-cols-3 gap-1 rounded-xl border border-[#E8DBC6] bg-[#F4ECE0] dark:border-[#343842] dark:bg-[#181A20] p-1"
           >
             {roleTabs.map((tab) => {
               const Icon = tab.icon;
@@ -427,14 +429,16 @@ export function LoginPortal({
                     refreshCaptcha();
                   }}
                   className={`relative inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
-                    selected ? 'text-white' : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                    selected
+                      ? 'text-white'
+                      : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                   }`}
                 >
                   {selected && (
                     <motion.span
                       layoutId="login-role-pill"
                       transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#7A1629] to-[#961F36] shadow-xs"
+                      className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#7A1629] to-[#961F36] dark:from-[#86192F] dark:to-[#661021] shadow-xs"
                     />
                   )}
                   <Icon className="relative z-10 h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" aria-hidden="true" />
@@ -449,7 +453,7 @@ export function LoginPortal({
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               role="alert"
-              className="rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-xs sm:text-sm text-[#991B1B]"
+              className="rounded-xl border border-[#FCA5A5] bg-[#FEF2F2] px-4 py-3 text-xs sm:text-sm text-[#991B1B] dark:border-[#7F1D1D] dark:bg-[#3A1519] dark:text-[#FCA5A5]"
             >
               {error}
             </motion.div>
@@ -461,11 +465,11 @@ export function LoginPortal({
               {studentMode === 'login' ? (
                 <form onSubmit={handleStudentLogin} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label htmlFor="stu-login-id" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                    <label htmlFor="stu-login-id" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                       ชื่อผู้ใช้งาน (รหัสนักศึกษา) *
                     </label>
-                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                         <GraduationCap className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <input
@@ -478,17 +482,17 @@ export function LoginPortal({
                         value={studentIdInput}
                         onChange={(e) => setStudentIdInput(e.target.value.replace(/\D/g, '').slice(0, 8))}
                         placeholder="กรอกรหัสนักศึกษา 8 หลัก (เช่น 69xxxxxx)"
-                        className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none tabular-nums"
+                        className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none tabular-nums"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="stu-login-password" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                    <label htmlFor="stu-login-password" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                       รหัสผ่าน (Password) *
                     </label>
-                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                         <KeyRound className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <input
@@ -499,19 +503,23 @@ export function LoginPortal({
                         value={studentPasswordInput}
                         onChange={(e) => setStudentPasswordInput(e.target.value)}
                         placeholder="เข้าใช้งานครั้งแรกใช้รหัสนักศึกษา 8 หลัก"
-                        className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                        className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setShowStudentPassword((v) => !v)}
                         aria-label={showStudentPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-                        className="px-3 text-[#7A6B6E] hover:text-[#7A1629]"
+                        className="px-3 text-[#7A6B6E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A]"
                       >
                         {showStudentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                    <p className="text-[11px] text-[#66585B]">
-                      รหัสผ่านเริ่มต้นสำหรับนักศึกษาใหม่คือ <span className="font-semibold text-[#7A1629]">รหัสนักศึกษา 8 หลัก</span> (เช่น 69xxxxxx)
+                    <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">
+                      รหัสผ่านเริ่มต้นสำหรับนักศึกษาใหม่คือ{' '}
+                      <span className="font-semibold text-[#7A1629] dark:text-[#E8C97A]">
+                        รหัสนักศึกษา 8 หลัก
+                      </span>{' '}
+                      (เช่น 69xxxxxx)
                     </p>
                   </div>
 
@@ -536,7 +544,7 @@ export function LoginPortal({
                         }
                         setError(null);
                       }}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#16A34A] bg-white px-4 py-2.5 text-sm font-semibold text-[#15803D] hover:bg-[#ECFDF5] active:scale-[0.99] transition-all"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#16A34A] bg-white px-4 py-2.5 text-sm font-semibold text-[#15803D] hover:bg-[#ECFDF5] dark:border-[#22C55E] dark:bg-[#192820] dark:text-[#4ADE80] dark:hover:bg-[#1F352A] active:scale-[0.99] transition-all"
                     >
                       <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
                       <span>สมัครสมาชิกด้วยรหัสนักศึกษา</span>
@@ -546,7 +554,7 @@ export function LoginPortal({
                       <button
                         type="button"
                         onClick={() => setShowForgotHelp((v) => !v)}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A] hover:underline"
                       >
                         <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
                         <span>ลืมรหัสผ่าน?</span>
@@ -554,7 +562,7 @@ export function LoginPortal({
                     </div>
 
                     {showForgotHelp && (
-                      <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] p-3 text-xs text-[#5C410A] leading-relaxed">
+                      <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] p-3 text-xs text-[#5C410A] dark:text-[#F2D590] leading-relaxed">
                         หากลืมรหัสผ่าน กรุณาติดต่อผู้ดูแลระบบหรืออาจารย์ผู้รับผิดชอบงานทุนการศึกษาเพื่อดำเนินการรีเซ็ตรหัสผ่าน
                         เมื่อรีเซ็ตแล้ว ระบบจะให้ตั้งรหัสผ่านใหม่ทันทีเมื่อเข้าสู่ระบบครั้งถัดไป
                       </div>
@@ -563,18 +571,18 @@ export function LoginPortal({
                 </form>
               ) : (
                 <form onSubmit={handleStudentRegister} className="space-y-3.5">
-                  <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] px-3.5 py-2.5 text-xs text-[#5C410A] leading-relaxed">
+                  <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-3.5 py-2.5 text-xs text-[#5C410A] dark:text-[#F2D590] leading-relaxed">
                     ระบบจะสร้างบัญชีด้วยรหัสนักศึกษา 8 หลัก และกำหนดรหัสผ่านเริ่มต้นอัตโนมัติเป็น{' '}
-                    <span className="font-semibold text-[#7A1629]">รหัสนักศึกษาของคุณ</span>{' '}
+                    <span className="font-semibold text-[#7A1629] dark:text-[#E8C97A]">รหัสนักศึกษาของคุณ</span>{' '}
                     จากนั้นบังคับตั้งรหัสผ่านใหม่ที่ปลอดภัยทันทีเมื่อเข้าสู่ระบบ
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="stu-reg-id" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                    <label htmlFor="stu-reg-id" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                       รหัสนักศึกษา 8 หลัก *
                     </label>
-                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#15803D] focus-within:ring-2 focus-within:ring-[#15803D]/15">
-                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#15803D]">
+                    <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#15803D] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#15803D]/15">
+                      <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#15803D] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#4ADE80]">
                         <GraduationCap className="h-4 w-4" aria-hidden="true" />
                       </span>
                       <input
@@ -586,13 +594,13 @@ export function LoginPortal({
                         value={regStudentId}
                         onChange={(e) => setRegStudentId(e.target.value.replace(/\D/g, '').slice(0, 8))}
                         placeholder="กรอกรหัสนักศึกษา 8 หลัก (เช่น 69xxxxxx)"
-                        className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none tabular-nums"
+                        className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none tabular-nums"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label htmlFor="stu-reg-name" className="block text-xs font-medium text-[#23181A]">
+                    <label htmlFor="stu-reg-name" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                       ชื่อ-นามสกุล (ไม่บังคับ กรอกเพิ่มทีหลังได้)
                     </label>
                     <input
@@ -601,20 +609,20 @@ export function LoginPortal({
                       value={regFullName}
                       onChange={(e) => setRegFullName(e.target.value)}
                       placeholder="เช่น นางสาวกานดา ใจดี"
-                      className="w-full rounded-xl border border-[#D8CBB8] bg-white px-3.5 py-2 text-sm text-[#23181A] focus:border-[#15803D] focus:outline-none"
+                      className="w-full rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] px-3.5 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:border-[#15803D] focus:outline-none"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label htmlFor="stu-reg-year-level" className="block text-xs font-medium text-[#23181A]">
+                      <label htmlFor="stu-reg-year-level" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                         ชั้นปีที่กำลังศึกษา
                       </label>
                       <select
                         id="stu-reg-year-level"
                         value={regYearLevel}
                         onChange={(e) => setRegYearLevel(e.target.value as YearLevel)}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm text-[#23181A] focus:border-[#15803D] focus:outline-none"
+                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] dark:border-[#434856] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] focus:border-[#15803D] focus:outline-none"
                       >
                         {YEAR_LEVELS.map((lvl) => (
                           <option key={lvl} value={lvl}>
@@ -624,14 +632,14 @@ export function LoginPortal({
                       </select>
                     </div>
                     <div className="space-y-1.5">
-                      <label htmlFor="stu-reg-academic-year" className="block text-xs font-medium text-[#23181A]">
+                      <label htmlFor="stu-reg-academic-year" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                         ปีการศึกษา
                       </label>
                       <select
                         id="stu-reg-academic-year"
                         value={regAcademicYear}
                         onChange={(e) => setRegAcademicYear(e.target.value as AcademicYear)}
-                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm text-[#23181A] focus:border-[#15803D] focus:outline-none"
+                        className="w-full rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] dark:border-[#434856] dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] focus:border-[#15803D] focus:outline-none"
                       >
                         {ACADEMIC_YEARS.map((yr) => (
                           <option key={yr} value={yr}>
@@ -660,7 +668,7 @@ export function LoginPortal({
                         setStudentMode('login');
                         setError(null);
                       }}
-                      className="text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] hover:underline"
+                      className="text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A] hover:underline"
                     >
                       มีบัญชีแล้ว? กลับไปเข้าสู่ระบบ
                     </button>
@@ -675,11 +683,11 @@ export function LoginPortal({
             <form onSubmit={handleTeacherSubmit} className="space-y-4">
               {teacherMode === 'register' && (
                 <div className="space-y-1.5">
-                  <label htmlFor="t-fullname" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                  <label htmlFor="t-fullname" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                     ชื่อ-นามสกุลอาจารย์
                   </label>
-                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#15803D] focus-within:ring-2 focus-within:ring-[#15803D]/15">
-                    <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#15803D]">
+                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#15803D] focus-within:ring-2 focus-within:ring-[#15803D]/15">
+                    <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#15803D] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#4ADE80]">
                       <UserCheck className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <input
@@ -688,18 +696,18 @@ export function LoginPortal({
                       value={teacherFullName}
                       onChange={(e) => setTeacherFullName(e.target.value)}
                       placeholder="เช่น อ.ดร.สุภาพร วงศ์ล้านนา"
-                      className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                      className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                     />
                   </div>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label htmlFor="t-user" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                <label htmlFor="t-user" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   ชื่อผู้ใช้งาน (Username)
                 </label>
-                <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                  <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                  <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                     <User className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <input
@@ -709,17 +717,17 @@ export function LoginPortal({
                     value={teacherUsername}
                     onChange={(e) => setTeacherUsername(e.target.value)}
                     placeholder="กรอกชื่อผู้ใช้งาน เช่น ajarn.somchai"
-                    className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="t-pass" className="block text-xs sm:text-sm font-medium text-[#23181A]">
+                <label htmlFor="t-pass" className="block text-xs sm:text-sm font-medium text-[#23181A] dark:text-[#F2EFEA]">
                   รหัสผ่าน (Password)
                 </label>
-                <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                  <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                  <span className="flex w-11 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                     <KeyRound className="h-4 w-4" aria-hidden="true" />
                   </span>
                   <input
@@ -733,13 +741,13 @@ export function LoginPortal({
                         ? 'อย่างน้อย 8 ตัวอักษร (ตัวอักษรและตัวเลข)'
                         : 'กรอกรหัสผ่าน'
                     }
-                    className="w-full bg-white px-3.5 py-2.5 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                    className="w-full bg-white dark:bg-[#1A1C21] px-3.5 py-2.5 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => setShowTeacherPassword((v) => !v)}
                     aria-label={showTeacherPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-                    className="px-3 text-[#7A6B6E] hover:text-[#7A1629]"
+                    className="px-3 text-[#7A6B6E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A]"
                   >
                     {showTeacherPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -779,7 +787,7 @@ export function LoginPortal({
                       setTeacherMode('register');
                       setError(null);
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#16A34A] bg-white px-4 py-2.5 text-sm font-semibold text-[#15803D] hover:bg-[#ECFDF5] transition-all"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[#16A34A] bg-white px-4 py-2.5 text-sm font-semibold text-[#15803D] hover:bg-[#ECFDF5] dark:border-[#22C55E] dark:bg-[#192820] dark:text-[#4ADE80] dark:hover:bg-[#1F352A] transition-all"
                   >
                     <UserPlus className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>สมัครสมาชิก (อาจารย์ประจำสาขา)</span>
@@ -793,7 +801,7 @@ export function LoginPortal({
                         setError(null);
                         refreshCaptcha();
                       }}
-                      className="text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] hover:underline"
+                      className="text-xs font-medium text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A] hover:underline"
                     >
                       มีบัญชีแล้ว? กลับไปเข้าสู่ระบบอาจารย์
                     </button>
@@ -812,8 +820,8 @@ export function LoginPortal({
               <form onSubmit={handleAdminSubmit} className="space-y-3">
                 {!adminInitialized && (
                   <>
-                    <div className="rounded-xl border border-[#C6922C]/70 bg-[#FDF8EC] px-3.5 py-2.5 text-xs text-[#5C410A] space-y-1 leading-relaxed">
-                      <p className="font-display font-bold text-[#7A1629]">
+                    <div className="rounded-xl border border-[#C6922C]/70 bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-3.5 py-2.5 text-xs text-[#5C410A] dark:text-[#F2D590] space-y-1 leading-relaxed">
+                      <p className="font-display font-bold text-[#7A1629] dark:text-[#E8C97A]">
                         ตั้งค่าบัญชีผู้ดูแลระบบหลัก (เข้าใช้งานครั้งแรก)
                       </p>
                       <p>
@@ -822,11 +830,11 @@ export function LoginPortal({
                     </div>
 
                     <div className="space-y-1">
-                      <label htmlFor="adm-name" className="block text-xs font-medium text-[#23181A]">
+                      <label htmlFor="adm-name" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                         ชื่อ-นามสกุลผู้ดูแลระบบ *
                       </label>
-                      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#C6922C] focus-within:ring-2 focus-within:ring-[#C6922C]/20">
-                        <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#A16B14]">
+                      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#C6922C] focus-within:ring-2 focus-within:ring-[#C6922C]/20">
+                        <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#A16B14] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                           <UserCheck className="h-4 w-4" aria-hidden="true" />
                         </span>
                         <input
@@ -836,7 +844,7 @@ export function LoginPortal({
                           value={adminFullName}
                           onChange={(e) => setAdminFullName(e.target.value)}
                           placeholder="เช่น เจ้าหน้าที่งานทุนการศึกษา สาขาสังคมศึกษา"
-                          className="w-full bg-white px-3 py-2 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                          className="w-full bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -844,11 +852,11 @@ export function LoginPortal({
                 )}
 
                 <div className="space-y-1">
-                  <label htmlFor="adm-user" className="block text-xs font-medium text-[#23181A]">
+                  <label htmlFor="adm-user" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                     ชื่อผู้ใช้ผู้ดูแลระบบ (Username) *
                   </label>
-                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                    <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                    <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                       <User className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <input
@@ -859,17 +867,17 @@ export function LoginPortal({
                       value={adminUsername}
                       onChange={(e) => setAdminUsername(e.target.value)}
                       placeholder={!adminInitialized ? 'เช่น admin หรือ admin.social (ภาษาอังกฤษ)' : 'กรอกชื่อผู้ใช้งาน เช่น admin'}
-                      className="w-full bg-white px-3 py-2 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                      className="w-full bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="adm-pass" className="block text-xs font-medium text-[#23181A]">
+                  <label htmlFor="adm-pass" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]">
                     รหัสผ่าน (Password) *
                   </label>
-                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                    <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                  <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                    <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                       <KeyRound className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <input
@@ -884,13 +892,13 @@ export function LoginPortal({
                           ? `อย่างน้อย ${MIN_ADMIN_PASSWORD_LENGTH} ตัวอักษร (ตัวอักษรและตัวเลข)`
                           : 'กรอกรหัสผ่านผู้ดูแลระบบ'
                       }
-                      className="w-full bg-white px-3 py-2 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                      className="w-full bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={() => setShowAdminPassword((v) => !v)}
                       aria-label={showAdminPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-                      className="px-3 text-[#7A6B6E] hover:text-[#7A1629]"
+                      className="px-3 text-[#7A6B6E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A]"
                     >
                       {showAdminPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -902,12 +910,12 @@ export function LoginPortal({
                     <div className="space-y-1">
                       <label
                         htmlFor="adm-pass-confirm"
-                        className="block text-xs font-medium text-[#23181A]"
+                        className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA]"
                       >
                         ยืนยันรหัสผ่าน (Confirm Password) *
                       </label>
-                      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white overflow-hidden transition-all focus-within:border-[#7A1629] focus-within:ring-2 focus-within:ring-[#7A1629]/15">
-                        <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629]">
+                      <div className="flex items-stretch rounded-xl border border-[#D8CBB8] bg-white dark:border-[#434856] dark:bg-[#1A1C21] overflow-hidden transition-all focus-within:border-[#7A1629] dark:focus-within:border-[#E8C97A] focus-within:ring-2 focus-within:ring-[#7A1629]/15 dark:focus-within:ring-[#E8C97A]/20">
+                        <span className="flex w-10 shrink-0 items-center justify-center border-r border-[#E4D9C6] bg-[#FAF6EE] text-[#7A1629] dark:border-[#3A3E4A] dark:bg-[#252830] dark:text-[#E8C97A]">
                           <ShieldCheck className="h-4 w-4" aria-hidden="true" />
                         </span>
                         <input
@@ -918,13 +926,13 @@ export function LoginPortal({
                           value={adminConfirmPassword}
                           onChange={(e) => setAdminConfirmPassword(e.target.value)}
                           placeholder="กรอกรหัสผ่านผู้ดูแลระบบอีกครั้งให้ตรงกัน"
-                          className="w-full bg-white px-3 py-2 text-sm text-[#23181A] placeholder:text-[#9A8B8E] focus:outline-none"
+                          className="w-full bg-white dark:bg-[#1A1C21] px-3 py-2 text-sm text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:outline-none"
                         />
                         <button
                           type="button"
                           onClick={() => setShowAdminConfirmPassword((v) => !v)}
                           aria-label={showAdminConfirmPassword ? 'ซ่อนยืนยันรหัสผ่าน' : 'แสดงยืนยันรหัสผ่าน'}
-                          className="px-3 text-[#7A6B6E] hover:text-[#7A1629]"
+                          className="px-3 text-[#7A6B6E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#E8C97A]"
                         >
                           {showAdminConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -935,20 +943,20 @@ export function LoginPortal({
                       </div>
                     </div>
 
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/80 px-3 py-2 text-[11px]">
-                      <li className={adminPwdCheck.minLength ? 'text-[#15803D] font-medium' : 'text-[#66585B]'}>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/80 dark:border-[#343842] dark:bg-[#181A20] px-3 py-2 text-[11px]">
+                      <li className={adminPwdCheck.minLength ? 'text-[#15803D] dark:text-[#4ADE80] font-medium' : 'text-[#66585B] dark:text-[#A19B91]'}>
                         {adminPwdCheck.minLength ? '✓' : '○'} ยาวอย่างน้อย {MIN_ADMIN_PASSWORD_LENGTH} ตัวอักษร
                       </li>
                       <li
                         className={
                           adminPwdCheck.hasLetter && adminPwdCheck.hasDigit
-                            ? 'text-[#15803D] font-medium'
-                            : 'text-[#66585B]'
+                            ? 'text-[#15803D] dark:text-[#4ADE80] font-medium'
+                            : 'text-[#66585B] dark:text-[#A19B91]'
                         }
                       >
                         {adminPwdCheck.hasLetter && adminPwdCheck.hasDigit ? '✓' : '○'} มีตัวอักษร (A-Z/a-z) และตัวเลข
                       </li>
-                      <li className={`sm:col-span-2 ${adminPwdMatched ? 'text-[#15803D] font-medium' : 'text-[#66585B]'}`}>
+                      <li className={`sm:col-span-2 ${adminPwdMatched ? 'text-[#15803D] dark:text-[#4ADE80] font-medium' : 'text-[#66585B] dark:text-[#A19B91]'}`}>
                         {adminPwdMatched ? '✓' : '○'} ยืนยันรหัสผ่านตรงกัน
                       </li>
                     </ul>
@@ -976,8 +984,8 @@ export function LoginPortal({
           })()}
 
           {showForgotHelp && activeRole !== 'student' && (
-            <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] px-4 py-3 text-xs text-[#5C410A] leading-relaxed">
-              <p className="font-semibold text-[#7A1629]">คำแนะนำการเข้าสู่ระบบเจ้าหน้าที่:</p>
+            <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-4 py-3 text-xs text-[#5C410A] dark:text-[#F2D590] leading-relaxed">
+              <p className="font-semibold text-[#7A1629] dark:text-[#E8C97A]">คำแนะนำการเข้าสู่ระบบเจ้าหน้าที่:</p>
               <p className="mt-1">
                 {activeRole === 'admin'
                   ? !adminInitialized
@@ -990,8 +998,8 @@ export function LoginPortal({
         </div>
 
         {/* Minimal Card Footer */}
-        <div className="border-t border-[#EAE0CE] bg-[#FAF6EE] px-4 py-3">
-          <div className="flex items-center justify-center gap-3 text-xs">
+        <div className="border-t border-[#EAE0CE] bg-[#FAF6EE] dark:border-[#343842] dark:bg-[#1A1C21] px-4 py-3">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs">
             <button
               type="button"
               onClick={() => {
@@ -1006,27 +1014,42 @@ export function LoginPortal({
                 setShowForgotHelp(false);
                 refreshCaptcha();
               }}
-              className="inline-flex items-center gap-1 font-semibold text-[#7A1629] hover:underline"
+              className="inline-flex items-center gap-1 font-semibold text-[#7A1629] dark:text-[#E8C97A] hover:underline"
             >
               <GraduationCap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>{activeRole === 'student' ? 'สำหรับอาจารย์' : 'สำหรับนักศึกษา'}</span>
             </button>
-            <span className="text-[#D4C6B0]" aria-hidden="true">
+            <span className="text-[#D4C6B0] dark:text-[#4A4E5D]" aria-hidden="true">
               |
             </span>
             <button
               type="button"
               onClick={() => setShowForgotHelp((v) => !v)}
-              className="inline-flex items-center gap-1 font-medium text-[#66585B] hover:text-[#23181A] hover:underline"
+              className="inline-flex items-center gap-1 font-medium text-[#66585B] hover:text-[#23181A] dark:text-[#A19B91] dark:hover:text-[#F2EFEA] hover:underline"
             >
               <HelpCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <span>{activeRole === 'admin' && !adminInitialized ? 'วิธีตั้งค่าครั้งแรก?' : 'ลืมรหัสผ่าน?'}</span>
             </button>
+            {onBackToOverview && (
+              <>
+                <span className="text-[#D4C6B0] dark:text-[#4A4E5D]" aria-hidden="true">
+                  |
+                </span>
+                <button
+                  type="button"
+                  onClick={onBackToOverview}
+                  className="inline-flex items-center gap-1 font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline"
+                >
+                  <LayoutDashboard className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>ดูภาพรวมข้อมูลทุน</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
 
-      <p className="mt-5 text-center text-xs text-[#66585B]">
+      <p className="mt-5 text-center text-xs text-[#66585B] dark:text-[#A19B91]">
         © 2569 งานทุนการศึกษา &amp; กยศ. สาขาวิชาสังคมศึกษา มหาวิทยาลัยราชภัฏเชียงใหม่
       </p>
     </main>

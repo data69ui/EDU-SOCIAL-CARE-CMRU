@@ -41,15 +41,15 @@ export function WorkspaceConfirmDialog({
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-md rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4 shadow-xl"
+        className="w-full max-w-md rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 shadow-xl"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div
               className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
                 isDanger
-                  ? 'bg-[#FEE2E2] text-[#B91C1C]'
-                  : 'bg-[#FEF3C7] text-[#B45309]'
+                  ? 'bg-[#FEE2E2] dark:bg-red-950/60 text-[#B91C1C] dark:text-red-300'
+                  : 'bg-[#FEF3C7] dark:bg-amber-950/60 text-[#B45309] dark:text-amber-300'
               }`}
             >
               {isDanger ? (
@@ -59,10 +59,10 @@ export function WorkspaceConfirmDialog({
               )}
             </div>
             <div>
-              <h3 className="font-display text-base font-bold text-[#23181A]">
+              <h3 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                 {request.title}
               </h3>
-              <p className="mt-1 text-sm text-[#5A4B4E] leading-relaxed">
+              <p className="mt-1 text-sm text-[#5A4B4E] dark:text-[#A19B91] leading-relaxed">
                 {request.description}
               </p>
             </div>
@@ -72,17 +72,17 @@ export function WorkspaceConfirmDialog({
             onClick={onCancel}
             disabled={busy}
             aria-label="ปิดหน้าต่างยืนยัน"
-            className="rounded-lg p-1 text-[#66585B] hover:bg-[#FAF6EE] hover:text-[#23181A]"
+            className="rounded-lg p-1 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A] hover:text-[#23181A] dark:hover:text-[#F2EFEA]"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
 
         {request.details && request.details.length > 0 && (
-          <ul className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] px-4 py-3 space-y-1.5 text-xs text-[#4A3B3E]">
+          <ul className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1B1D23] px-4 py-3 space-y-1.5 text-xs text-[#4A3B3E] dark:text-[#D1CBC2]">
             {request.details.map((item, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <span className="text-[#7A1629] font-bold">•</span>
+                <span className="text-[#7A1629] dark:text-[#E8C97A] font-bold">•</span>
                 <span className="break-all">{item}</span>
               </li>
             ))}
@@ -94,7 +94,7 @@ export function WorkspaceConfirmDialog({
             type="button"
             onClick={onCancel}
             disabled={busy}
-            className="rounded-xl border border-[#D8CBB8] bg-white px-4 py-2 text-xs font-semibold text-[#5A4B4E] hover:bg-[#FAF6EE] transition-colors disabled:opacity-60"
+            className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1B1D23] px-4 py-2 text-xs font-semibold text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A] transition-colors disabled:opacity-60"
           >
             {request.cancelLabel || 'ยกเลิก'}
           </button>

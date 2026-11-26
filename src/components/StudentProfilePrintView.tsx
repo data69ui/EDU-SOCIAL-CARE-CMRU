@@ -236,19 +236,19 @@ export function StudentProfilePrintView({
     >
       <style>{`@media print { @page { size: A4 ${orientation}; margin: 10mm; } }`}</style>
 
-      <div className="mx-auto max-w-[1140px] rounded-2xl bg-[#FAF6EE] p-4 sm:p-6 shadow-2xl border border-[#DFD1BA] print:max-w-none print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none space-y-4">
-        <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#DFD1BA] bg-white px-4 py-3.5">
+      <div className="mx-auto max-w-[1140px] rounded-2xl bg-[#FAF6EE] dark:bg-[#16171B] p-4 sm:p-6 shadow-2xl border border-[#DFD1BA] dark:border-[#343842] print:max-w-none print:rounded-none print:border-0 print:bg-white print:p-0 print:shadow-none space-y-4">
+        <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] px-4 py-3.5">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="font-display text-base sm:text-lg font-bold text-[#7A1629]">
+              <h2 className="font-display text-base sm:text-lg font-bold text-[#7A1629] dark:text-[#F3B9C3]">
                 ตัวอย่างหน้าก่อนพิมพ์จริง (Print Preview)
               </h2>
-              <span className="inline-flex items-center gap-1 rounded-md border border-[#E5CFA0] bg-[#FDF8EC] px-2 py-0.5 text-[11px] font-semibold text-[#7A1629]">
+              <span className="inline-flex items-center gap-1 rounded-md border border-[#E5CFA0] dark:border-[#E8C97A]/40 bg-[#FDF8EC] dark:bg-[#2B2518] px-2 py-0.5 text-[11px] font-semibold text-[#7A1629] dark:text-[#F8E7B8]">
                 <FileCheck2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Fit All Columns on One Page
               </span>
             </div>
-            <p className="text-xs text-[#66585B] mt-0.5">
+            <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-0.5">
               ตรวจสอบข้อมูลทั้งหมดบนเอกสารขนาด{' '}
               {orientation === 'landscape'
                 ? 'A4 แนวนอน (297 × 210 มม.)'
@@ -260,7 +260,7 @@ export function StudentProfilePrintView({
             <div
               role="group"
               aria-label="เลือกแนวกระดาษ A4"
-              className="inline-flex rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] p-0.5 text-xs"
+              className="inline-flex rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1B1D23] p-0.5 text-xs"
             >
               <button
                 type="button"
@@ -268,7 +268,7 @@ export function StudentProfilePrintView({
                 className={`rounded-md px-2.5 py-1.5 font-medium transition-colors ${
                   orientation === 'portrait'
                     ? 'bg-[#7A1629] text-white'
-                    : 'text-[#5A4B4E] hover:text-[#23181A]'
+                    : 'text-[#5A4B4E] dark:text-[#D1CBC2] hover:text-[#23181A] dark:hover:text-[#F2EFEA]'
                 }`}
               >
                 A4 แนวตั้ง
@@ -279,7 +279,7 @@ export function StudentProfilePrintView({
                 className={`rounded-md px-2.5 py-1.5 font-medium transition-colors ${
                   orientation === 'landscape'
                     ? 'bg-[#7A1629] text-white'
-                    : 'text-[#5A4B4E] hover:text-[#23181A]'
+                    : 'text-[#5A4B4E] dark:text-[#D1CBC2] hover:text-[#23181A] dark:hover:text-[#F2EFEA]'
                 }`}
               >
                 A4 แนวนอน
@@ -304,7 +304,7 @@ export function StudentProfilePrintView({
               type="button"
               disabled={preparingDirectPrint || downloadingPdf}
               onClick={handleDirectPrint}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#7A1629] bg-white px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#FAF6EE] transition-colors disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg border border-[#7A1629] dark:border-[#E8C97A]/50 bg-white dark:bg-[#1B1D23] px-4 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F8E7B8] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A] transition-colors disabled:opacity-60"
             >
               {preparingDirectPrint ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -318,7 +318,7 @@ export function StudentProfilePrintView({
               type="button"
               onClick={onClose}
               aria-label="ปิดหน้าต่างพิมพ์"
-              className="rounded-lg border border-[#D8CBB8] bg-white p-2 text-[#5A4B4E] hover:bg-[#FAF6EE]"
+              className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1B1D23] p-2 text-[#5A4B4E] dark:text-[#D1CBC2] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
             >
               <X className="h-4 w-4" />
             </button>
@@ -330,8 +330,8 @@ export function StudentProfilePrintView({
             role={pdfFeedback.type === 'error' ? 'alert' : 'status'}
             className={`no-print flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs font-medium ${
               pdfFeedback.type === 'error'
-                ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-                : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+                ? 'border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/50 text-[#991B1B] dark:text-red-300'
+                : 'border-[#86EFAC] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 text-[#166534] dark:text-emerald-300'
             }`}
           >
             {pdfFeedback.type === 'success' && (
@@ -342,7 +342,7 @@ export function StudentProfilePrintView({
         )}
 
         {/* Real A4 Paper Preview Desk */}
-        <div className="a4-preview-desk rounded-xl border border-[#DFD1BA] bg-[#E8DFCE] p-3 sm:p-6 overflow-x-auto print:border-0 print:bg-white print:p-0">
+        <div className="a4-preview-desk rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-[#E8DFCE] dark:bg-[#1A1C22] p-3 sm:p-6 overflow-x-auto print:border-0 print:bg-white print:p-0">
           {/* Official A4 Document Content */}
           <div
             id="student-profile-print-sheet"

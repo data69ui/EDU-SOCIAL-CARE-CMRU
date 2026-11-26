@@ -13,6 +13,7 @@ import {
   isVolunteerModuleUnlocked,
 } from '../utils/scholarshipLogic';
 import { FileUploadField } from './FileUploadField';
+import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 
 interface StudentVolunteerViewProps {
   application: ScholarshipApplicationData | null;
@@ -29,6 +30,7 @@ export function StudentVolunteerView({
   onVolunteerAdded,
   onGoToProgress,
 }: StudentVolunteerViewProps) {
+  const { showSaveSuccess } = useSaveSuccess();
   const unlocked = isVolunteerModuleUnlocked(application);
   const summary = calculateApprovedVolunteerHours(volunteers);
 
@@ -47,14 +49,14 @@ export function StudentVolunteerView({
 
   if (!unlocked) {
     return (
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-8 lg:p-12 text-center space-y-4">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7A1629]/10 text-[#7A1629]">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-8 lg:p-12 text-center space-y-4">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#7A1629]/10 dark:bg-[#7A1629]/30 text-[#7A1629] dark:text-[#F3B9C3]">
           <Lock className="h-8 w-8" aria-hidden="true" />
         </div>
-        <h2 className="font-display text-2xl font-bold text-[#7A1629]">
+        <h2 className="font-display text-2xl font-bold text-[#7A1629] dark:text-[#F3B9C3]">
           5. ระบบจิตอาสาหลังได้รับทุนการศึกษา (ล็อกอยู่)
         </h2>
-        <p className="mx-auto max-w-xl text-sm text-[#66585B] leading-relaxed">
+        <p className="mx-auto max-w-xl text-sm text-[#66585B] dark:text-[#A19B91] leading-relaxed">
           ระบบบันทึกกิจกรรมจิตอาสาจะเปิดให้ใช้งานอัตโนมัติก็ต่อเมื่อใบสมัครทุนการศึกษาของท่านได้รับการอนุมัติเรียบร้อยแล้ว
           กรุณาตรวจสอบสถานะการสมัครทุนที่เมนู &ldquo;ความคืบหน้าการสมัครทุน&rdquo;
         </p>
@@ -117,10 +119,12 @@ export function StudentVolunteerView({
       setActivityDate('');
       setDailyLifeApplication('');
       setPhotos([]);
+      const successMessage = 'บันทึกกิจกรรมจิตอาสาเรียบร้อยแล้ว รออาจารย์ตรวจสอบและอนุมัติชั่วโมงจิตอาสา';
       setFeedback({
         type: 'success',
-        text: 'บันทึกกิจกรรมจิตอาสาเรียบร้อยแล้ว รออาจารย์ตรวจสอบและอนุมัติชั่วโมงจิตอาสา',
+        text: successMessage,
       });
+      showSaveSuccess(successMessage, 'บันทึกกิจกรรมจิตอาสาเสร็จสิ้นแล้ว');
     } catch (err) {
       setFeedback({ type: 'error', text: (err as Error).message });
     } finally {
@@ -130,26 +134,26 @@ export function StudentVolunteerView({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6">
         <div>
-          <h2 className="font-display text-xl font-bold text-[#7A1629]">
+          <h2 className="font-display text-xl font-bold text-[#7A1629] dark:text-[#F3B9C3]">
             5. ระบบบันทึกกิจกรรมจิตอาสาหลังได้รับทุนการศึกษา
           </h2>
-          <p className="text-sm text-[#66585B] mt-1">
+          <p className="text-sm text-[#66585B] dark:text-[#A19B91] mt-1">
             แนบรูปภาพขั้นต่ำ 3 รูป (ขนาดไม่เกิน 10 MB) พร้อมบันทึกสิ่งที่ได้เรียนรู้และชั่วโมงจิตอาสา
           </p>
         </div>
 
-        <div className="flex gap-6 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] px-5 py-3 text-sm tabular-nums">
+        <div className="flex gap-6 rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1B1D23] px-5 py-3 text-sm tabular-nums">
           <div>
-            <p className="text-xs text-[#66585B]">อนุมัติแล้ว</p>
-            <p className="font-display text-lg font-bold text-[#166534]">
+            <p className="text-xs text-[#66585B] dark:text-[#A19B91]">อนุมัติแล้ว</p>
+            <p className="font-display text-lg font-bold text-[#166534] dark:text-emerald-400">
               {summary.approvedHours} ชม.
             </p>
           </div>
           <div>
-            <p className="text-xs text-[#66585B]">รอพิจารณา</p>
-            <p className="font-display text-lg font-bold text-[#92400E]">
+            <p className="text-xs text-[#66585B] dark:text-[#A19B91]">รอพิจารณา</p>
+            <p className="font-display text-lg font-bold text-[#92400E] dark:text-amber-400">
               {summary.pendingHours} ชม.
             </p>
           </div>
@@ -161,8 +165,8 @@ export function StudentVolunteerView({
           role={feedback.type === 'error' ? 'alert' : 'status'}
           className={`rounded-xl border px-4 py-3 text-sm ${
             feedback.type === 'error'
-              ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-              : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+              ? 'border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/50 text-[#991B1B] dark:text-red-300'
+              : 'border-[#86EFAC] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 text-[#166534] dark:text-emerald-300'
           }`}
         >
           {feedback.text}
@@ -171,11 +175,11 @@ export function StudentVolunteerView({
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5"
+        className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
-            <label htmlFor="vol-title" className="block text-xs font-medium text-[#23181A] mb-1">
+            <label htmlFor="vol-title" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               ชื่อกิจกรรมจิตอาสา *
             </label>
             <input
@@ -184,19 +188,19 @@ export function StudentVolunteerView({
               value={activityTitle}
               onChange={(e) => setActivityTitle(e.target.value)}
               placeholder="เช่น ค่ายอาสาพัฒนาการอ่านวิชาสังคมศึกษา"
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label htmlFor="vol-year" className="block text-xs font-medium text-[#23181A] mb-1">
+            <label htmlFor="vol-year" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               ปีการศึกษา
             </label>
             <select
               id="vol-year"
               value={academicYear}
               onChange={(e) => setAcademicYear(e.target.value as AcademicYear)}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               {ACADEMIC_YEARS.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -205,7 +209,7 @@ export function StudentVolunteerView({
           </div>
 
           <div>
-            <label htmlFor="vol-hours" className="block text-xs font-medium text-[#23181A] mb-1">
+            <label htmlFor="vol-hours" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               ทั้งหมดกี่ชั่วโมง *
             </label>
             <input
@@ -215,12 +219,12 @@ export function StudentVolunteerView({
               max="200"
               value={hours}
               onChange={(e) => setHours(e.target.value)}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label htmlFor="vol-date" className="block text-xs font-medium text-[#23181A] mb-1">
+            <label htmlFor="vol-date" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               วันที่ทำจิตอาสา *
             </label>
             <input
@@ -228,13 +232,13 @@ export function StudentVolunteerView({
               type="date"
               value={activityDate}
               onChange={(e) => setActivityDate(e.target.value)}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="vol-detail" className="block text-xs font-medium text-[#23181A] mb-1">
+          <label htmlFor="vol-detail" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
             2. รายละเอียดที่ทำจิตอาสา *
           </label>
           <textarea
@@ -242,12 +246,12 @@ export function StudentVolunteerView({
             rows={3}
             value={activityDetail}
             onChange={(e) => setActivityDetail(e.target.value)}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="vol-learn" className="block text-xs font-medium text-[#23181A] mb-1">
+          <label htmlFor="vol-learn" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
             3. สิ่งที่ได้จากการทำจิตอาสา *
           </label>
           <textarea
@@ -255,12 +259,12 @@ export function StudentVolunteerView({
             rows={2}
             value={learnings}
             onChange={(e) => setLearnings(e.target.value)}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="vol-apply" className="block text-xs font-medium text-[#23181A] mb-1">
+          <label htmlFor="vol-apply" className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
             5. สามารถนำไปประยุกต์ใช้ในชีวิตประจำวันได้อย่างไร *
           </label>
           <textarea
@@ -268,7 +272,7 @@ export function StudentVolunteerView({
             rows={2}
             value={dailyLifeApplication}
             onChange={(e) => setDailyLifeApplication(e.target.value)}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
 
@@ -294,45 +298,45 @@ export function StudentVolunteerView({
       </form>
 
       {/* Submitted Volunteer History */}
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4">
-        <div className="flex items-center gap-2 border-b border-[#EAE0CE] pb-3">
-          <HeartHandshake className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-          <h3 className="font-display text-base font-bold text-[#23181A]">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4">
+        <div className="flex items-center gap-2 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+          <HeartHandshake className="h-5 w-5 text-[#7A1629] dark:text-[#E8C97A]" aria-hidden="true" />
+          <h3 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
             ประวัติกิจกรรมจิตอาสา ({volunteers.length} กิจกรรม)
           </h3>
         </div>
 
         {volunteers.length === 0 ? (
-          <p className="text-sm text-[#66585B] py-4">ยังไม่มีบันทึกกิจกรรมจิตอาสา</p>
+          <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-4">ยังไม่มีบันทึกกิจกรรมจิตอาสา</p>
         ) : (
           <div className="space-y-4">
             {volunteers.map((vol) => (
               <article
                 key={vol.id}
-                className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-4 space-y-2"
+                className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-4 space-y-2"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h4 className="font-display font-semibold text-[#7A1629]">{vol.activityTitle}</h4>
+                  <h4 className="font-display font-semibold text-[#7A1629] dark:text-[#F3B9C3]">{vol.activityTitle}</h4>
                   <div className="flex items-center gap-2 text-xs font-semibold tabular-nums">
                     {vol.approvalStatus === 'approved' ? (
-                      <span className="inline-flex items-center gap-1 text-[#166534]">
+                      <span className="inline-flex items-center gap-1 text-[#166534] dark:text-emerald-400">
                         <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                         อนุมัติแล้ว ({vol.approvedHours} ชั่วโมง)
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[#92400E]">
+                      <span className="inline-flex items-center gap-1 text-[#92400E] dark:text-amber-400">
                         <Clock className="h-4 w-4" aria-hidden="true" />
                         รออาจารย์อนุมัติ ({vol.hours} ชั่วโมง)
                       </span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-[#66585B] tabular-nums">
+                <p className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
                   วันที่ทำกิจกรรม: {vol.activityDate} · ปีการศึกษา {vol.academicYear}
                 </p>
-                <p className="text-sm text-[#23181A]">{vol.activityDetail}</p>
+                <p className="text-sm text-[#23181A] dark:text-[#E6E2DC]">{vol.activityDetail}</p>
                 {vol.advisorNote && (
-                  <p className="text-xs text-[#7A1629] font-medium">
+                  <p className="text-xs text-[#7A1629] dark:text-[#E8C97A] font-medium">
                     ความเห็นอาจารย์: {vol.advisorNote}
                   </p>
                 )}

@@ -13,6 +13,7 @@ import {
   prefillApplicationFromBasicInfo,
 } from '../utils/scholarshipLogic';
 import { FileUploadField } from './FileUploadField';
+import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 
 interface StudentApplicationFormProps {
   studentUserId: string;
@@ -33,62 +34,62 @@ function AddressBlock({
   onChange: (next: StructuredAddress) => void;
 }) {
   return (
-    <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-4 space-y-3">
-      <h4 className="font-display text-sm font-semibold text-[#7A1629]">{title}</h4>
+    <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-4 space-y-3">
+      <h4 className="font-display text-sm font-semibold text-[#7A1629] dark:text-[#F3B9C3]">{title}</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">บ้านเลขที่ / หมู่ที่ **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">บ้านเลขที่ / หมู่ที่ **</label>
           <input
             type="text"
             value={value.houseNo}
             onChange={(e) => onChange({ ...value, houseNo: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">ตรอก / ซอย / ถนน **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ตรอก / ซอย / ถนน **</label>
           <input
             type="text"
             value={value.alleyRoad}
             onChange={(e) => onChange({ ...value, alleyRoad: e.target.value })}
             placeholder="- หากไม่มี"
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">ตำบล / แขวง **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ตำบล / แขวง **</label>
           <input
             type="text"
             value={value.subDistrict}
             onChange={(e) => onChange({ ...value, subDistrict: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">อำเภอ / เขต **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">อำเภอ / เขต **</label>
           <input
             type="text"
             value={value.district}
             onChange={(e) => onChange({ ...value, district: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">จังหวัด **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">จังหวัด **</label>
           <input
             type="text"
             value={value.province}
             onChange={(e) => onChange({ ...value, province: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-[#23181A] mb-1">รหัสไปรษณีย์ **</label>
+          <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">รหัสไปรษณีย์ **</label>
           <input
             type="text"
             value={value.postalCode}
             onChange={(e) => onChange({ ...value, postalCode: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
           />
         </div>
       </div>
@@ -119,6 +120,7 @@ export function StudentApplicationForm({
     }
   }, [form]);
 
+  const { showSaveSuccess } = useSaveSuccess();
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null
@@ -159,12 +161,17 @@ export function StudentApplicationForm({
       setFormState(res.application);
       onDraftChange?.(null);
       onSaved(res.application);
+      const successMessage = submitNow
+        ? 'บันทึกและยื่นสมัครทุนการศึกษาเรียบร้อยแล้ว ข้อมูลถูกส่งไปยังอาจารย์และผู้ดูแลระบบ'
+        : 'บันทึกฉบับร่างใบสมัครทุนการศึกษาเรียบร้อยแล้ว';
       setFeedback({
         type: 'success',
-        text: submitNow
-          ? 'บันทึกและยื่นสมัครทุนการศึกษาเรียบร้อยแล้ว ข้อมูลถูกส่งไปยังอาจารย์และผู้ดูแลระบบ'
-          : 'บันทึกฉบับร่างใบสมัครทุนการศึกษาเรียบร้อยแล้ว',
+        text: successMessage,
       });
+      showSaveSuccess(
+        successMessage,
+        submitNow ? 'ส่งใบสมัครทุนการศึกษาเสร็จสิ้นแล้ว' : 'บันทึกฉบับร่างเสร็จสิ้นแล้ว'
+      );
     } catch (err) {
       setFeedback({ type: 'error', text: (err as Error).message });
     } finally {
@@ -174,13 +181,13 @@ export function StudentApplicationForm({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6">
         <div>
-          <h2 className="font-display text-xl font-bold text-[#7A1629]">
+          <h2 className="font-display text-xl font-bold text-[#7A1629] dark:text-[#F3B9C3]">
             2. บันทึกข้อมูลสมัครทุนการศึกษา
           </h2>
-          <p className="text-sm text-[#66585B]">
-            สถานะปัจจุบัน: <strong className="text-[#7A1629]">{statusMeta.label}</strong> ·
+          <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
+            สถานะปัจจุบัน: <strong className="text-[#7A1629] dark:text-[#E8C97A]">{statusMeta.label}</strong> ·
             จำเป็นทุกช่อง กรณีที่ไม่มีข้อมูลให้ขีด -
           </p>
         </div>
@@ -188,7 +195,7 @@ export function StudentApplicationForm({
         <button
           type="button"
           onClick={handleSyncFromBasicInfo}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB]"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#C6922C] dark:border-[#E8C97A]/50 bg-[#FDF8EC] dark:bg-[#2B2518] px-4 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F8E7B8] hover:bg-[#F7EBCB] dark:hover:bg-[#38301E]"
         >
           <RefreshCw className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>ดึงข้อมูลจากข้อมูลพื้นฐาน</span>
@@ -200,8 +207,8 @@ export function StudentApplicationForm({
           role={feedback.type === 'error' ? 'alert' : 'status'}
           className={`rounded-xl border px-4 py-3 text-sm ${
             feedback.type === 'error'
-              ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-              : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+              ? 'border-[#FCA5A5] dark:border-red-900/70 bg-[#FEF2F2] dark:bg-red-950/50 text-[#991B1B] dark:text-red-300'
+              : 'border-[#86EFAC] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 text-[#166534] dark:text-emerald-300'
           }`}
         >
           {feedback.text}
@@ -209,20 +216,20 @@ export function StudentApplicationForm({
       )}
 
       {/* Part 1 */}
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-        <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+        <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
           ส่วนที่ 1 ข้อมูลส่วนตัวของผู้สมัคร
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ปีการศึกษาที่ขอรับทุน</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ปีการศึกษาที่ขอรับทุน</label>
             <select
               value={form.academicYear}
               onChange={(e) =>
                 setForm({ ...form, academicYear: e.target.value as ScholarshipApplicationData['academicYear'] })
               }
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               {ACADEMIC_YEARS.map((y) => (
                 <option key={y} value={y}>{y}</option>
@@ -231,13 +238,13 @@ export function StudentApplicationForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ชั้นปี</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ชั้นปี</label>
             <select
               value={form.yearLevel}
               onChange={(e) =>
                 setForm({ ...form, yearLevel: e.target.value as ScholarshipApplicationData['yearLevel'] })
               }
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               {YEAR_LEVELS.map((l) => (
                 <option key={l} value={l}>{l}</option>
@@ -246,109 +253,109 @@ export function StudentApplicationForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">รหัสประจำตัวนักศึกษา **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">รหัสประจำตัวนักศึกษา **</label>
             <input
               type="text"
               value={form.studentId}
               onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ชื่อ – นามสกุล **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ชื่อ – นามสกุล **</label>
             <input
               type="text"
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ชั้นปี / หมู่เรียน **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ชั้นปี / หมู่เรียน **</label>
             <input
               type="text"
               value={form.yearAndSection}
               onChange={(e) => setForm({ ...form, yearAndSection: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ผลการเรียนเฉลี่ยสะสม (GPAX) **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ผลการเรียนเฉลี่ยสะสม (GPAX) **</label>
             <input
               type="text"
               value={form.gpax}
               onChange={(e) => setForm({ ...form, gpax: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">วัน / เดือน / ปีเกิด **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">วัน / เดือน / ปีเกิด **</label>
             <input
               type="date"
               value={form.birthDate}
               onChange={(e) => setForm({ ...form, birthDate: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">อายุ **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">อายุ **</label>
             <input
               type="text"
               value={form.age}
               onChange={(e) => setForm({ ...form, age: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">สัญชาติ **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">สัญชาติ **</label>
             <input
               type="text"
               value={form.nationality}
               onChange={(e) => setForm({ ...form, nationality: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">เชื้อชาติ **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">เชื้อชาติ **</label>
             <input
               type="text"
               value={form.ethnicity}
               onChange={(e) => setForm({ ...form, ethnicity: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ศาสนา **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ศาสนา **</label>
             <input
               type="text"
               value={form.religion}
               onChange={(e) => setForm({ ...form, religion: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">เบอร์โทรศัพท์ติดต่อ **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">เบอร์โทรศัพท์ติดต่อ **</label>
             <input
               type="text"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs font-medium text-[#23181A] mb-1">Facebook **</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">Facebook **</label>
             <input
               type="text"
               value={form.facebook}
               onChange={(e) => setForm({ ...form, facebook: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -366,20 +373,20 @@ export function StudentApplicationForm({
         />
 
         {/* 1.5 Financial & 1.6 Health & 1.7 Income */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#EAE0CE]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#EAE0CE] dark:border-[#343842]">
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               1.5 ข้าพเจ้าได้รับการอุปการะด้านการเงินจาก **
             </label>
             <input
               type="text"
               value={form.financialSponsorName}
               onChange={(e) => setForm({ ...form, financialSponsorName: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">มีความสัมพันธ์โดยเป็น</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">มีความสัมพันธ์โดยเป็น</label>
             <select
               value={form.financialSponsorRelation}
               onChange={(e) =>
@@ -388,7 +395,7 @@ export function StudentApplicationForm({
                   financialSponsorRelation: e.target.value as ScholarshipApplicationData['financialSponsorRelation'],
                 })
               }
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               <option value="บิดา">บิดา</option>
               <option value="มารดา">มารดา</option>
@@ -401,24 +408,24 @@ export function StudentApplicationForm({
                 value={form.financialSponsorRelationOther}
                 onChange={(e) => setForm({ ...form, financialSponsorRelationOther: e.target.value })}
                 placeholder="โปรดระบุความสัมพันธ์"
-                className="mt-2 w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">ค่าใช้จ่ายที่ได้รับต่อเดือน (บาท)</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">ค่าใช้จ่ายที่ได้รับต่อเดือน (บาท)</label>
             <input
               type="text"
               value={form.monthlyExpenses}
               onChange={(e) => setForm({ ...form, monthlyExpenses: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#EAE0CE]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[#EAE0CE] dark:border-[#343842] text-[#23181A] dark:text-[#F2EFEA]">
           <div className="space-y-1.5">
-            <span className="block text-xs font-semibold text-[#23181A]">1.6 โรคประจำตัว</span>
+            <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">1.6 โรคประจำตัว</span>
             <div className="flex gap-4 text-sm">
               {(['ไม่มี', 'มี'] as const).map((opt) => (
                 <label key={opt} className="inline-flex items-center gap-1.5">
@@ -437,13 +444,13 @@ export function StudentApplicationForm({
                 value={form.chronicDiseaseDetail}
                 onChange={(e) => setForm({ ...form, chronicDiseaseDetail: e.target.value })}
                 placeholder="โปรดระบุโรคประจำตัว"
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
             )}
           </div>
 
           <div className="space-y-1.5">
-            <span className="block text-xs font-semibold text-[#23181A]">1.7 การกู้ยืมเงิน กยศ.</span>
+            <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">1.7 การกู้ยืมเงิน กยศ.</span>
             <div className="flex gap-4 text-sm">
               {(['กู้ กยศ.', 'ไม่กู้ กยศ.'] as const).map((opt) => (
                 <label key={opt} className="inline-flex items-center gap-1.5">
@@ -459,7 +466,7 @@ export function StudentApplicationForm({
           </div>
 
           <div className="space-y-1.5">
-            <span className="block text-xs font-semibold text-[#23181A]">การได้รับทุนการศึกษาอื่น</span>
+            <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">การได้รับทุนการศึกษาอื่น</span>
             <div className="flex gap-4 text-sm">
               {(['ไม่ได้รับ', 'ได้รับ'] as const).map((opt) => (
                 <label key={opt} className="inline-flex items-center gap-1.5">
@@ -478,13 +485,13 @@ export function StudentApplicationForm({
                 value={form.otherScholarshipNameAmount}
                 onChange={(e) => setForm({ ...form, otherScholarshipNameAmount: e.target.value })}
                 placeholder="ระบุชื่อทุนและจำนวนเงิน"
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
             )}
           </div>
 
           <div className="space-y-1.5">
-            <span className="block text-xs font-semibold text-[#23181A]">การทำงานหารายได้เสริม</span>
+            <span className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">การทำงานหารายได้เสริม</span>
             <div className="flex gap-4 text-sm">
               {(['ไม่ได้ทำงาน', 'ทำงาน'] as const).map((opt) => (
                 <label key={opt} className="inline-flex items-center gap-1.5">
@@ -503,7 +510,7 @@ export function StudentApplicationForm({
                 value={form.partTimeJobDetailIncome}
                 onChange={(e) => setForm({ ...form, partTimeJobDetailIncome: e.target.value })}
                 placeholder="ระบุลักษณะงานและรายได้ที่ได้รับ"
-                className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
             )}
           </div>
@@ -511,26 +518,26 @@ export function StudentApplicationForm({
       </section>
 
       {/* Part 2: Family */}
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-        <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+        <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
           ส่วนที่ 2 ข้อมูลครอบครัวและผู้ปกครอง
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-4 space-y-2.5">
-            <h4 className="font-display text-sm font-semibold text-[#7A1629]">2.1 ข้อมูลบิดา</h4>
+          <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-4 space-y-2.5">
+            <h4 className="font-display text-sm font-semibold text-[#7A1629] dark:text-[#F3B9C3]">2.1 ข้อมูลบิดา</h4>
             <input
               type="text"
               placeholder="ชื่อ – นามสกุล"
               value={form.father.fullName}
               onChange={(e) => setForm({ ...form, father: { ...form.father, fullName: e.target.value } })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
             />
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={form.father.status}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, status: e.target.value as 'ยังมีชีวิตอยู่' | 'ถึงแก่กรรม' | '' } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
               >
                 <option value="">สถานภาพ</option>
                 <option value="ยังมีชีวิตอยู่">ยังมีชีวิตอยู่</option>
@@ -541,53 +548,53 @@ export function StudentApplicationForm({
                 placeholder="อายุ"
                 value={form.father.age}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, age: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
               <input
                 type="text"
                 placeholder="อาชีพ"
                 value={form.father.occupation}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, occupation: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
               <input
                 type="text"
                 placeholder="สถานที่ทำงาน"
                 value={form.father.workplace}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, workplace: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
               <input
                 type="text"
                 placeholder="รายได้ต่อเดือน"
                 value={form.father.monthlyIncome}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, monthlyIncome: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
               <input
                 type="text"
                 placeholder="เบอร์โทรศัพท์"
                 value={form.father.phone}
                 onChange={(e) => setForm({ ...form, father: { ...form.father, phone: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 p-4 space-y-2.5">
-            <h4 className="font-display text-sm font-semibold text-[#7A1629]">2.2 ข้อมูลมารดา</h4>
+          <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE]/60 dark:bg-[#1B1D23] p-4 space-y-2.5">
+            <h4 className="font-display text-sm font-semibold text-[#7A1629] dark:text-[#F3B9C3]">2.2 ข้อมูลมารดา</h4>
             <input
               type="text"
               placeholder="ชื่อ – นามสกุล"
               value={form.mother.fullName}
               onChange={(e) => setForm({ ...form, mother: { ...form.mother, fullName: e.target.value } })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
             />
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={form.mother.status}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, status: e.target.value as 'ยังมีชีวิตอยู่' | 'ถึงแก่กรรม' | '' } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
               >
                 <option value="">สถานภาพ</option>
                 <option value="ยังมีชีวิตอยู่">ยังมีชีวิตอยู่</option>
@@ -598,35 +605,35 @@ export function StudentApplicationForm({
                 placeholder="อายุ"
                 value={form.mother.age}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, age: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
               <input
                 type="text"
                 placeholder="อาชีพ"
                 value={form.mother.occupation}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, occupation: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
               <input
                 type="text"
                 placeholder="สถานที่ทำงาน"
                 value={form.mother.workplace}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, workplace: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
               <input
                 type="text"
                 placeholder="รายได้ต่อเดือน"
                 value={form.mother.monthlyIncome}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, monthlyIncome: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
               <input
                 type="text"
                 placeholder="เบอร์โทรศัพท์"
                 value={form.mother.phone}
                 onChange={(e) => setForm({ ...form, mother: { ...form.mother, phone: e.target.value } })}
-                className="rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm tabular-nums"
+                className="rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm tabular-nums"
               />
             </div>
           </div>
@@ -634,7 +641,7 @@ export function StudentApplicationForm({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">2.3 สถานภาพสมรสของบิดาและมารดา</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">2.3 สถานภาพสมรสของบิดาและมารดา</label>
             <select
               value={form.parentsMaritalStatus}
               onChange={(e) =>
@@ -643,7 +650,7 @@ export function StudentApplicationForm({
                   parentsMaritalStatus: e.target.value as ScholarshipApplicationData['parentsMaritalStatus'],
                 })
               }
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               <option value="อยู่ด้วยกัน">อยู่ด้วยกัน</option>
               <option value="แยกกันอยู่ตามอาชีพ">แยกกันอยู่ตามอาชีพ</option>
@@ -656,23 +663,23 @@ export function StudentApplicationForm({
                 value={form.parentsMaritalStatusOther}
                 onChange={(e) => setForm({ ...form, parentsMaritalStatusOther: e.target.value })}
                 placeholder="โปรดระบุ"
-                className="mt-2 w-full rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-sm"
+                className="mt-2 w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] px-3 py-2 text-sm"
               />
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">จำนวนสมาชิกในครัวเรือน (ไม่รวมผู้สมัคร)</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">จำนวนสมาชิกในครัวเรือน (ไม่รวมผู้สมัคร)</label>
             <input
               type="text"
               value={form.householdMembersCount}
               onChange={(e) => setForm({ ...form, householdMembersCount: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm tabular-nums"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm tabular-nums"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#23181A] mb-1">สถานะการอยู่อาศัย</label>
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">สถานะการอยู่อาศัย</label>
             <select
               value={form.housingStatus}
               onChange={(e) =>
@@ -681,7 +688,7 @@ export function StudentApplicationForm({
                   housingStatus: e.target.value as ScholarshipApplicationData['housingStatus'],
                 })
               }
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             >
               <option value="บ้านของตนเอง">บ้านของตนเอง</option>
               <option value="บ้านเช่า">บ้านเช่า</option>
@@ -690,71 +697,71 @@ export function StudentApplicationForm({
           </div>
 
           <div className="md:col-span-3">
-            <label className="block text-xs font-medium text-[#23181A] mb-1">
+            <label className="block text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] mb-1">
               ปัจจุบันนักศึกษาพักอาศัยอยู่กับใคร
             </label>
             <input
               type="text"
               value={form.currentlyLivingWith}
               onChange={(e) => setForm({ ...form, currentlyLivingWith: e.target.value })}
-              className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
             />
           </div>
         </div>
       </section>
 
       {/* Part 3: Problems & Necessity */}
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-4">
-        <h3 className="font-display text-base font-bold text-[#7A1629] border-b border-[#EAE0CE] pb-3">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4">
+        <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3] border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
           ส่วนที่ 3 ข้อมูลปัญหาและความจำเป็นในการขอรับทุนการศึกษา
         </h3>
         <div>
-          <label className="block text-xs font-semibold text-[#23181A] mb-1">
+          <label className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] mb-1">
             3.1 สภาพปัญหาและความจำเป็นทางการเงิน *
           </label>
-          <p className="text-xs text-[#66585B] mb-1.5">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91] mb-1.5">
             อธิบายสภาพความเป็นอยู่ของครอบครัว ภาระค่าใช้จ่าย รายได้ของผู้ปกครอง ภาระหนี้สิน (ถ้ามี) และปัญหาที่ส่งผลต่อการศึกษา
           </p>
           <textarea
             rows={3}
             value={form.financialProblemDetail}
             onChange={(e) => setForm({ ...form, financialProblemDetail: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-[#23181A] mb-1">
+          <label className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] mb-1">
             3.2 เหตุผลและความจำเป็นในการขอรับทุนการศึกษา *
           </label>
           <textarea
             rows={3}
             value={form.scholarshipNecessityDetail}
             onChange={(e) => setForm({ ...form, scholarshipNecessityDetail: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-[#23181A] mb-1">
+          <label className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] mb-1">
             3.3 ประโยชน์ที่คาดว่าจะได้รับจากทุนการศึกษา *
           </label>
           <textarea
             rows={3}
             value={form.expectedBenefitDetail}
             onChange={(e) => setForm({ ...form, expectedBenefitDetail: e.target.value })}
-            className="w-full rounded-lg border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] text-[#23181A] dark:text-[#F2EFEA] px-3 py-2 text-sm"
           />
         </div>
       </section>
 
       {/* Part 4: House Photos */}
-      <section className="rounded-2xl border border-[#D8C6A6] bg-white p-6 space-y-5">
-        <div className="border-b border-[#EAE0CE] pb-3">
-          <h3 className="font-display text-base font-bold text-[#7A1629]">
+      <section className="rounded-2xl border border-[#D8C6A6] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-5">
+        <div className="border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
+          <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#F3B9C3]">
             ส่วนที่ 4 ภาพถ่ายประกอบการสมัครขอรับทุนการศึกษา
           </h3>
-          <p className="text-xs text-[#66585B] mt-1">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1">
             ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีเอกสาร
             สามารถบันทึกข้อมูลไว้ก่อนและแนบเอกสารภายหลังได้
           </p>
@@ -806,7 +813,7 @@ export function StudentApplicationForm({
           type="button"
           disabled={saving}
           onClick={() => handleSave(false)}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#D8CBB8] bg-white px-5 py-2.5 text-sm font-medium text-[#23181A] hover:bg-[#FAF6EE]"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#22242B] px-5 py-2.5 text-sm font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#FAF6EE] dark:hover:bg-[#2B2F3A]"
         >
           <Save className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>บันทึกฉบับร่าง</span>

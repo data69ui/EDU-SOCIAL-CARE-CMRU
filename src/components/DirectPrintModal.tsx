@@ -85,17 +85,17 @@ export function DirectPrintModal({
       aria-label={`หน้าจอสั่งพิมพ์เอกสารจริง ${filename}`}
       className="no-print fixed inset-0 z-[70] flex flex-col bg-[#1F1719]/92 backdrop-blur-xs"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D8CBB8] bg-white px-4 py-3 sm:px-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#D8CBB8] dark:border-[#343842] bg-white dark:bg-[#22242B] px-4 py-3 sm:px-6 shadow-sm">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-display text-sm sm:text-base font-bold text-[#7A1629] truncate">
+            <h2 className="font-display text-sm sm:text-base font-bold text-[#7A1629] dark:text-[#F4D98A] truncate">
               หน้าจอสั่งพิมพ์เอกสารจริง (Direct Print Screen)
             </h2>
-            <span className="inline-flex items-center rounded-md border border-[#E5CFA0] bg-[#FDF8EC] px-2 py-0.5 text-[11px] font-semibold text-[#7A1629] tabular-nums">
+            <span className="inline-flex items-center rounded-md border border-[#E5CFA0] dark:border-[#6A5220] bg-[#FDF8EC] dark:bg-[#2D2414] px-2 py-0.5 text-[11px] font-semibold text-[#7A1629] dark:text-[#F4D98A] tabular-nums">
               {orientation === 'landscape' ? 'A4 แนวนอน' : 'A4 แนวตั้ง'} · {pageCount} หน้า
             </span>
           </div>
-          <p className="text-xs text-[#66585B] truncate mt-0.5">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91] truncate mt-0.5">
             พร้อมสั่งพิมพ์ไฟล์: {filename}
           </p>
         </div>
@@ -114,7 +114,7 @@ export function DirectPrintModal({
           <button
             type="button"
             onClick={handlePrintPdfFrame}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#7A1629] bg-[#FDF8EC] px-3.5 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7ECD1] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#7A1629] dark:border-[#C6922C]/70 bg-[#FDF8EC] dark:bg-[#2D2414] px-3.5 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#F7ECD1] dark:hover:bg-[#3A2E19] transition-colors"
           >
             <Printer className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>สั่งพิมพ์จากหน้านี้</span>
@@ -123,7 +123,7 @@ export function DirectPrintModal({
           <a
             href={blobUrl}
             download={filename}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8CBB8] bg-white px-3.5 py-2 text-xs font-medium text-[#23181A] hover:bg-[#FAF6EE] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3.5 py-2 text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors"
           >
             <Download className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>ดาวน์โหลด PDF</span>
@@ -133,7 +133,7 @@ export function DirectPrintModal({
             type="button"
             onClick={onClose}
             aria-label="ปิดหน้าจอสั่งพิมพ์จริง"
-            className="inline-flex items-center gap-1 rounded-lg border border-[#D8CBB8] bg-white px-3 py-2 text-xs font-medium text-[#5A4B4E] hover:bg-[#FAF6EE] transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-xs font-medium text-[#5A4B4E] dark:text-[#C8C2B8] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors"
           >
             <X className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>ปิด</span>
@@ -144,14 +144,14 @@ export function DirectPrintModal({
       {printHint && (
         <div
           role="status"
-          className="border-b border-[#E5CFA0] bg-[#FDF8EC] px-4 py-2 text-xs text-[#7A1629] sm:px-6"
+          className="border-b border-[#E5CFA0] dark:border-[#6A5220] bg-[#FDF8EC] dark:bg-[#2D2414] px-4 py-2 text-xs text-[#7A1629] dark:text-[#F4D98A] sm:px-6"
         >
           {printHint}
         </div>
       )}
 
       {/* Printable A4 Sheet Stack Preview (always visible across all browsers/iframes) */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-[#4B4E52] p-4 sm:p-8">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-[#4B4E52] dark:bg-[#141519] p-4 sm:p-8">
         {pageImages.length > 0 ? (
           <div className="mx-auto space-y-6">
             {pageImages.map((src, index) => (

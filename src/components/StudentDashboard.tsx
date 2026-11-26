@@ -177,14 +177,14 @@ export function StudentDashboard({
       title: 'สถานะการสมัครทุน',
       value: statusMeta.label,
       meta: `ความพร้อม ${completedCount}/4 ขั้นตอน (${progressPct}%)`,
-      iconBg: 'bg-[#F8ECED] text-[#7A1629]',
+      iconBg: 'bg-[#F8ECED] text-[#7A1629] dark:bg-[#3A1B23] dark:text-[#F493A4]',
       icon: ClipboardCheck,
     },
     {
       title: 'เกรดเฉลี่ยสะสม (GPAX)',
       value: basicInfo.gpax || '-',
       meta: `${basicInfo.yearLevel} · กยศ.: ${basicInfo.hasStudentLoan || 'ไม่กู้'}`,
-      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8]',
+      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#172845] dark:text-[#60A5FA]',
       icon: GraduationCap,
     },
     {
@@ -194,7 +194,7 @@ export function StudentDashboard({
         grades.length > 0
           ? `ล่าสุด GPA ${grades[grades.length - 1]?.gpa || '-'}`
           : 'ยังไม่พบบันทึกผลการเรียน',
-      iconBg: 'bg-[#FFFBEB] text-[#B45309]',
+      iconBg: 'bg-[#FFFBEB] text-[#B45309] dark:bg-[#362811] dark:text-[#FBBF24]',
       icon: FileSpreadsheet,
     },
     {
@@ -203,7 +203,7 @@ export function StudentDashboard({
       meta: volunteerUnlocked
         ? `รออนุมัติ ${volSummary.pendingHours} ชม.`
         : 'เปิดใช้งานหลังได้รับอนุมัติทุน',
-      iconBg: 'bg-[#ECFDF5] text-[#15803D]',
+      iconBg: 'bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]',
       icon: HeartHandshake,
     },
   ];
@@ -213,42 +213,42 @@ export function StudentDashboard({
       key: 'basic' as const,
       label: 'ข้อมูลพื้นฐาน & PDPA',
       icon: UserCheck,
-      iconColor: 'bg-[#EFF6FF] text-[#1D4ED8]',
+      iconColor: 'bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#172845] dark:text-[#60A5FA]',
       onClick: () => onSelectSection('basic'),
     },
     {
       key: 'application' as const,
       label: 'ยื่นใบสมัครทุน',
       icon: FileSpreadsheet,
-      iconColor: 'bg-[#F8ECED] text-[#7A1629]',
+      iconColor: 'bg-[#F8ECED] text-[#7A1629] dark:bg-[#3A1B23] dark:text-[#F493A4]',
       onClick: () => onSelectSection('application'),
     },
     {
       key: 'grades' as const,
       label: 'บันทึกผลการเรียน',
       icon: GraduationCap,
-      iconColor: 'bg-[#FFFBEB] text-[#B45309]',
+      iconColor: 'bg-[#FFFBEB] text-[#B45309] dark:bg-[#362811] dark:text-[#FBBF24]',
       onClick: () => onSelectSection('grades'),
     },
     {
       key: 'progress' as const,
       label: 'ความคืบหน้าทุน',
       icon: TrendingUp,
-      iconColor: 'bg-[#ECFDF5] text-[#15803D]',
+      iconColor: 'bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]',
       onClick: () => onSelectSection('progress'),
     },
     {
       key: 'volunteer' as const,
       label: 'ระบบจิตอาสา',
       icon: volunteerUnlocked ? Unlock : Lock,
-      iconColor: 'bg-[#F5F3FF] text-[#6D28D9]',
+      iconColor: 'bg-[#F5F3FF] text-[#6D28D9] dark:bg-[#281F44] dark:text-[#C4B5FD]',
       onClick: () => onSelectSection('volunteer'),
     },
     {
       key: 'print-pdf' as const,
       label: 'พิมพ์ PDF โปรไฟล์',
       icon: Printer,
-      iconColor: 'bg-[#FDF6E4] text-[#9A6E14]',
+      iconColor: 'bg-[#FDF6E4] text-[#9A6E14] dark:bg-[#332714] dark:text-[#E8C97A]',
       onClick: () => setShowPrintModal(true),
     },
   ];
@@ -271,13 +271,13 @@ export function StudentDashboard({
       onSetMobileMenuOpen={setMobileMenuOpen}
       topRightSlot={
         <div className="flex items-center gap-2">
-          <span className="hidden sm:inline-flex items-center rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] px-3 py-1.5 text-xs font-medium text-[#5A4B4E] tabular-nums">
+          <span className="hidden sm:inline-flex items-center rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] dark:border-[#3A3E4A] dark:bg-[#282B33] px-3 py-1.5 text-xs font-medium text-[#5A4B4E] dark:text-[#CEC8BE] tabular-nums">
             ปีการศึกษา {basicInfo.academicYear} · {basicInfo.yearLevel}
           </span>
           <button
             type="button"
             onClick={() => setShowPrintModal(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#7A1629] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#5B0F1D] transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#7A1629] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#5B0F1D] dark:bg-[#C6922C] dark:text-[#1D1416] dark:hover:bg-[#DDA83F] transition-colors whitespace-nowrap"
           >
             <Printer className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>พิมพ์โปรไฟล์ PDF</span>
@@ -288,7 +288,7 @@ export function StudentDashboard({
       {statusBanner && (
         <div
           role="status"
-          className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-[#86EFAC] bg-[#F0FDF4] px-4 py-3 text-sm font-medium text-[#166534]"
+          className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-[#86EFAC] bg-[#F0FDF4] dark:border-[#166534] dark:bg-[#143322] px-4 py-3 text-sm font-medium text-[#166534] dark:text-[#4ADE80]"
         >
           <span className="inline-flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -298,7 +298,7 @@ export function StudentDashboard({
             <button
               type="button"
               onClick={onDismissStatusBanner}
-              className="text-xs font-semibold underline hover:text-[#14532D]"
+              className="text-xs font-semibold underline hover:text-[#14532D] dark:hover:text-[#86EFAC]"
             >
               ปิด
             </button>
@@ -386,7 +386,7 @@ export function StudentDashboard({
                   return (
                     <div
                       key={card.title}
-                      className="rounded-2xl border border-[#DFD1BA] bg-white p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
+                      className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
                     >
                       <div
                         className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${card.iconBg}`}
@@ -394,15 +394,19 @@ export function StudentDashboard({
                         <Icon className="h-6 w-6" aria-hidden="true" />
                       </div>
                       <div className="min-w-0 space-y-1">
-                        <p className="text-xs font-medium text-[#66585B]">{card.title}</p>
+                        <p className="text-xs font-medium text-[#66585B] dark:text-[#A19B91]">
+                          {card.title}
+                        </p>
                         <p
-                          className={`font-display font-bold text-[#23181A] tabular-nums leading-snug ${
+                          className={`font-display font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums leading-snug ${
                             card.value.length > 14 ? 'text-base sm:text-lg' : 'text-xl sm:text-2xl'
                           }`}
                         >
                           {card.value}
                         </p>
-                        <p className="text-xs text-[#66585B] leading-snug">{card.meta}</p>
+                        <p className="text-xs text-[#66585B] dark:text-[#A19B91] leading-snug">
+                          {card.meta}
+                        </p>
                       </div>
                     </div>
                   );
@@ -411,22 +415,22 @@ export function StudentDashboard({
 
               {/* Row 2: 12-Col Progress Tracker (7) + 6-Tile Quick Actions (5) */}
               <section className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-                <div className="xl:col-span-7 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-5 surface-card">
+                <div className="xl:col-span-7 rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 space-y-5 surface-card">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <h2 className="font-display text-base font-bold text-[#23181A]">
+                      <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                         ความคืบหน้าการดำเนินการขอรับทุนการศึกษา
                       </h2>
-                      <p className="text-xs text-[#66585B]">
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                         สวัสดี {basicInfo.fullName || user.fullName} · ตรวจสอบสถานะทีละขั้นตอน
                       </p>
                     </div>
-                    <span className="rounded-lg bg-[#FDF8EC] border border-[#DFC9A1] px-2.5 py-1 text-xs font-semibold text-[#7A1629] tabular-nums">
+                    <span className="rounded-lg bg-[#FDF8EC] border border-[#DFC9A1] dark:border-[#8D6B2A] dark:bg-[#2A2316] px-2.5 py-1 text-xs font-semibold text-[#7A1629] dark:text-[#E8C97A] tabular-nums">
                       {completedCount}/4 ขั้นตอน ({progressPct}%)
                     </span>
                   </div>
 
-                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#F2E9D8]">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#F2E9D8] dark:bg-[#323642]">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-[#7A1629] to-[#C6922C] transition-all duration-300"
                       style={{ width: `${Math.max(8, progressPct)}%` }}
@@ -441,21 +445,21 @@ export function StudentDashboard({
                         onClick={() => onSelectSection(step.key)}
                         className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition-colors ${
                           step.done
-                            ? 'border-[#BBF7D0] bg-[#F0FDF4]/80 hover:border-[#86EFAC]'
-                            : 'border-[#EAE0CE] bg-[#FAF6EE]/70 hover:border-[#7A1629]/45'
+                            ? 'border-[#BBF7D0] bg-[#F0FDF4]/80 hover:border-[#86EFAC] dark:border-[#166534] dark:bg-[#143322]/70 dark:hover:border-[#22C55E]'
+                            : 'border-[#EAE0CE] bg-[#FAF6EE]/70 hover:border-[#7A1629]/45 dark:border-[#343842] dark:bg-[#1B1D23] dark:hover:border-[#E8C97A]/60'
                         }`}
                       >
                         <CheckCircle2
                           className={`h-5 w-5 shrink-0 ${
-                            step.done ? 'text-[#16A34A]' : 'text-[#9CA3AF]'
+                            step.done ? 'text-[#16A34A] dark:text-[#4ADE80]' : 'text-[#9CA3AF] dark:text-[#6B7280]'
                           }`}
                           aria-hidden="true"
                         />
                         <div className="min-w-0">
-                          <p className="text-[11px] font-medium text-[#66585B]">
+                          <p className="text-[11px] font-medium text-[#66585B] dark:text-[#A19B91]">
                             ขั้นตอนที่ {index + 1}
                           </p>
-                          <p className="text-xs sm:text-sm font-semibold text-[#23181A] truncate">
+                          <p className="text-xs sm:text-sm font-semibold text-[#23181A] dark:text-[#F2EFEA] truncate">
                             {step.label}
                           </p>
                         </div>
@@ -464,39 +468,41 @@ export function StudentDashboard({
                   </div>
 
                   {application?.advisorComment && (
-                    <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] p-4 space-y-1">
-                      <p className="text-xs font-semibold text-[#7A1629]">
+                    <div className="rounded-xl border border-[#DFC9A1] bg-[#FDF8EC] dark:border-[#8D6B2A] dark:bg-[#2A2316] p-4 space-y-1">
+                      <p className="text-xs font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                         ความคิดเห็นจากอาจารย์ประจำสาขา
                       </p>
-                      <p className="text-sm text-[#23181A]">{application.advisorComment}</p>
+                      <p className="text-sm text-[#23181A] dark:text-[#F2EFEA]">
+                        {application.advisorComment}
+                      </p>
                     </div>
                   )}
 
-                  <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 p-4 space-y-2">
+                  <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/70 dark:border-[#343842] dark:bg-[#1B1D23] p-4 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A1629]">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                         <Award className="h-4 w-4 shrink-0" aria-hidden="true" />
                         <span>ทุนการศึกษาที่ได้รับ ({myScholarships.length} รายการ)</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => onSelectSection('basic')}
-                        className="text-xs font-medium text-[#7A1629] hover:underline"
+                        className="text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline"
                       >
                         แก้ไขในข้อมูลพื้นฐาน
                       </button>
                     </div>
                     {myScholarships.length === 0 ? (
-                      <p className="text-xs text-[#66585B]">
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
                         ยังไม่มีรายการทุนการศึกษาที่ระบุไว้ (หากได้รับทุนสามารถเพิ่มได้ไม่จำกัดในหน้าข้อมูลพื้นฐาน)
                       </p>
                     ) : (
-                      <ul className="space-y-1 text-xs text-[#23181A] list-disc pl-5">
+                      <ul className="space-y-1 text-xs text-[#23181A] dark:text-[#F2EFEA] list-disc pl-5">
                         {myScholarships.map((s) => (
                           <li key={s.id}>
                             <span className="font-semibold">{s.name}</span>
                             {s.provider ? (
-                              <span className="text-[#66585B]"> — {s.provider}</span>
+                              <span className="text-[#66585B] dark:text-[#A19B91]"> — {s.provider}</span>
                             ) : null}
                           </li>
                         ))}
@@ -505,11 +511,13 @@ export function StudentDashboard({
                   </div>
                 </div>
 
-                {/* 6-Tile Quick Actions (Matching Reference Image Bottom-Right Grid) */}
-                <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
+                {/* 6-Tile Quick Actions */}
+                <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 space-y-4 surface-card">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-base font-bold text-[#23181A]">เมนูด่วน</h2>
-                    <span className="text-xs text-[#66585B]">คลิกเพื่อเปิดส่วนงาน</span>
+                    <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
+                      เมนูด่วน
+                    </h2>
+                    <span className="text-xs text-[#66585B] dark:text-[#A19B91]">คลิกเพื่อเปิดส่วนงาน</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {quickActions.map((qa) => {
@@ -519,14 +527,14 @@ export function StudentDashboard({
                           key={qa.key}
                           type="button"
                           onClick={qa.onClick}
-                          className="group rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/55 p-4 flex flex-col items-center justify-center gap-2.5 text-center hover:border-[#7A1629] hover:bg-white transition-all"
+                          className="group rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/55 dark:border-[#343842] dark:bg-[#1B1D23] p-4 flex flex-col items-center justify-center gap-2.5 text-center hover:border-[#7A1629] hover:bg-white dark:hover:border-[#E8C97A] dark:hover:bg-[#282B33] transition-all"
                         >
                           <div
                             className={`flex h-10 w-10 items-center justify-center rounded-xl ${qa.iconColor} transition-transform group-hover:scale-105`}
                           >
                             <Icon className="h-5 w-5" aria-hidden="true" />
                           </div>
-                          <span className="text-xs font-semibold text-[#23181A] leading-tight">
+                          <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] leading-tight">
                             {qa.label}
                           </span>
                         </button>
@@ -538,41 +546,41 @@ export function StudentDashboard({
 
               {/* Row 3: Submitted Grades & Volunteer Summary Table */}
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                <div className="rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
+                <div className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 space-y-4 surface-card">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-base font-bold text-[#23181A]">
+                    <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                       ประวัติผลการเรียนที่บันทึกไว้
                     </h2>
                     <button
                       type="button"
                       onClick={() => onSelectSection('grades')}
-                      className="text-xs font-medium text-[#7A1629] hover:underline"
+                      className="text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline"
                     >
                       จัดการผลการเรียน
                     </button>
                   </div>
                   {grades.length === 0 ? (
-                    <p className="text-sm text-[#66585B] py-4">
+                    <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-4">
                       ยังไม่มีข้อมูลใบแสดงผลการเรียน — กดที่เมนู &quot;3. ผลการเรียน&quot; เพื่อบันทึกเกรดภาค 1 และ 2
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs sm:text-sm border-collapse">
                         <thead>
-                          <tr className="border-b border-[#EAE0CE] text-[#66585B]">
+                          <tr className="border-b border-[#EAE0CE] dark:border-[#343842] text-[#66585B] dark:text-[#A19B91]">
                             <th className="py-2 pr-3 font-medium">ปีการศึกษา</th>
                             <th className="py-2 pr-3 font-medium">ชั้นปี</th>
                             <th className="py-2 pr-3 font-medium">ภาคเรียน</th>
                             <th className="py-2 text-right font-medium">GPA</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#F0E8D8] tabular-nums">
+                        <tbody className="divide-y divide-[#F0E8D8] dark:divide-[#2E323D] tabular-nums">
                           {grades.map((g) => (
-                            <tr key={g.id}>
+                            <tr key={g.id} className="hover:bg-[#FAF6EE]/60 dark:hover:bg-[#2B2E37]">
                               <td className="py-2.5 pr-3">{g.academicYear}</td>
                               <td className="py-2.5 pr-3">{g.yearLevel}</td>
                               <td className="py-2.5 pr-3">{g.semester}</td>
-                              <td className="py-2.5 text-right font-semibold text-[#7A1629]">
+                              <td className="py-2.5 text-right font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                                 {g.gpa}
                               </td>
                             </tr>
@@ -583,21 +591,21 @@ export function StudentDashboard({
                   )}
                 </div>
 
-                <div className="rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
+                <div className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 space-y-4 surface-card">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-base font-bold text-[#23181A]">
+                    <h2 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                       กิจกรรมจิตอาสาล่าสุด
                     </h2>
                     <button
                       type="button"
                       onClick={() => onSelectSection('volunteer')}
-                      className="text-xs font-medium text-[#7A1629] hover:underline"
+                      className="text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline"
                     >
                       ดูทั้งหมด
                     </button>
                   </div>
                   {volunteers.length === 0 ? (
-                    <p className="text-sm text-[#66585B] py-4">
+                    <p className="text-sm text-[#66585B] dark:text-[#A19B91] py-4">
                       {volunteerUnlocked
                         ? 'ยังไม่มีรายการบันทึกกิจกรรมจิตอาสา — เริ่มบันทึกกิจกรรมแรกได้เลย'
                         : 'ระบบจิตอาสาจะเปิดให้บันทึกกิจกรรมเมื่อคำร้องขอรับทุนได้รับการอนุมัติแล้ว'}
@@ -607,23 +615,23 @@ export function StudentDashboard({
                       {volunteers.slice(0, 4).map((v) => (
                         <div
                           key={v.id}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 px-3.5 py-2.5 text-xs"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[#EAE0CE] bg-[#FAF6EE]/60 dark:border-[#343842] dark:bg-[#1B1D23] px-3.5 py-2.5 text-xs"
                         >
                           <div className="min-w-0">
-                            <p className="font-semibold text-[#23181A] truncate">
+                            <p className="font-semibold text-[#23181A] dark:text-[#F2EFEA] truncate">
                               {v.activityTitle}
                             </p>
-                            <p className="text-[#66585B] tabular-nums">
+                            <p className="text-[#66585B] dark:text-[#A19B91] tabular-nums">
                               วันที่ {v.activityDate} · {v.hours} ชม.
                             </p>
                           </div>
                           <span
                             className={`shrink-0 rounded-md px-2 py-0.5 font-medium ${
                               v.approvalStatus === 'approved'
-                                ? 'bg-[#ECFDF5] text-[#15803D]'
+                                ? 'bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]'
                                 : v.approvalStatus === 'rejected'
-                                  ? 'bg-[#FEF2F2] text-[#B91C1C]'
-                                  : 'bg-[#FFFBEB] text-[#B45309]'
+                                  ? 'bg-[#FEF2F2] text-[#B91C1C] dark:bg-[#3A1519] dark:text-[#FCA5A5]'
+                                  : 'bg-[#FFFBEB] text-[#B45309] dark:bg-[#362811] dark:text-[#FBBF24]'
                             }`}
                           >
                             {v.approvalStatus === 'approved'

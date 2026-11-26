@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-display: "Prompt", system-ui, sans-serif;
@@ -12,6 +13,32 @@
   --color-cream-surface: #F3ECDF;
   --color-ink: #23181A;
   --color-ink-muted: #66585B;
+}
+
+:root {
+  --bg-canvas: #FAF6EE;
+  --bg-card: #FFFFFF;
+  --bg-surface: #FAF6EE;
+  --text-primary: #23181A;
+  --text-muted: #66585B;
+  --border-card: #DFD1BA;
+  --chart-track: #F2E9D8;
+  --chart-approved: #16A34A;
+  --chart-pending: #D97706;
+  --chart-draft: #CBD5E1;
+}
+
+.dark {
+  --bg-canvas: #16171B;
+  --bg-card: #22242B;
+  --bg-surface: #282B33;
+  --text-primary: #F2EFEA;
+  --text-muted: #A19B91;
+  --border-card: #343842;
+  --chart-track: #323642;
+  --chart-approved: #22C55E;
+  --chart-pending: #F59E0B;
+  --chart-draft: #64748B;
 }
 
 @layer base {
@@ -30,11 +57,26 @@
       box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .dark input,
+  .dark select,
+  .dark textarea {
+    color-scheme: dark;
+  }
+
   input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline: none;
     border-color: #7A1629;
     background-color: #FFFFFF;
     box-shadow: 0 0 0 3px rgba(198, 146, 44, 0.22);
+  }
+
+  .dark input:focus-visible,
+  .dark select:focus-visible,
+  .dark textarea:focus-visible {
+    outline: none;
+    border-color: #E8C97A;
+    background-color: #191B21;
+    box-shadow: 0 0 0 3px rgba(232, 201, 122, 0.22);
   }
 }
 
@@ -46,8 +88,16 @@
   box-shadow: 0 10px 30px -12px rgba(91, 15, 29, 0.1), 0 1px 3px rgba(91, 15, 29, 0.05);
 }
 
+.dark .surface-elevated {
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
 .surface-card {
   box-shadow: 0 4px 18px -8px rgba(91, 15, 29, 0.08);
+}
+
+.dark .surface-card {
+  box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {

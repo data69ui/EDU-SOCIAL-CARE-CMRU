@@ -174,22 +174,22 @@ export function FileUploadField({
   return (
     <div className="space-y-2.5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <label htmlFor={inputId} className="text-sm font-semibold text-[#23181A]">
+        <label htmlFor={inputId} className="text-sm font-semibold text-[#23181A] dark:text-[#F2EFEA]">
           {label}
         </label>
-        <span className="text-xs text-[#66585B] tabular-nums">
+        <span className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
           แนบแล้ว {files.length} ไฟล์
           {minCount ? ` · ขั้นต่ำ ${minCount} ไฟล์` : ''}
           {` · สูงสุด ${maxSizeMB} MB/ไฟล์`}
         </span>
       </div>
 
-      <p className="text-xs text-[#66585B]">{helperText}</p>
+      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">{helperText}</p>
 
       <div className="flex flex-wrap items-center gap-2.5">
         <label
           htmlFor={inputId}
-          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#C6922C]/60 bg-[#FAF6EE] px-4 py-2 text-xs font-medium text-[#7A1629] transition-colors hover:bg-[#F1E6D0] ${
+          className={`inline-flex cursor-pointer items-center gap-2 rounded-lg border border-[#C6922C]/60 dark:border-[#E8C97A]/50 bg-[#FAF6EE] dark:bg-[#1B1D23] px-4 py-2 text-xs font-medium text-[#7A1629] dark:text-[#F8E7B8] transition-colors hover:bg-[#F1E6D0] dark:hover:bg-[#2B2F3A] ${
             uploading ? 'opacity-60 pointer-events-none' : ''
           }`}
         >
@@ -212,7 +212,7 @@ export function FileUploadField({
         />
 
         {accessToken ? (
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#BBF7D0] bg-[#F0FDF4] px-2.5 py-1.5 text-[11px] font-medium text-[#166534]">
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#BBF7D0] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-medium text-[#166534] dark:text-emerald-300">
             <HardDrive className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>
               เก็บใน Google Drive
@@ -229,7 +229,7 @@ export function FileUploadField({
       </div>
 
       {error && (
-        <p role="alert" className="text-xs font-medium text-[#B91C1C]">
+        <p role="alert" className="text-xs font-medium text-[#B91C1C] dark:text-red-400">
           {error}
         </p>
       )}
@@ -243,10 +243,10 @@ export function FileUploadField({
             return (
               <div
                 key={file.id}
-                className="flex items-center gap-3 rounded-lg border border-[#E5DAC7] bg-white p-2.5"
+                className="flex items-center gap-3 rounded-lg border border-[#E5DAC7] dark:border-[#343842] bg-white dark:bg-[#1B1D23] p-2.5"
               >
                 {isPdf ? (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#7A1629]/10 text-[#7A1629]">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#7A1629]/10 dark:bg-[#7A1629]/30 text-[#7A1629] dark:text-[#F3B9C3]">
                     <HardDrive className="h-5 w-5" aria-hidden="true" />
                   </div>
                 ) : (
@@ -254,15 +254,15 @@ export function FileUploadField({
                     src={file.url}
                     driveFileId={file.driveFileId}
                     alt={file.name}
-                    className="h-12 w-12 shrink-0 rounded-md border border-[#E5DAC7] object-cover bg-[#FAF6EE]"
+                    className="h-12 w-12 shrink-0 rounded-md border border-[#E5DAC7] dark:border-[#343842] object-cover bg-[#FAF6EE] dark:bg-[#22242B]"
                   />
                 )}
                 <div className="min-w-0 flex-1">
                   <DriveFileLink
                     file={file}
-                    className="flex items-center gap-1 truncate text-xs font-medium text-[#23181A] hover:text-[#7A1629] underline-offset-2 hover:underline"
+                    className="flex items-center gap-1 truncate text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:text-[#7A1629] dark:hover:text-[#E8C97A] underline-offset-2 hover:underline"
                   />
-                  <span className="text-[11px] text-[#66585B] tabular-nums block">
+                  <span className="text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums block">
                     {(file.size / 1024).toFixed(0)} KB
                     {file.storageProvider === 'google_drive' ? ' · Google Drive' : ''}
                   </span>
@@ -271,7 +271,7 @@ export function FileUploadField({
                   type="button"
                   onClick={() => handleRemove(file)}
                   aria-label={`ลบไฟล์ ${file.name}`}
-                  className="rounded-md p-1.5 text-[#66585B] hover:bg-[#FEE2E2] hover:text-[#B91C1C] transition-colors shrink-0"
+                  className="rounded-md p-1.5 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FEE2E2] dark:hover:bg-red-950/60 hover:text-[#B91C1C] dark:hover:text-red-300 transition-colors shrink-0"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>

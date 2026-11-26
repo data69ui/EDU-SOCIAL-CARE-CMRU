@@ -59,7 +59,7 @@ export function DriveImage({ src, driveFileId, alt, className = '' }: DriveImage
     return (
       <div
         title={`${alt} (จัดเก็บบน Google Drive)`}
-        className={`flex items-center justify-center bg-[#F4ECDD] text-[#7A1629] ${className}`}
+        className={`flex items-center justify-center bg-[#F4ECDD] dark:bg-[#2B2518] text-[#7A1629] dark:text-[#E8C97A] ${className}`}
       >
         <HardDrive className="h-5 w-5" aria-hidden="true" />
       </div>
@@ -116,13 +116,13 @@ export function DriveFileLink({ file, className = '' }: DriveFileLinkProps) {
       onClick={handleOpen}
       className={
         className ||
-        'inline-flex items-center gap-1 text-xs font-medium text-[#7A1629] hover:underline'
+        'inline-flex items-center gap-1 text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline'
       }
     >
       <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <span className="truncate">{file.name}</span>
       {file.storageProvider === 'google_drive' && (
-        <ExternalLink className="h-3 w-3 shrink-0 text-[#66585B]" aria-hidden="true" />
+        <ExternalLink className="h-3 w-3 shrink-0 text-[#66585B] dark:text-[#A19B91]" aria-hidden="true" />
       )}
     </a>
   );

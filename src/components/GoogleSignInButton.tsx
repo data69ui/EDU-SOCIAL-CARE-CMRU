@@ -35,7 +35,7 @@ export function GoogleSignInButton({
       type="button"
       onClick={handleClick}
       disabled={disabled || loading}
-      className={`gsi-material-button inline-flex items-center justify-center gap-2.5 rounded-xl border border-[#747775]/40 bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-xs transition-colors hover:bg-[#F8FAFD] hover:border-[#747775]/70 active:bg-[#EEF2F6] disabled:opacity-60 disabled:pointer-events-none cursor-pointer ${className}`}
+      className={`gsi-material-button inline-flex items-center justify-center gap-2.5 rounded-xl border border-[#747775]/40 dark:border-[#434856] bg-white dark:bg-[#1B1D23] px-4 py-2 text-sm font-medium text-[#1F1F1F] dark:text-[#F2EFEA] shadow-xs transition-colors hover:bg-[#F8FAFD] dark:hover:bg-[#2B2F3A] hover:border-[#747775]/70 dark:hover:border-[#62687A] active:bg-[#EEF2F6] dark:active:bg-[#323744] disabled:opacity-60 disabled:pointer-events-none cursor-pointer ${className}`}
     >
       <span className="inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center">
         <svg

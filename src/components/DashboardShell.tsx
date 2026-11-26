@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { UserAccount } from '../types/scholarship';
 import { DriveImage } from './DriveMedia';
+import { ThemeToggleButton } from '../contexts/ThemeContext';
 
 export interface SidebarNavItem {
   key: string;
@@ -78,7 +79,7 @@ export function DashboardShell({
   };
 
   const renderSidebarBody = () => (
-    <div className="flex h-full flex-col justify-between bg-gradient-to-b from-[#6B1022] via-[#5B0F1D] to-[#430A14] text-white">
+    <div className="flex h-full flex-col justify-between bg-gradient-to-b from-[#6B1022] via-[#5B0F1D] to-[#430A14] dark:from-[#3B0813] dark:via-[#2B050D] dark:to-[#1C0308] text-white">
       <div className="flex flex-col min-h-0 flex-1">
         {/* Top Brand Lockup -> Clickable to return Home */}
         <div className="border-b border-white/10 px-4 py-4">
@@ -163,14 +164,14 @@ export function DashboardShell({
                     onClick={() => handleSelectItem(item.key)}
                     className={`w-full flex items-center justify-between gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium whitespace-nowrap transition-all ${
                       active
-                        ? 'bg-white/15 text-white border border-[#E8C97A]/45 shadow-xs'
+                        ? 'bg-gradient-to-r from-[#C6922C] to-[#DDA83F] text-[#23181A] font-semibold border border-[#E8C97A]/80 shadow-xs dark:from-[#86192F] dark:to-[#661021] dark:text-[#F8E7B8] dark:border-[#E8C97A]/75'
                         : 'text-white/85 border border-transparent hover:bg-white/10 hover:text-white'
                     } disabled:opacity-45 disabled:cursor-not-allowed`}
                   >
                     <span className="flex min-w-0 items-center gap-2.5">
                       <Icon
                         className={`h-4 w-4 shrink-0 ${
-                          active ? 'text-[#E8C97A]' : 'text-white/75'
+                          active ? 'text-[#23181A] dark:text-[#E8C97A]' : 'text-white/75'
                         }`}
                         aria-hidden="true"
                       />
@@ -180,7 +181,7 @@ export function DashboardShell({
                       <span
                         className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
                           active
-                            ? 'bg-[#C6922C] text-[#23181A]'
+                            ? 'bg-[#5B0F1D] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
                             : 'bg-white/15 text-white/90'
                         }`}
                       >
@@ -215,8 +216,9 @@ export function DashboardShell({
         </nav>
       </div>
 
-      {/* Institutional Motto Footer */}
-      <div className="border-t border-white/10 p-3.5">
+      {/* Theme Switcher & Institutional Motto Footer */}
+      <div className="border-t border-white/10 p-3.5 space-y-2.5">
+        <ThemeToggleButton variant="sidebar" />
         <div className="rounded-xl border border-white/10 bg-black/20 p-3 space-y-1">
           <p className="font-display text-xs font-semibold text-[#E8C97A]">
             Your Education, Our Care.
@@ -230,9 +232,9 @@ export function DashboardShell({
   );
 
   return (
-    <div className="flex min-h-screen bg-[#FAF6EE] text-[#23181A] print:bg-white">
+    <div className="flex min-h-screen bg-[#FAF6EE] text-[#23181A] dark:bg-[#16171B] dark:text-[#F2EFEA] print:bg-white print:text-[#23181A]">
       {/* Fixed Desktop Sidebar */}
-      <aside className="no-print hidden lg:block w-[264px] shrink-0 sticky top-0 h-screen border-r border-[#430A14]">
+      <aside className="no-print hidden lg:block w-[264px] shrink-0 sticky top-0 h-screen border-r border-[#430A14] dark:border-[#4A101C]">
         {renderSidebarBody()}
       </aside>
 
@@ -245,7 +247,7 @@ export function DashboardShell({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => onSetMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/45 backdrop-blur-xs"
+              className="fixed inset-0 bg-black/55 backdrop-blur-xs"
             />
             <motion.aside
               initial={{ x: -270 }}
@@ -271,7 +273,7 @@ export function DashboardShell({
       {/* Main Content Column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Single Unified Top Utility Header */}
-        <header className="no-print sticky top-0 z-30 border-b border-[#E5DAC7] bg-white/95 backdrop-blur-md">
+        <header className="no-print sticky top-0 z-30 border-b border-[#E5DAC7] bg-white/95 dark:border-[#323640] dark:bg-[#1E2027]/95 backdrop-blur-md">
           <div className="h-[2px] w-full bg-gradient-to-r from-[#7A1629] via-[#C6922C] to-[#7A1629]" />
           <div className="flex min-h-[60px] flex-wrap items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 py-2.5">
             <div className="flex min-w-0 items-center gap-3">
@@ -279,32 +281,33 @@ export function DashboardShell({
                 type="button"
                 onClick={() => onSetMobileMenuOpen(true)}
                 aria-label="เปิดเมนูหลัก"
-                className="lg:hidden inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] text-[#7A1629] hover:bg-[#F3ECDF] transition-colors"
+                className="lg:hidden inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] text-[#7A1629] hover:bg-[#F3ECDF] dark:border-[#3A3E4A] dark:bg-[#282B33] dark:text-[#E8C97A] dark:hover:bg-[#323640] transition-colors"
               >
                 <Menu className="h-5 w-5" aria-hidden="true" />
               </button>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-2">
-                  <h1 className="font-display text-base sm:text-lg font-bold tracking-tight text-[#23181A] truncate">
+                  <h1 className="font-display text-base sm:text-lg font-bold tracking-tight text-[#23181A] dark:text-[#F2EFEA] truncate">
                     {pageTitle}
                   </h1>
                   {breadcrumb && (
-                    <span className="hidden sm:inline text-xs text-[#66585B] truncate">
+                    <span className="hidden sm:inline text-xs text-[#66585B] dark:text-[#A19B91] truncate">
                       · {breadcrumb}
                     </span>
                   )}
                 </div>
                 {pageSubtitle && (
-                  <p className="hidden sm:block text-xs text-[#66585B] truncate">
+                  <p className="hidden sm:block text-xs text-[#66585B] dark:text-[#A19B91] truncate">
                     {pageSubtitle}
                   </p>
                 )}
               </div>
             </div>
 
-            {topRightSlot && (
-              <div className="flex flex-wrap items-center gap-2 shrink-0">{topRightSlot}</div>
-            )}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <ThemeToggleButton variant="icon" />
+              {topRightSlot}
+            </div>
           </div>
         </header>
 
@@ -314,12 +317,12 @@ export function DashboardShell({
         </main>
 
         {/* Minimal Footer */}
-        <footer className="no-print border-t border-[#E5DAC7] bg-[#F4EDE0]/70 px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#66585B]">
+        <footer className="no-print border-t border-[#E5DAC7] bg-[#F4EDE0]/70 dark:border-[#323640] dark:bg-[#1B1D23]/90 px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#66585B] dark:text-[#A19B91]">
             <span>
               EDU SOCIAL CARE CMRU · งานทุนการศึกษา &amp; กยศ. สาขาวิชาสังคมศึกษา มหาวิทยาลัยราชภัฏเชียงใหม่
             </span>
-            <span className="font-display font-medium text-[#7A1629]">
+            <span className="font-display font-medium text-[#7A1629] dark:text-[#E8C97A]">
               Your Education, Our Care.
             </span>
           </div>

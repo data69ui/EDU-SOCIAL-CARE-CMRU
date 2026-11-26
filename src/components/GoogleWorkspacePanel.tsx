@@ -42,6 +42,7 @@ import type {
   StudentFullRecord,
   SystemSnapshotPayload,
 } from '../types/scholarship';
+import { useSaveSuccess } from '../contexts/SaveSuccessContext';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import {
   WorkspaceConfirmDialog,
@@ -65,6 +66,7 @@ export function GoogleWorkspacePanel({
   onRestoredSnapshot,
   onDownloadJsonBackup,
 }: GoogleWorkspacePanelProps) {
+  const { showSaveSuccess } = useSaveSuccess();
   const [googleUserEmail, setGoogleUserEmail] = useState<string | null>(null);
   const [googleUserName, setGoogleUserName] = useState<string | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -184,10 +186,12 @@ export function GoogleWorkspacePanel({
           spreadsheetTitle: created.title,
           spreadsheetUrl: created.spreadsheetUrl,
         });
+        const createdMsg = `สร้างและเชื่อมต่อ Google Sheet "${created.title}" เรียบร้อยแล้ว`;
         setStatusMessage({
           type: 'success',
-          text: `สร้างและเชื่อมต่อ Google Sheet "${created.title}" เรียบร้อยแล้ว`,
+          text: createdMsg,
         });
+        showSaveSuccess(createdMsg, 'สร้างและบันทึกการเชื่อมต่อเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -209,10 +213,12 @@ export function GoogleWorkspacePanel({
         spreadsheetTitle: meta.title,
         spreadsheetUrl: meta.spreadsheetUrl,
       });
+      const connectedMsg = `เชื่อมต่อ Google Sheet "${meta.title}" สำเร็จ (${meta.sheets.length} แผ่นงาน)`;
       setStatusMessage({
         type: 'success',
-        text: `เชื่อมต่อ Google Sheet "${meta.title}" สำเร็จ (${meta.sheets.length} แผ่นงาน)`,
+        text: connectedMsg,
       });
+      showSaveSuccess(connectedMsg, 'บันทึกการเชื่อมต่อเสร็จสิ้นแล้ว');
     } catch (err) {
       setStatusMessage({ type: 'error', text: (err as Error).message });
     } finally {
@@ -258,10 +264,12 @@ export function GoogleWorkspacePanel({
           lastSyncedAt: new Date().toISOString(),
           lastSyncedBy: currentUserName,
         });
+        const syncMsg = `ซิงก์ข้อมูลไปยัง Google Sheet สำเร็จ (${res.studentRows} นักศึกษา, ${res.applicationRows} คำร้อง, ${res.gradeRows} ผลการเรียน, ${res.volunteerRows} จิตอาสา)`;
         setStatusMessage({
           type: 'success',
-          text: `ซิงก์ข้อมูลไปยัง Google Sheet สำเร็จ (${res.studentRows} นักศึกษา, ${res.applicationRows} คำร้อง, ${res.gradeRows} ผลการเรียน, ${res.volunteerRows} จิตอาสา)`,
+          text: syncMsg,
         });
+        showSaveSuccess(syncMsg, 'อัปเดตข้อมูลลง Google Sheets เสร็จสิ้นแล้ว');
       }
     );
   };
@@ -297,10 +305,12 @@ export function GoogleWorkspacePanel({
         }
         const importRes = await api.importStudentsExcel(sheetRead.validRows);
         await onImportedFromSheet(importRes.result);
+        const importMsg = `นำเข้าจากแท็บ "${sheetRead.tabTitle}" สำเร็จ: เพิ่มใหม่ ${importRes.result.createdCount} คน, อัปเดต ${importRes.result.updatedCount} คน`;
         setStatusMessage({
           type: 'success',
-          text: `นำเข้าจากแท็บ "${sheetRead.tabTitle}" สำเร็จ: เพิ่มใหม่ ${importRes.result.createdCount} คน, อัปเดต ${importRes.result.updatedCount} คน`,
+          text: importMsg,
         });
+        showSaveSuccess(importMsg, 'นำเข้าและบันทึกข้อมูลเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -329,10 +339,12 @@ export function GoogleWorkspacePanel({
         });
         const files = await listDriveFolderFiles(accessToken, folder.id);
         setDriveFiles(files);
+        const folderMsg = `สร้างและเชื่อมต่อโฟลเดอร์ Google Drive "${folder.name}" เรียบร้อยแล้ว`;
         setStatusMessage({
           type: 'success',
-          text: `สร้างและเชื่อมต่อโฟลเดอร์ Google Drive "${folder.name}" เรียบร้อยแล้ว`,
+          text: folderMsg,
         });
+        showSaveSuccess(folderMsg, 'สร้างโฟลเดอร์และบันทึกเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -355,10 +367,12 @@ export function GoogleWorkspacePanel({
       });
       const files = await listDriveFolderFiles(accessToken, folder.id);
       setDriveFiles(files);
+      const folderConnectedMsg = `เชื่อมต่อโฟลเดอร์ Google Drive "${folder.name}" สำเร็จ`;
       setStatusMessage({
         type: 'success',
-        text: `เชื่อมต่อโฟลเดอร์ Google Drive "${folder.name}" สำเร็จ`,
+        text: folderConnectedMsg,
       });
+      showSaveSuccess(folderConnectedMsg, 'บันทึกการเชื่อมต่อโฟลเดอร์เสร็จสิ้นแล้ว');
     } catch (err) {
       setStatusMessage({ type: 'error', text: (err as Error).message });
     } finally {
@@ -400,10 +414,12 @@ export function GoogleWorkspacePanel({
         });
         const files = await listDriveFolderFiles(accessToken, config.driveFolderId);
         setDriveFiles(files);
+        const uploadMsg = `อัปโหลดไฟล์ "${file.name}" ลง Google Drive เรียบร้อยแล้ว`;
         setStatusMessage({
           type: 'success',
-          text: `อัปโหลดไฟล์ "${file.name}" ลง Google Drive เรียบร้อยแล้ว`,
+          text: uploadMsg,
         });
+        showSaveSuccess(uploadMsg, 'อัปโหลดและบันทึกไฟล์เสร็จสิ้นแล้ว');
       }
     );
   };
@@ -422,10 +438,12 @@ export function GoogleWorkspacePanel({
       async () => {
         await deleteDriveFile(accessToken, item.id);
         setDriveFiles((prev) => prev.filter((f) => f.id !== item.id));
+        const deleteMsg = `ลบไฟล์ "${item.name}" ออกจาก Google Drive แล้ว`;
         setStatusMessage({
           type: 'success',
-          text: `ลบไฟล์ "${item.name}" ออกจาก Google Drive แล้ว`,
+          text: deleteMsg,
         });
+        showSaveSuccess(deleteMsg, 'ดำเนินการเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -462,10 +480,12 @@ export function GoogleWorkspacePanel({
         });
         const files = await listDriveFolderFiles(accessToken, config.driveFolderId);
         setDriveFiles(files);
+        const backupMsg = `สำรองข้อมูลทั้งระบบ (${students.length} คน) ลง Google Drive ชื่อ "${fileName}" เรียบร้อยแล้ว`;
         setStatusMessage({
           type: 'success',
-          text: `สำรองข้อมูลทั้งระบบ (${students.length} คน) ลง Google Drive ชื่อ "${fileName}" เรียบร้อยแล้ว`,
+          text: backupMsg,
         });
+        showSaveSuccess(backupMsg, 'สำรองข้อมูลเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -491,10 +511,12 @@ export function GoogleWorkspacePanel({
           setSheetInput(cfgRes.config.spreadsheetId || '');
           setFolderInput(cfgRes.config.driveFolderId || '');
         }
+        const restoreMsg = `กู้คืนข้อมูลสำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`;
         setStatusMessage({
           type: 'success',
-          text: `กู้คืนข้อมูลสำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`,
+          text: restoreMsg,
         });
+        showSaveSuccess(restoreMsg, 'กู้คืนและบันทึกข้อมูลเสร็จสิ้นแล้ว');
       }
     );
   };
@@ -530,10 +552,12 @@ export function GoogleWorkspacePanel({
             setSheetInput(cfgRes.config.spreadsheetId || '');
             setFolderInput(cfgRes.config.driveFolderId || '');
           }
+          const localRestoreMsg = `กู้คืนข้อมูลจากไฟล์ "${file.name}" สำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`;
           setStatusMessage({
             type: 'success',
-            text: `กู้คืนข้อมูลจากไฟล์ "${file.name}" สำเร็จ: นักศึกษา ${res.result.restoredStudents} คน, ใบสมัคร ${res.result.restoredApplications} ฉบับ, ผลการเรียน ${res.result.restoredGrades} รายการ, จิตอาสา ${res.result.restoredVolunteers} รายการ`,
+            text: localRestoreMsg,
           });
+          showSaveSuccess(localRestoreMsg, 'กู้คืนและบันทึกข้อมูลเสร็จสิ้นแล้ว');
         }
       );
     } catch (err) {
@@ -544,17 +568,17 @@ export function GoogleWorkspacePanel({
   return (
     <div className="no-print space-y-6">
       {/* Header & Google Auth Connection Bar */}
-      <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] pb-4">
+      <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] dark:border-[#343842] pb-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#7A1629]/10 text-[#7A1629]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#7A1629]/10 dark:bg-[#3A1B23] text-[#7A1629] dark:text-[#F493A4]">
               <FileSpreadsheet className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="font-display text-lg font-bold text-[#7A1629]">
+              <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#F4D98A]">
                 ศูนย์จัดการฐานข้อมูล Google Sheets &amp; ที่เก็บไฟล์ Google Drive
               </h2>
-              <p className="text-xs text-[#66585B] mt-0.5">
+              <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-0.5">
                 เชื่อมต่อบัญชี Google เพื่อเก็บข้อมูลนักศึกษา ใบสมัคร ผลการเรียน จิตอาสา ใน Google Sheets และจัดเก็บภาพ/PDF ใน Google Drive
               </p>
             </div>
@@ -562,20 +586,20 @@ export function GoogleWorkspacePanel({
 
           <div className="flex flex-wrap items-center gap-2">
             {accessToken ? (
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#86EFAC] bg-[#F0FDF4] px-3 py-1.5">
-                <CheckCircle2 className="h-4 w-4 text-[#16A34A]" aria-hidden="true" />
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#86EFAC] dark:border-[#166534] bg-[#F0FDF4] dark:bg-[#143322] px-3 py-1.5">
+                <CheckCircle2 className="h-4 w-4 text-[#16A34A] dark:text-[#4ADE80]" aria-hidden="true" />
                 <div className="text-xs">
-                  <span className="font-semibold text-[#166534]">
+                  <span className="font-semibold text-[#166534] dark:text-[#86EFAC]">
                     {googleUserName || 'เชื่อมต่อ Google แล้ว'}
                   </span>
                   {googleUserEmail && (
-                    <span className="ml-1.5 text-[#15803D]">({googleUserEmail})</span>
+                    <span className="ml-1.5 text-[#15803D] dark:text-[#6EE7B7]">({googleUserEmail})</span>
                   )}
                 </div>
                 <button
                   type="button"
                   onClick={() => googleWorkspaceLogout()}
-                  className="ml-2 inline-flex items-center gap-1 rounded-lg border border-[#BBF7D0] bg-white px-2.5 py-1 text-[11px] font-medium text-[#166534] hover:bg-[#DCFCE7] transition-colors"
+                  className="ml-2 inline-flex items-center gap-1 rounded-lg border border-[#BBF7D0] dark:border-[#1E6E3B] bg-white dark:bg-[#1A1C21] px-2.5 py-1 text-[11px] font-medium text-[#166534] dark:text-[#86EFAC] hover:bg-[#DCFCE7] dark:hover:bg-[#19402B] transition-colors"
                 >
                   <LogOut className="h-3 w-3" aria-hidden="true" />
                   <span>ออกจาก Google</span>
@@ -591,14 +615,14 @@ export function GoogleWorkspacePanel({
         </div>
 
         {!accessToken && (
-          <div className="rounded-xl border border-[#E5C98E] bg-[#FDF8EC] p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="rounded-xl border border-[#E5C98E] dark:border-[#6A5220] bg-[#FDF8EC] dark:bg-[#2D2414] p-4 flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-[#5C410A]">
+              <p className="text-sm font-semibold text-[#5C410A] dark:text-[#F4D98A]">
                 {googleUserEmail
                   ? `เชื่อมต่อบัญชี Google (${googleUserEmail}) ไว้แล้ว — กดเพื่อยืนยัน Token ชั่วคราวของเซสชันนี้`
                   : 'ยังไม่ได้เชื่อมต่อบัญชี Google สำหรับ Google Sheets & Google Drive'}
               </p>
-              <p className="text-xs text-[#7B5A12]">
+              <p className="text-xs text-[#7B5A12] dark:text-[#E5CFA0]">
                 {googleUserEmail
                   ? 'เพื่อความปลอดภัยของสิทธิ์ OAuth เมื่อรีเฟรชหน้าเว็บ ระบบจะขอให้กด "Sign in with Google" เพื่อเปิดสิทธิ์ใช้งาน Sheets และ Drive อีกครั้ง (ข้อมูลใน Sheets/Drive ไม่หาย)'
                   : 'กดปุ่ม "Sign in with Google" เพื่ออนุญาตให้แอปสร้าง/อัปเดตฐานข้อมูล Google Sheets และอัปโหลดรูปภาพ/ไฟล์ลง Google Drive โดยได้รับอนุญาตจากผู้ใช้งาน'}
@@ -616,8 +640,8 @@ export function GoogleWorkspacePanel({
             role={statusMessage.type === 'error' ? 'alert' : 'status'}
             className={`rounded-xl border px-4 py-3 text-sm ${
               statusMessage.type === 'error'
-                ? 'border-[#FCA5A5] bg-[#FEF2F2] text-[#991B1B]'
-                : 'border-[#86EFAC] bg-[#F0FDF4] text-[#166534]'
+                ? 'border-[#FCA5A5] dark:border-[#7F1D1D] bg-[#FEF2F2] dark:bg-[#2F1519] text-[#991B1B] dark:text-[#FCA5A5]'
+                : 'border-[#86EFAC] dark:border-[#166534] bg-[#F0FDF4] dark:bg-[#143322] text-[#166534] dark:text-[#86EFAC]'
             }`}
           >
             {statusMessage.text}
@@ -628,11 +652,11 @@ export function GoogleWorkspacePanel({
       {/* Grid: Google Sheets + Google Drive */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Google Sheets Card */}
-        <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-          <div className="flex items-center justify-between gap-3 border-b border-[#EAE0CE] pb-3">
+        <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+          <div className="flex items-center justify-between gap-3 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet className="h-5 w-5 text-[#166534]" aria-hidden="true" />
-              <h3 className="font-display text-base font-bold text-[#23181A]">
+              <FileSpreadsheet className="h-5 w-5 text-[#166534] dark:text-[#4ADE80]" aria-hidden="true" />
+              <h3 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                 1. ฐานข้อมูล Google Sheets
               </h3>
             </div>
@@ -641,7 +665,7 @@ export function GoogleWorkspacePanel({
                 href={config.spreadsheetUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#166534] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#166534] dark:text-[#4ADE80] hover:underline"
               >
                 <span>เปิด Google Sheet</span>
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -650,13 +674,13 @@ export function GoogleWorkspacePanel({
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] p-3.5 text-xs space-y-1">
-              <p className="text-[#66585B]">ไฟล์ Google Sheet ที่เชื่อมต่ออยู่:</p>
-              <p className="font-semibold text-[#23181A]">
+            <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1A1C21] p-3.5 text-xs space-y-1">
+              <p className="text-[#66585B] dark:text-[#A19B91]">ไฟล์ Google Sheet ที่เชื่อมต่ออยู่:</p>
+              <p className="font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                 {config.spreadsheetTitle || (config.spreadsheetId ? config.spreadsheetId : 'ยังไม่ได้เชื่อมต่อ')}
               </p>
               {config.lastSyncedAt && (
-                <p className="text-[11px] text-[#66585B]">
+                <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">
                   ซิงก์ล่าสุด: {new Date(config.lastSyncedAt).toLocaleString('th-TH')} โดย{' '}
                   {config.lastSyncedBy || '-'}
                 </p>
@@ -666,7 +690,7 @@ export function GoogleWorkspacePanel({
             <div className="space-y-1.5">
               <label
                 htmlFor="gsheet-id-input"
-                className="block text-xs font-semibold text-[#23181A]"
+                className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]"
               >
                 ระบุลิงก์หรือ Spreadsheet ID ที่มีอยู่แล้ว
               </label>
@@ -677,13 +701,13 @@ export function GoogleWorkspacePanel({
                   value={sheetInput}
                   onChange={(e) => setSheetInput(e.target.value)}
                   placeholder="https://docs.google.com/spreadsheets/d/..."
-                  className="flex-1 rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-xs text-[#23181A] focus:border-[#7A1629] focus:outline-none"
+                  className="flex-1 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-xs text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:border-[#7A1629] dark:focus:border-[#C6922C] focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleConnectExistingSheet}
                   disabled={!accessToken || busy || !sheetInput.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-xs font-semibold text-[#23181A] hover:bg-[#EFE5D1] disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#2B2F3A] px-3 py-2 text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#EFE5D1] dark:hover:bg-[#343946] disabled:opacity-50"
                 >
                   <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>เชื่อมต่อ</span>
@@ -714,10 +738,10 @@ export function GoogleWorkspacePanel({
             </div>
 
             {config.spreadsheetId && sheetTabs.length > 0 && (
-              <div className="border-t border-[#EAE0CE] pt-3 space-y-2">
+              <div className="border-t border-[#EAE0CE] dark:border-[#343842] pt-3 space-y-2">
                 <label
                   htmlFor="gsheet-import-tab"
-                  className="block text-xs font-semibold text-[#23181A]"
+                  className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]"
                 >
                   นำเข้ารายชื่อนักศึกษาจากแผ่นงาน (Tab) ใน Google Sheet
                 </label>
@@ -726,7 +750,7 @@ export function GoogleWorkspacePanel({
                     id="gsheet-import-tab"
                     value={selectedImportTab}
                     onChange={(e) => setSelectedImportTab(e.target.value)}
-                    className="flex-1 min-w-[160px] rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-xs text-[#23181A]"
+                    className="flex-1 min-w-[160px] rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-xs text-[#23181A] dark:text-[#F2EFEA]"
                   >
                     {sheetTabs.map((tab) => (
                       <option key={tab.sheetId} value={tab.title}>
@@ -738,7 +762,7 @@ export function GoogleWorkspacePanel({
                     type="button"
                     onClick={handleImportFromGoogleSheets}
                     disabled={!accessToken || busy}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] bg-white px-3.5 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#FAF6EE] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 bg-white dark:bg-[#1A1C21] px-3.5 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] disabled:opacity-50"
                   >
                     <span>นำเข้าจากแผ่นงานนี้</span>
                   </button>
@@ -749,11 +773,11 @@ export function GoogleWorkspacePanel({
         </section>
 
         {/* Google Drive Card */}
-        <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-          <div className="flex items-center justify-between gap-3 border-b border-[#EAE0CE] pb-3">
+        <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-6 space-y-4 surface-card">
+          <div className="flex items-center justify-between gap-3 border-b border-[#EAE0CE] dark:border-[#343842] pb-3">
             <div className="flex items-center gap-2">
-              <HardDrive className="h-5 w-5 text-[#1D4ED8]" aria-hidden="true" />
-              <h3 className="font-display text-base font-bold text-[#23181A]">
+              <HardDrive className="h-5 w-5 text-[#1D4ED8] dark:text-[#60A5FA]" aria-hidden="true" />
+              <h3 className="font-display text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                 2. ที่เก็บภาพและไฟล์แนบ Google Drive
               </h3>
             </div>
@@ -762,7 +786,7 @@ export function GoogleWorkspacePanel({
                 href={config.driveFolderUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-[#1D4ED8] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#1D4ED8] dark:text-[#60A5FA] hover:underline"
               >
                 <span>เปิดโฟลเดอร์ Drive</span>
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -771,13 +795,13 @@ export function GoogleWorkspacePanel({
           </div>
 
           <div className="space-y-3">
-            <div className="rounded-xl border border-[#EAE0CE] bg-[#FAF6EE] p-3.5 text-xs space-y-1">
-              <p className="text-[#66585B]">โฟลเดอร์ Google Drive ที่ใช้งานอยู่:</p>
-              <p className="font-semibold text-[#23181A]">
+            <div className="rounded-xl border border-[#EAE0CE] dark:border-[#343842] bg-[#FAF6EE] dark:bg-[#1A1C21] p-3.5 text-xs space-y-1">
+              <p className="text-[#66585B] dark:text-[#A19B91]">โฟลเดอร์ Google Drive ที่ใช้งานอยู่:</p>
+              <p className="font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                 {config.driveFolderName ||
                   (config.driveFolderId ? config.driveFolderId : 'ยังไม่ได้เลือกโฟลเดอร์ (สร้างหรือเชื่อมต่อด้านล่าง)')}
               </p>
-              <p className="text-[11px] text-[#66585B]">
+              <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">
                 ไฟล์ที่อัปโหลดผ่านแบบฟอร์มนักศึกษา ใบเกรด และภาพกิจกรรมจิตอาสา จะถูกบันทึกเข้าสู่โฟลเดอร์นี้เมื่อผู้ใช้เชื่อมต่อ Google
               </p>
             </div>
@@ -785,7 +809,7 @@ export function GoogleWorkspacePanel({
             <div className="space-y-1.5">
               <label
                 htmlFor="gdrive-folder-input"
-                className="block text-xs font-semibold text-[#23181A]"
+                className="block text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]"
               >
                 ระบุลิงก์โฟลเดอร์ Google Drive หรือ Folder ID
               </label>
@@ -796,13 +820,13 @@ export function GoogleWorkspacePanel({
                   value={folderInput}
                   onChange={(e) => setFolderInput(e.target.value)}
                   placeholder="https://drive.google.com/drive/folders/..."
-                  className="flex-1 rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-xs text-[#23181A] focus:border-[#7A1629] focus:outline-none"
+                  className="flex-1 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-xs text-[#23181A] dark:text-[#F2EFEA] placeholder:text-[#9A8B8E] dark:placeholder:text-[#7E8594] focus:border-[#7A1629] dark:focus:border-[#C6922C] focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleConnectExistingFolder}
                   disabled={!accessToken || busy || !folderInput.trim()}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-3 py-2 text-xs font-semibold text-[#23181A] hover:bg-[#EFE5D1] disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#2B2F3A] px-3 py-2 text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#EFE5D1] dark:hover:bg-[#343946] disabled:opacity-50"
                 >
                   <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>เชื่อมต่อ</span>
@@ -822,7 +846,7 @@ export function GoogleWorkspacePanel({
               </button>
 
               <label
-                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#C6922C]/60 bg-[#FAF6EE] px-3.5 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#EFE5D1] transition-colors ${
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#C6922C]/60 bg-[#FAF6EE] dark:bg-[#2D2414] px-3.5 py-2 text-xs font-semibold text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#EFE5D1] dark:hover:bg-[#3A2E19] transition-colors ${
                   !accessToken || busy ? 'opacity-50 pointer-events-none' : ''
                 }`}
               >
@@ -840,7 +864,7 @@ export function GoogleWorkspacePanel({
                 type="button"
                 onClick={handleRefreshDriveFiles}
                 disabled={!accessToken || busy}
-                className="inline-flex items-center gap-1 rounded-xl border border-[#D8CBB8] bg-white px-3 py-2 text-xs font-medium text-[#5A4B4E] hover:bg-[#FAF6EE] disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-white dark:bg-[#1A1C21] px-3 py-2 text-xs font-medium text-[#5A4B4E] dark:text-[#C8C2B8] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] disabled:opacity-50"
               >
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>รีเฟรชรายการ</span>
@@ -848,18 +872,18 @@ export function GoogleWorkspacePanel({
             </div>
 
             {/* File list inside Drive */}
-            <div className="border-t border-[#EAE0CE] pt-3 space-y-2">
-              <p className="text-xs font-semibold text-[#23181A]">
+            <div className="border-t border-[#EAE0CE] dark:border-[#343842] pt-3 space-y-2">
+              <p className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA]">
                 ไฟล์และรูปภาพในโฟลเดอร์ Google Drive ({driveFiles.length})
               </p>
               {driveFiles.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-[#D8CBB8] bg-[#FAF6EE] p-4 text-center text-xs text-[#66585B]">
+                <p className="rounded-xl border border-dashed border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#1A1C21] p-4 text-center text-xs text-[#66585B] dark:text-[#A19B91]">
                   {accessToken
                     ? 'ยังไม่มีไฟล์ที่อัปโหลดในโฟลเดอร์นี้'
                     : 'เข้าสู่ระบบด้วย Google เพื่อดูรายการไฟล์ในโฟลเดอร์ Google Drive'}
                 </p>
               ) : (
-                <div className="max-h-60 overflow-auto divide-y divide-[#F0E8D8] rounded-xl border border-[#EAE0CE]">
+                <div className="max-h-60 overflow-auto divide-y divide-[#F0E8D8] dark:divide-[#2D313B] rounded-xl border border-[#EAE0CE] dark:border-[#343842]">
                   {driveFiles.map((f) => {
                     const isJsonSnapshot =
                       f.name.toLowerCase().endsWith('.json') ||
@@ -867,18 +891,18 @@ export function GoogleWorkspacePanel({
                     return (
                       <div
                         key={f.id}
-                        className="flex items-center justify-between gap-2 px-3 py-2 text-xs bg-white"
+                        className="flex items-center justify-between gap-2 px-3 py-2 text-xs bg-white dark:bg-[#1A1C21]"
                       >
                         <div className="min-w-0 flex-1">
                           <a
                             href={f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`}
                             target="_blank"
                             rel="noreferrer"
-                            className="font-medium text-[#23181A] hover:text-[#7A1629] hover:underline truncate block"
+                            className="font-medium text-[#23181A] dark:text-[#F2EFEA] hover:text-[#7A1629] dark:hover:text-[#F4D98A] hover:underline truncate block"
                           >
                             {f.name}
                           </a>
-                          <p className="text-[11px] text-[#66585B] tabular-nums">
+                          <p className="text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums">
                             {f.size ? `${(Number(f.size) / 1024).toFixed(0)} KB · ` : ''}
                             {f.modifiedTime
                               ? new Date(f.modifiedTime).toLocaleDateString('th-TH')
@@ -891,7 +915,7 @@ export function GoogleWorkspacePanel({
                               type="button"
                               onClick={() => handleRestoreFromDriveSnapshot(f)}
                               disabled={busy}
-                              className="rounded-lg border border-[#166534]/40 bg-[#F0FDF4] px-2.5 py-1 text-[11px] font-semibold text-[#166534] hover:bg-[#DCFCE7] transition-colors disabled:opacity-50"
+                              className="rounded-lg border border-[#166534]/40 dark:border-[#22C55E]/40 bg-[#F0FDF4] dark:bg-[#143322] px-2.5 py-1 text-[11px] font-semibold text-[#166534] dark:text-[#86EFAC] hover:bg-[#DCFCE7] dark:hover:bg-[#19402B] transition-colors disabled:opacity-50"
                             >
                               กู้คืนระบบ
                             </button>
@@ -901,7 +925,7 @@ export function GoogleWorkspacePanel({
                             onClick={() => handleDeleteDriveFile(f)}
                             disabled={busy}
                             aria-label={`ลบไฟล์ ${f.name} ออกจาก Google Drive`}
-                            className="rounded-lg p-1.5 text-[#66585B] hover:bg-[#FEE2E2] hover:text-[#B91C1C] transition-colors shrink-0"
+                            className="rounded-lg p-1.5 text-[#66585B] dark:text-[#A19B91] hover:bg-[#FEE2E2] dark:hover:bg-[#3E181E] hover:text-[#B91C1C] dark:hover:text-[#FCA5A5] transition-colors shrink-0"
                           >
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </button>
@@ -917,12 +941,12 @@ export function GoogleWorkspacePanel({
       </div>
 
       {/* Export & Full Snapshot Backup/Restore strip */}
-      <section className="rounded-2xl border border-[#DFD1BA] bg-white p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
+      <section className="rounded-2xl border border-[#DFD1BA] dark:border-[#343842] bg-white dark:bg-[#22242B] p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
         <div>
-          <h3 className="font-display text-sm font-bold text-[#23181A]">
+          <h3 className="font-display text-sm font-bold text-[#23181A] dark:text-[#F2EFEA]">
             สำรองข้อมูล &amp; กู้คืนระบบทั้งหมด (Google Drive Snapshot / Excel / CSV / JSON)
           </h3>
-          <p className="text-xs text-[#66585B]">
+          <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
             บันทึกสแนปช็อตฐานข้อมูลทั้งหมดเก็บไว้บน Google Drive หรือไฟล์ JSON และกู้คืนได้ทันทีหากมีการย้าย/รีเซ็ตเซิร์ฟเวอร์
           </p>
         </div>
@@ -946,21 +970,21 @@ export function GoogleWorkspacePanel({
           <button
             type="button"
             onClick={() => exportStudentsToCsv(students)}
-            className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-4 py-2 text-xs font-medium text-[#23181A] hover:bg-[#EFE5D1] transition-colors"
+            className="rounded-xl border border-[#D8CBB8] dark:border-[#434856] bg-[#FAF6EE] dark:bg-[#2B2F3A] px-4 py-2 text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:bg-[#EFE5D1] dark:hover:bg-[#343946] transition-colors"
           >
             ดาวน์โหลด CSV
           </button>
           <button
             type="button"
             onClick={onDownloadJsonBackup}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] bg-white px-4 py-2 text-xs font-medium text-[#7A1629] hover:bg-[#FAF6EE] transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] dark:border-[#C6922C]/70 bg-white dark:bg-[#1A1C21] px-4 py-2 text-xs font-medium text-[#7A1629] dark:text-[#F4D98A] hover:bg-[#FAF6EE] dark:hover:bg-[#2D313B] transition-colors"
           >
             <DatabaseBackup className="h-3.5 w-3.5" aria-hidden="true" />
             <span>สำรองข้อมูล (JSON)</span>
           </button>
           {isAdmin && (
             <label
-              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#166534] bg-[#F0FDF4] px-4 py-2 text-xs font-semibold text-[#166534] hover:bg-[#DCFCE7] transition-colors ${
+              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#166534] dark:border-[#22C55E]/50 bg-[#F0FDF4] dark:bg-[#143322] px-4 py-2 text-xs font-semibold text-[#166534] dark:text-[#86EFAC] hover:bg-[#DCFCE7] dark:hover:bg-[#19402B] transition-colors ${
                 busy ? 'opacity-50 pointer-events-none' : ''
               }`}
             >

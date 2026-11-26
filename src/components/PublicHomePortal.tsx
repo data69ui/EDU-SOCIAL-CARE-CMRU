@@ -27,6 +27,7 @@ import type {
   YearLevel,
 } from '../types/scholarship';
 import { ACADEMIC_YEARS, YEAR_LEVELS } from '../utils/scholarshipLogic';
+import { useTheme } from '../contexts/ThemeContext';
 import { DashboardShell, type SidebarNavGroup } from './DashboardShell';
 import { ScholarshipSummarySection } from './ScholarshipSummarySection';
 
@@ -92,11 +93,18 @@ const TAB_TITLES: Record<PublicHomeTab, { title: string; breadcrumb: string }> =
   },
 };
 
-const BAR_COLORS = [
+const BAR_COLORS_LIGHT = [
   'from-[#7A1629] to-[#9B2339]',
   'from-[#2563EB] to-[#3B82F6]',
   'from-[#0D9488] to-[#14B8A6]',
   'from-[#C6922C] to-[#DFAB43]',
+];
+
+const BAR_COLORS_DARK = [
+  'from-[#C83E56] to-[#E0526B]',
+  'from-[#3B82F6] to-[#60A5FA]',
+  'from-[#14B8A6] to-[#2DD4BF]',
+  'from-[#C6922C] to-[#E8C97A]',
 ];
 
 export function PublicHomePortal({
@@ -107,6 +115,7 @@ export function PublicHomePortal({
   adminInitialized,
   onNavigateAuth,
 }: PublicHomePortalProps) {
+  const { isDark } = useTheme();
   const [academicYear, setAcademicYear] = useState<AcademicYear | 'all'>('all');
   const [yearLevel, setYearLevel] = useState<YearLevel | 'all'>('all');
   const [overview, setOverview] = useState<PublicOverviewStats>(EMPTY_OVERVIEW);
@@ -154,21 +163,22 @@ export function PublicHomePortal({
   const totalForDonut = Math.max(1, overview.filteredTotal);
   const draftAndRevCount =
     overview.draftOrNoAppCount + overview.needsRevisionOrRejectedCount;
+  const barPalette = isDark ? BAR_COLORS_DARK : BAR_COLORS_LIGHT;
   const donutSegments = [
     {
       label: 'อนุมัติทุนแล้ว',
       count: overview.approvedCount,
-      color: '#16A34A',
+      color: isDark ? '#22C55E' : '#16A34A',
     },
     {
       label: 'รอพิจารณา',
       count: overview.pendingCount,
-      color: '#D97706',
+      color: isDark ? '#F59E0B' : '#D97706',
     },
     {
       label: 'ฉบับร่าง / ขอแก้ไข',
       count: draftAndRevCount,
-      color: '#CBD5E1',
+      color: isDark ? '#64748B' : '#CBD5E1',
     },
   ];
 
@@ -236,28 +246,28 @@ export function PublicHomePortal({
       title: 'นักศึกษาในระบบทั้งหมด',
       value: `${overview.filteredTotal.toLocaleString()} คน`,
       meta: `ทั้งหมด ${overview.totalAllStudents} คน · ยืนยัน PDPA ${overview.pdpaConsentedCount} คน`,
-      iconBg: 'bg-[#F8ECED] text-[#7A1629]',
+      iconBg: 'bg-[#F8ECED] text-[#7A1629] dark:bg-[#3A1B23] dark:text-[#F493A4]',
       icon: Users,
     },
     {
       title: 'อนุมัติทุนการศึกษาแล้ว',
       value: `${overview.approvedCount.toLocaleString()} คน`,
       meta: `คิดเป็น ${approvedRate}% · เปิดระบบจิตอาสาแล้ว`,
-      iconBg: 'bg-[#ECFDF5] text-[#15803D]',
+      iconBg: 'bg-[#ECFDF5] text-[#15803D] dark:bg-[#143322] dark:text-[#4ADE80]',
       icon: UserCheck,
     },
     {
       title: 'รอพิจารณา / ตรวจสอบ',
       value: `${overview.pendingCount.toLocaleString()} รายการ`,
       meta: `ขอแก้ไข ${overview.needsRevisionOrRejectedCount} · ฉบับร่าง ${overview.draftOrNoAppCount}`,
-      iconBg: 'bg-[#FFFBEB] text-[#B45309]',
+      iconBg: 'bg-[#FFFBEB] text-[#B45309] dark:bg-[#362811] dark:text-[#FBBF24]',
       icon: Clock,
     },
     {
       title: 'ผู้กู้ยืม กยศ. / จิตอาสา',
       value: `${overview.loanCount.toLocaleString()} คน`,
       meta: `${loanRate}% กู้ กยศ. · จิตอาสาอนุมัติ ${overview.approvedVolunteerHours} ชม.`,
-      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8]',
+      iconBg: 'bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#172845] dark:text-[#60A5FA]',
       icon: Wallet,
     },
   ];
@@ -290,7 +300,7 @@ export function PublicHomePortal({
                 id="overview-year-select"
                 value={academicYear}
                 onChange={(e) => setAcademicYear(e.target.value as AcademicYear | 'all')}
-                className="rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] px-3 py-1.5 text-xs sm:text-sm font-medium text-[#23181A]"
+                className="rounded-xl border border-[#DFD1BA] bg-[#FAF6EE] px-3 py-1.5 text-xs sm:text-sm font-medium text-[#23181A] dark:border-[#434856] dark:bg-[#1A1C21] dark:text-[#F2EFEA]"
               >
                 <option value="all">ทุกปีการศึกษา ({overview.totalAllStudents} คน)</option>
                 {ACADEMIC_YEARS.map((yr) => (
@@ -304,7 +314,7 @@ export function PublicHomePortal({
           <button
             type="button"
             onClick={() => onNavigateAuth('student', 'login')}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-[#7A1629] px-3.5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-[#5B0F1D] transition-colors whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-[#7A1629] px-3.5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-[#5B0F1D] dark:bg-[#C6922C] dark:text-[#1D1416] dark:hover:bg-[#DDA83F] transition-colors whitespace-nowrap"
           >
             <LogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span>เข้าสู่ระบบ</span>
@@ -324,12 +334,12 @@ export function PublicHomePortal({
           {activeTab === 'overview' && (
             <>
               {!adminInitialized && (
-                <section className="rounded-2xl border border-[#C6922C]/70 bg-white p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
+                <section className="rounded-2xl border border-[#C6922C]/70 bg-white dark:border-[#8D6B2A] dark:bg-[#22242B] p-5 flex flex-wrap items-center justify-between gap-4 surface-card">
                   <div className="space-y-1">
-                    <h2 className="font-display text-base font-bold text-[#7A1629]">
+                    <h2 className="font-display text-base font-bold text-[#7A1629] dark:text-[#E8C97A]">
                       เปิดใช้งานระบบครั้งแรก: ยังไม่ได้ตั้งค่าบัญชีผู้ดูแลระบบ
                     </h2>
-                    <p className="text-xs sm:text-sm text-[#5A4B4E]">
+                    <p className="text-xs sm:text-sm text-[#5A4B4E] dark:text-[#CEC8BE]">
                       กรุณาสร้างบัญชีผู้ดูแลระบบหลักคนแรกเพื่อจัดการรายชื่อนักศึกษา นำเข้า Excel อนุมัติทุน และดูแลบัญชีผู้ใช้งาน
                     </p>
                   </div>
@@ -345,7 +355,7 @@ export function PublicHomePortal({
                     <button
                       type="button"
                       onClick={() => onNavigateAuth('student', 'register')}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] dark:border-[#8D6B2A] dark:bg-[#2A2316] dark:text-[#E8C97A] dark:hover:bg-[#352C1B] transition-colors"
                     >
                       <UserPlus className="h-4 w-4" aria-hidden="true" />
                       <span>สมัครด้วยรหัสนักศึกษา</span>
@@ -354,7 +364,7 @@ export function PublicHomePortal({
                 </section>
               )}
 
-              {/* 4 KPI Cards Row (Matching Reference Dashboard Structure) */}
+              {/* 4 KPI Cards Row */}
               <section
                 aria-label="ตัวชี้วัดภาพรวมทุนการศึกษา"
                 className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
@@ -364,7 +374,7 @@ export function PublicHomePortal({
                   return (
                     <div
                       key={card.title}
-                      className="rounded-2xl border border-[#DFD1BA] bg-white p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
+                      className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 flex items-start gap-4 surface-card transition-transform duration-200 hover:-translate-y-0.5"
                     >
                       <div
                         className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${card.iconBg}`}
@@ -372,11 +382,15 @@ export function PublicHomePortal({
                         <Icon className="h-6 w-6" aria-hidden="true" />
                       </div>
                       <div className="min-w-0 space-y-1">
-                        <p className="text-xs font-medium text-[#66585B] truncate">{card.title}</p>
-                        <p className="font-display text-2xl font-bold tracking-tight text-[#23181A] tabular-nums">
+                        <p className="text-xs font-medium text-[#66585B] dark:text-[#A19B91] truncate">
+                          {card.title}
+                        </p>
+                        <p className="font-display text-2xl font-bold tracking-tight text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                           {loading ? '—' : card.value}
                         </p>
-                        <p className="text-xs text-[#66585B] leading-snug">{card.meta}</p>
+                        <p className="text-xs text-[#66585B] dark:text-[#A19B91] leading-snug">
+                          {card.meta}
+                        </p>
                       </div>
                     </div>
                   );
@@ -386,26 +400,28 @@ export function PublicHomePortal({
               {/* 12-Col Analytics Grid: Bar Chart (5) + Donut Chart (4) + Summary/Quick Start (3) */}
               <section className="grid grid-cols-1 xl:grid-cols-12 gap-5">
                 {/* Bar Chart: Year Level Breakdown */}
-                <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                <div className="xl:col-span-5 rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2 text-[#7A1629]">
+                      <div className="flex items-center gap-2 text-[#7A1629] dark:text-[#E8C97A]">
                         <BarChart3 className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                           นักศึกษาแยกตามชั้นปี (ปี 1 - ปี 4)
                         </h2>
                       </div>
-                      <p className="text-xs text-[#66585B]">คลิกแท่งกราฟเพื่อกรองชั้นปีที่แสดงผล</p>
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
+                        คลิกแท่งกราฟเพื่อกรองชั้นปีที่แสดงผล
+                      </p>
                     </div>
 
-                    <div className="inline-flex rounded-xl bg-[#F3ECDF] p-1">
+                    <div className="inline-flex rounded-xl bg-[#F3ECDF] dark:bg-[#181A20] p-1">
                       <button
                         type="button"
                         onClick={() => setChartMode('stacked')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
                           chartMode === 'stacked'
-                            ? 'bg-[#7A1629] text-white'
-                            : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                            ? 'bg-[#7A1629] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
+                            : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                         }`}
                       >
                         แยกสถานะ
@@ -415,8 +431,8 @@ export function PublicHomePortal({
                         onClick={() => setChartMode('total')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
                           chartMode === 'total'
-                            ? 'bg-[#7A1629] text-white'
-                            : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                            ? 'bg-[#7A1629] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
+                            : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                         }`}
                       >
                         แท่งรวม
@@ -426,8 +442,8 @@ export function PublicHomePortal({
                         onClick={() => setChartMode('table')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
                           chartMode === 'table'
-                            ? 'bg-[#7A1629] text-white'
-                            : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                            ? 'bg-[#7A1629] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
+                            : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                         }`}
                       >
                         ตาราง
@@ -439,7 +455,7 @@ export function PublicHomePortal({
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-[#E6DAC5] text-[#66585B]">
+                          <tr className="border-b border-[#E6DAC5] dark:border-[#343842] text-[#66585B] dark:text-[#A19B91]">
                             <th className="py-2 pr-2 font-medium">ชั้นปี</th>
                             <th className="py-2 px-2 text-right font-medium">ทั้งหมด</th>
                             <th className="py-2 px-2 text-right font-medium">อนุมัติ</th>
@@ -447,22 +463,22 @@ export function PublicHomePortal({
                             <th className="py-2 pl-2 text-right font-medium">กยศ.</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#EFE5D4] tabular-nums">
+                        <tbody className="divide-y divide-[#EFE5D4] dark:divide-[#2E323D] tabular-nums">
                           {overview.byYearLevel.map((row) => (
-                            <tr key={row.yearLevel} className="hover:bg-[#FAF6EE]">
-                              <td className="py-2.5 pr-2 font-medium text-[#23181A]">
+                            <tr key={row.yearLevel} className="hover:bg-[#FAF6EE] dark:hover:bg-[#2B2E37]">
+                              <td className="py-2.5 pr-2 font-medium text-[#23181A] dark:text-[#F2EFEA]">
                                 {row.yearLevel}
                               </td>
-                              <td className="py-2.5 px-2 text-right font-semibold text-[#7A1629]">
+                              <td className="py-2.5 px-2 text-right font-semibold text-[#7A1629] dark:text-[#E8C97A]">
                                 {row.total}
                               </td>
-                              <td className="py-2.5 px-2 text-right text-[#15803D]">
+                              <td className="py-2.5 px-2 text-right text-[#15803D] dark:text-[#4ADE80]">
                                 {row.approved}
                               </td>
-                              <td className="py-2.5 px-2 text-right text-[#B45309]">
+                              <td className="py-2.5 px-2 text-right text-[#B45309] dark:text-[#FBBF24]">
                                 {row.pending}
                               </td>
-                              <td className="py-2.5 pl-2 text-right text-[#1D4ED8]">
+                              <td className="py-2.5 pl-2 text-right text-[#1D4ED8] dark:text-[#60A5FA]">
                                 {row.loanCount}
                               </td>
                             </tr>
@@ -472,24 +488,24 @@ export function PublicHomePortal({
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#5A4B4E]">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#5A4B4E] dark:text-[#CEC8BE]">
                         {chartMode === 'stacked' ? (
                           <>
                             <span className="inline-flex items-center gap-1.5">
-                              <span className="h-2.5 w-2.5 rounded-xs bg-[#16A34A]" />
+                              <span className="h-2.5 w-2.5 rounded-xs bg-[#16A34A] dark:bg-[#22C55E]" />
                               <span>อนุมัติแล้ว</span>
                             </span>
                             <span className="inline-flex items-center gap-1.5">
-                              <span className="h-2.5 w-2.5 rounded-xs bg-[#D97706]" />
+                              <span className="h-2.5 w-2.5 rounded-xs bg-[#D97706] dark:bg-[#F59E0B]" />
                               <span>รอพิจารณา</span>
                             </span>
                             <span className="inline-flex items-center gap-1.5">
-                              <span className="h-2.5 w-2.5 rounded-xs bg-[#CBD5E1]" />
+                              <span className="h-2.5 w-2.5 rounded-xs bg-[#CBD5E1] dark:bg-[#64748B]" />
                               <span>ฉบับร่าง</span>
                             </span>
                           </>
                         ) : (
-                          <span className="text-xs text-[#66585B]">
+                          <span className="text-xs text-[#66585B] dark:text-[#A19B91]">
                             แสดงจำนวนนักศึกษาทั้งหมดแยกตามชั้นปี
                           </span>
                         )}
@@ -497,14 +513,14 @@ export function PublicHomePortal({
                           <button
                             type="button"
                             onClick={() => setYearLevel('all')}
-                            className="ml-auto text-xs font-medium text-[#7A1629] hover:underline"
+                            className="ml-auto text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline"
                           >
                             แสดงทุกชั้นปี
                           </button>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-4 gap-3 items-end h-52 border-b border-[#E6DAC5] pt-6 px-1">
+                      <div className="grid grid-cols-4 gap-3 items-end h-52 border-b border-[#E6DAC5] dark:border-[#343842] pt-6 px-1">
                         {overview.byYearLevel.map((bucket, idx) => {
                           const heightPct = Math.round((bucket.total / maxBucketTotal) * 100);
                           const approvedPct =
@@ -524,9 +540,9 @@ export function PublicHomePortal({
                               onClick={() =>
                                 setYearLevel(isSelected ? 'all' : bucket.yearLevel)
                               }
-                              className="group flex flex-col items-center justify-end h-full gap-1.5 rounded-lg focus-visible:outline-2 focus-visible:outline-[#7A1629]"
+                              className="group flex flex-col items-center justify-end h-full gap-1.5 rounded-lg focus-visible:outline-2 focus-visible:outline-[#7A1629] dark:focus-visible:outline-[#E8C97A]"
                             >
-                              <span className="text-xs font-semibold text-[#23181A] tabular-nums">
+                              <span className="text-xs font-semibold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                                 {bucket.total}
                               </span>
                               <div className="w-full max-w-[46px] h-36 flex items-end justify-center">
@@ -535,7 +551,7 @@ export function PublicHomePortal({
                                     style={{ height: `${Math.max(heightPct, 14)}%` }}
                                     className={`w-full rounded-t-lg overflow-hidden flex flex-col-reverse border transition-transform duration-200 group-hover:scale-[1.03] ${
                                       isSelected
-                                        ? 'border-[#7A1629] ring-2 ring-[#C6922C]/45'
+                                        ? 'border-[#7A1629] dark:border-[#E8C97A] ring-2 ring-[#C6922C]/45'
                                         : 'border-transparent'
                                     }`}
                                   >
@@ -544,34 +560,36 @@ export function PublicHomePortal({
                                         {bucket.approved > 0 && (
                                           <div
                                             style={{ height: `${approvedPct}%` }}
-                                            className="w-full bg-[#16A34A]"
+                                            className="w-full bg-[#16A34A] dark:bg-[#22C55E]"
                                           />
                                         )}
                                         {bucket.pending > 0 && (
                                           <div
                                             style={{ height: `${pendingPct}%` }}
-                                            className="w-full bg-[#D97706]"
+                                            className="w-full bg-[#D97706] dark:bg-[#F59E0B]"
                                           />
                                         )}
                                         {bucket.draft > 0 && (
-                                          <div className="w-full flex-1 bg-[#CBD5E1]" />
+                                          <div className="w-full flex-1 bg-[#CBD5E1] dark:bg-[#64748B]" />
                                         )}
                                       </>
                                     ) : (
                                       <div
                                         className={`w-full h-full bg-gradient-to-t ${
-                                          BAR_COLORS[idx % BAR_COLORS.length]
+                                          barPalette[idx % barPalette.length]
                                         }`}
                                       />
                                     )}
                                   </div>
                                 ) : (
-                                  <div className="w-full h-1.5 rounded-t bg-[#EFE5D4]" />
+                                  <div className="w-full h-1.5 rounded-t bg-[#EFE5D4] dark:bg-[#323642]" />
                                 )}
                               </div>
                               <span
                                 className={`pb-2 text-xs font-medium ${
-                                  isSelected ? 'text-[#7A1629] font-semibold' : 'text-[#5A4B4E]'
+                                  isSelected
+                                    ? 'text-[#7A1629] dark:text-[#E8C97A] font-semibold'
+                                    : 'text-[#5A4B4E] dark:text-[#A19B91]'
                                 }`}
                               >
                                 {bucket.yearLevel}
@@ -585,26 +603,26 @@ export function PublicHomePortal({
                 </div>
 
                 {/* SVG Donut Chart: Scholarship Status Distribution */}
-                <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 space-y-4 surface-card">
+                <div className="xl:col-span-4 rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 sm:p-6 space-y-4 surface-card">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2 text-[#7A1629]">
+                      <div className="flex items-center gap-2 text-[#7A1629] dark:text-[#E8C97A]">
                         <PieChart className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                        <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                           สัดส่วนสถานะการขอทุน
                         </h2>
                       </div>
-                      <p className="text-xs text-[#66585B]">แสดงสถานะคำร้องทั้งหมด</p>
+                      <p className="text-xs text-[#66585B] dark:text-[#A19B91]">แสดงสถานะคำร้องทั้งหมด</p>
                     </div>
 
-                    <div className="inline-flex rounded-xl bg-[#F3ECDF] p-1">
+                    <div className="inline-flex rounded-xl bg-[#F3ECDF] dark:bg-[#181A20] p-1">
                       <button
                         type="button"
                         onClick={() => setRatioUnit('count')}
                         className={`rounded-lg px-2 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
                           ratioUnit === 'count'
-                            ? 'bg-[#7A1629] text-white'
-                            : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                            ? 'bg-[#7A1629] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
+                            : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                         }`}
                       >
                         จำนวน
@@ -614,8 +632,8 @@ export function PublicHomePortal({
                         onClick={() => setRatioUnit('percent')}
                         className={`rounded-lg px-2 py-1 text-xs font-medium whitespace-nowrap transition-colors ${
                           ratioUnit === 'percent'
-                            ? 'bg-[#7A1629] text-white'
-                            : 'text-[#5A4B4E] hover:text-[#7A1629]'
+                            ? 'bg-[#7A1629] text-white dark:bg-[#C6922C] dark:text-[#1D1416]'
+                            : 'text-[#5A4B4E] hover:text-[#7A1629] dark:text-[#A19B91] dark:hover:text-[#F2EFEA]'
                         }`}
                       >
                         %
@@ -631,7 +649,7 @@ export function PublicHomePortal({
                           cy="66"
                           r={radius}
                           fill="transparent"
-                          stroke="#F2E9D8"
+                          stroke={isDark ? '#323642' : '#F2E9D8'}
                           strokeWidth="18"
                         />
                         {overview.filteredTotal > 0 &&
@@ -653,24 +671,24 @@ export function PublicHomePortal({
                           )}
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                        <span className="font-display text-2xl font-bold text-[#23181A] tabular-nums">
+                        <span className="font-display text-2xl font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                           {overview.filteredTotal}
                         </span>
-                        <span className="text-[11px] text-[#66585B]">คน</span>
+                        <span className="text-[11px] text-[#66585B] dark:text-[#A19B91]">คน</span>
                       </div>
                     </div>
 
                     <div className="w-full space-y-3">
                       {donutArcs.map((arc) => (
                         <div key={arc.label} className="flex items-center justify-between gap-2 text-xs">
-                          <span className="inline-flex items-center gap-2 text-[#4B3F42]">
+                          <span className="inline-flex items-center gap-2 text-[#4B3F42] dark:text-[#CEC8BE]">
                             <span
                               className="h-2.5 w-2.5 rounded-full shrink-0"
                               style={{ backgroundColor: arc.color }}
                             />
                             <span>{arc.label}</span>
                           </span>
-                          <span className="font-semibold text-[#23181A] tabular-nums">
+                          <span className="font-semibold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                             {ratioUnit === 'count' ? `${arc.count} คน` : `${arc.pct}%`}
                           </span>
                         </div>
@@ -680,38 +698,38 @@ export function PublicHomePortal({
                 </div>
 
                 {/* Right Card: Academic & Volunteer Highlights + Auth Entry */}
-                <div className="xl:col-span-3 rounded-2xl border border-[#DFD1BA] bg-white p-5 sm:p-6 flex flex-col justify-between gap-4 surface-card">
+                <div className="xl:col-span-3 rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-5 sm:p-6 flex flex-col justify-between gap-4 surface-card">
                   <div className="space-y-4">
-                    <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A]">
+                    <h2 className="font-display text-sm sm:text-base font-bold text-[#23181A] dark:text-[#F2EFEA]">
                       ผลการเรียน &amp; จิตอาสา
                     </h2>
 
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 rounded-xl border border-[#EFE5D4] bg-[#FAF6EE]/80 p-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FDF6E4] text-[#9A6E14]">
+                      <div className="flex items-center gap-3 rounded-xl border border-[#EFE5D4] bg-[#FAF6EE]/80 dark:border-[#343842] dark:bg-[#1B1D23] p-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FDF6E4] text-[#9A6E14] dark:bg-[#332714] dark:text-[#E8C97A]">
                           <GraduationCap className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div>
-                          <p className="text-[11px] text-[#66585B]">เกรดเฉลี่ยสะสม (GPAX)</p>
-                          <p className="font-display text-lg font-bold text-[#23181A] tabular-nums">
+                          <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">เกรดเฉลี่ยสะสม (GPAX)</p>
+                          <p className="font-display text-lg font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                             {overview.averageGpax}
                           </p>
-                          <p className="text-[11px] text-[#66585B] tabular-nums">
+                          <p className="text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums">
                             บันทึกแล้ว {overview.gradeRecordsCount} ภาคเรียน
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 rounded-xl border border-[#EFE5D4] bg-[#FAF6EE]/80 p-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5F3FF] text-[#6D28D9]">
+                      <div className="flex items-center gap-3 rounded-xl border border-[#EFE5D4] bg-[#FAF6EE]/80 dark:border-[#343842] dark:bg-[#1B1D23] p-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F5F3FF] text-[#6D28D9] dark:bg-[#281F44] dark:text-[#C4B5FD]">
                           <HeartHandshake className="h-5 w-5" aria-hidden="true" />
                         </div>
                         <div>
-                          <p className="text-[11px] text-[#66585B]">ชั่วโมงจิตอาสา (อนุมัติ)</p>
-                          <p className="font-display text-lg font-bold text-[#23181A] tabular-nums">
+                          <p className="text-[11px] text-[#66585B] dark:text-[#A19B91]">ชั่วโมงจิตอาสา (อนุมัติ)</p>
+                          <p className="font-display text-lg font-bold text-[#23181A] dark:text-[#F2EFEA] tabular-nums">
                             {overview.approvedVolunteerHours} ชม.
                           </p>
-                          <p className="text-[11px] text-[#66585B] tabular-nums">
+                          <p className="text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums">
                             รออนุมัติ {overview.pendingVolunteerHours} ชม.
                           </p>
                         </div>
@@ -719,7 +737,7 @@ export function PublicHomePortal({
                     </div>
                   </div>
 
-                  <div className="border-t border-[#EFE5D4] pt-4 space-y-2">
+                  <div className="border-t border-[#EFE5D4] dark:border-[#343842] pt-4 space-y-2">
                     <button
                       type="button"
                       onClick={() => onNavigateAuth('student', 'login')}
@@ -730,7 +748,7 @@ export function PublicHomePortal({
                     <button
                       type="button"
                       onClick={() => onNavigateAuth('student', 'register')}
-                      className="w-full rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] transition-colors"
+                      className="w-full rounded-xl border border-[#C6922C] bg-[#FDF8EC] px-4 py-2 text-xs font-semibold text-[#7A1629] hover:bg-[#F7EBCB] dark:border-[#8D6B2A] dark:bg-[#2A2316] dark:text-[#E8C97A] dark:hover:bg-[#352C1B] transition-colors"
                     >
                       สมัครด้วยรหัสนักศึกษา
                     </button>
@@ -746,13 +764,13 @@ export function PublicHomePortal({
           )}
 
           {activeTab === 'manual' && (
-            <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 sm:p-8 space-y-6 surface-card">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EFE5D4] pb-4">
+            <section className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 sm:p-8 space-y-6 surface-card">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EFE5D4] dark:border-[#343842] pb-4">
                 <div className="space-y-1">
-                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629]">
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629] dark:text-[#E8C97A]">
                     คู่มือการใช้งานระบบทุนการศึกษา &amp; กยศ.
                   </h2>
-                  <p className="text-sm text-[#66585B]">
+                  <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
                     ขั้นตอนการลงทะเบียนและการยื่นขอรับทุนการศึกษาสำหรับนักศึกษาสาขาวิชาสังคมศึกษา
                   </p>
                 </div>
@@ -796,10 +814,14 @@ export function PublicHomePortal({
                 ].map((item) => (
                   <div
                     key={item.step}
-                    className="rounded-xl border border-[#E6DAC5] bg-[#FAF6EE]/70 p-5 space-y-2"
+                    className="rounded-xl border border-[#E6DAC5] bg-[#FAF6EE]/70 dark:border-[#343842] dark:bg-[#1B1D23] p-5 space-y-2"
                   >
-                    <h3 className="font-display text-base font-bold text-[#7A1629]">{item.step}</h3>
-                    <p className="text-sm text-[#4B3F42] leading-relaxed">{item.detail}</p>
+                    <h3 className="font-display text-base font-bold text-[#7A1629] dark:text-[#E8C97A]">
+                      {item.step}
+                    </h3>
+                    <p className="text-sm text-[#4B3F42] dark:text-[#CEC8BE] leading-relaxed">
+                      {item.detail}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -807,13 +829,13 @@ export function PublicHomePortal({
           )}
 
           {activeTab === 'forms' && (
-            <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 sm:p-8 space-y-6 surface-card">
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EFE5D4] pb-4">
+            <section className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 sm:p-8 space-y-6 surface-card">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EFE5D4] dark:border-[#343842] pb-4">
                 <div className="space-y-1">
-                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629]">
+                  <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629] dark:text-[#E8C97A]">
                     แบบฟอร์ม &amp; รายการเอกสารที่ต้องเตรียม
                   </h2>
-                  <p className="text-sm text-[#66585B]">
+                  <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
                     ตรวจสอบความพร้อมของเอกสารประกอบการสมัครทุนและการส่งผลการเรียนรายภาคเรียน
                   </p>
                 </div>
@@ -829,14 +851,14 @@ export function PublicHomePortal({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
-                    <tr className="border-b border-[#E6DAC5] text-[#66585B]">
+                    <tr className="border-b border-[#E6DAC5] dark:border-[#343842] text-[#66585B] dark:text-[#A19B91]">
                       <th className="py-3 pr-4 font-semibold">รายการเอกสาร</th>
                       <th className="py-3 px-4 font-semibold">หมวดหมู่</th>
                       <th className="py-3 px-4 font-semibold">รูปแบบไฟล์ที่รองรับ</th>
                       <th className="py-3 pl-4 font-semibold">เงื่อนไขสำคัญ</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#EFE5D4]">
+                  <tbody className="divide-y divide-[#EFE5D4] dark:divide-[#2E323D]">
                     {[
                       {
                         name: 'รูปถ่ายนักศึกษาขนาด 1.5 นิ้ว',
@@ -863,19 +885,19 @@ export function PublicHomePortal({
                         note: 'แนบอย่างน้อย 3 รูป (เปิดใช้งานหลังอนุมัติทุน)',
                       },
                     ].map((doc) => (
-                      <tr key={doc.name} className="hover:bg-[#FAF6EE]">
-                        <td className="py-3.5 pr-4 font-medium text-[#23181A]">
+                      <tr key={doc.name} className="hover:bg-[#FAF6EE] dark:hover:bg-[#2B2E37]">
+                        <td className="py-3.5 pr-4 font-medium text-[#23181A] dark:text-[#F2EFEA]">
                           <span className="inline-flex items-center gap-2">
                             <CheckCircle2
-                              className="h-4 w-4 text-[#16A34A] shrink-0"
+                              className="h-4 w-4 text-[#16A34A] dark:text-[#4ADE80] shrink-0"
                               aria-hidden="true"
                             />
                             <span>{doc.name}</span>
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-[#5A4B4E]">{doc.cat}</td>
-                        <td className="py-3.5 px-4 text-[#5A4B4E] tabular-nums">{doc.fmt}</td>
-                        <td className="py-3.5 pl-4 text-[#66585B]">{doc.note}</td>
+                        <td className="py-3.5 px-4 text-[#5A4B4E] dark:text-[#CEC8BE]">{doc.cat}</td>
+                        <td className="py-3.5 px-4 text-[#5A4B4E] dark:text-[#CEC8BE] tabular-nums">{doc.fmt}</td>
+                        <td className="py-3.5 pl-4 text-[#66585B] dark:text-[#A19B91]">{doc.note}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -885,12 +907,12 @@ export function PublicHomePortal({
           )}
 
           {activeTab === 'calendar' && (
-            <section className="rounded-2xl border border-[#DFD1BA] bg-white p-6 sm:p-8 space-y-6 surface-card">
-              <div className="border-b border-[#EFE5D4] pb-4 space-y-1">
-                <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629]">
+            <section className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 sm:p-8 space-y-6 surface-card">
+              <div className="border-b border-[#EFE5D4] dark:border-[#343842] pb-4 space-y-1">
+                <h2 className="font-display text-xl sm:text-2xl font-bold text-[#7A1629] dark:text-[#E8C97A]">
                   กำหนดการดำเนินงานทุนการศึกษา &amp; กยศ. (ปีการศึกษา 2569 – 2575)
                 </h2>
-                <p className="text-sm text-[#66585B]">
+                <p className="text-sm text-[#66585B] dark:text-[#A19B91]">
                   ลำดับช่วงเวลาการรับสมัคร การพิจารณาคัดเลือก และการรายงานชั่วโมงจิตอาสา
                 </p>
               </div>
@@ -916,11 +938,13 @@ export function PublicHomePortal({
                 ].map((item) => (
                   <div
                     key={item.phase}
-                    className="rounded-xl border border-[#E6DAC5] bg-[#FAF6EE]/60 p-4 flex flex-wrap items-center justify-between gap-3"
+                    className="rounded-xl border border-[#E6DAC5] bg-[#FAF6EE]/60 dark:border-[#343842] dark:bg-[#1B1D23] p-4 flex flex-wrap items-center justify-between gap-3"
                   >
                     <div className="space-y-1">
-                      <p className="font-display text-sm font-bold text-[#7A1629]">{item.phase}</p>
-                      <p className="text-xs sm:text-sm text-[#4B3F42]">{item.desc}</p>
+                      <p className="font-display text-sm font-bold text-[#7A1629] dark:text-[#E8C97A]">
+                        {item.phase}
+                      </p>
+                      <p className="text-xs sm:text-sm text-[#4B3F42] dark:text-[#CEC8BE]">{item.desc}</p>
                     </div>
                   </div>
                 ))}
