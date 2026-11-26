@@ -28,7 +28,6 @@ import {
   FixedWindowRateLimiter,
   isSafeUploadFilename,
 } from '../src/utils/securityGuard.js';
-import { generateAppsScriptFiles } from '../src/services/googleAppsScriptTemplate.js';
 import { signSessionWorker, verifySessionWorker } from './crypto.js';
 import { D1Store, sanitizeUser, StoredUser } from './d1Store.js';
 import type { CloudflareEnv } from './types.js';
@@ -334,7 +333,18 @@ export default {
 
     try {
       if (pathname === '/api/health' && method === 'GET') {
-        return jsonResponse({ ok: true, timestamp: new Date().toISOString(), runtime: 'cloudflare-workers' });
+        const d1Ping = await store.pingD1();
+        return jsonResponse({
+          ok: d1Ping.d1Connected,
+          timestamp: new Date().toISOString(),
+          runtime: 'cloudflare-workers',
+          cloudflare: {
+            worker: true,
+            d1Connected: d1Ping.d1Connected,
+            d1LatencyMs: d1Ping.d1LatencyMs,
+            r2Bound: Boolean(env.BUCKET),
+          },
+        });
       }
 
       const apiLimited = checkRateLimit(
@@ -1172,15 +1182,10 @@ export default {
         }
       }
 
-      if (pathname === '/api/admin/apps-script-template' && method === 'GET') {
-        const roleErr = checkRole(currentUser, ['admin', 'teacher']);
+      if (pathname === '/api/cloudflare/status' && method === 'GET') {
+        const roleErr = checkRole(currentUser, ['teacher', 'admin']);
         if (roleErr) return roleErr;
-        const cfg = await store.getWorkspaceConfig();
-        const files = generateAppsScriptFiles({
-          spreadsheetId: cfg.spreadsheetId,
-          driveFolderId: cfg.driveFolderId,
-        });
-        return jsonResponse({ code: files.codeGs, indexHtml: files.indexHtml });
+        return jsonResponse({ status: await store.getCloudflareStatusSummary() });
       }
 
       return jsonResponse({ error: 'ไม่พบ API ที่ร้องขอ' }, 404);

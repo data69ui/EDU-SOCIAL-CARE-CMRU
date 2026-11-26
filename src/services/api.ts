@@ -396,8 +396,36 @@ export const api = {
     });
   },
 
-  getAppsScriptTemplate() {
-    return request<{ code: string; indexHtml?: string }>('/api/admin/apps-script-template');
+  getCloudflareStatus() {
+    return request<{ status: import('../types/scholarship').CloudflareRuntimeStatus }>(
+      '/api/cloudflare/status'
+    );
+  },
+
+  testCloudflareConnection(workerUrl: string) {
+    return request<{ result: import('../types/scholarship').CloudflareTestResult }>(
+      '/api/cloudflare/test',
+      {
+        method: 'POST',
+        body: JSON.stringify({ workerUrl }),
+      }
+    );
+  },
+
+  syncCloudflareWorker(payload: {
+    workerUrl: string;
+    direction: 'push' | 'pull';
+    username: string;
+    password: string;
+  }) {
+    return request<{
+      direction: 'push' | 'pull';
+      result: RestoreSnapshotResult;
+      config: GoogleWorkspaceConfig;
+    }>('/api/cloudflare/sync', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   },
 };
 

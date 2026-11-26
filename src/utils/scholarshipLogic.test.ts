@@ -48,14 +48,10 @@ import {
   clampPayloadText,
   FixedWindowRateLimiter,
   isSafeUploadFilename,
-  sanitizeAppsScriptWebAppUrl,
+  sanitizeCloudflareWorkerUrl,
   sanitizeWorkspaceConfigInput,
   validateUploadedBinary,
 } from './securityGuard';
-import {
-  buildLocalAppsScriptPreviewHtml,
-  generateAppsScriptFiles,
-} from '../services/googleAppsScriptTemplate';
 import type { StudentFullRecord, VolunteerRecord } from '../types/scholarship';
 
 test('generateVerificationCode and verifyVerificationCode handle 5-digit numeric challenges', () => {
@@ -944,72 +940,39 @@ test('formatStructuredAddress renders Thai address parts cleanly and falls back 
   assert.equal(formatStructuredAddress(null, ''), '-');
 });
 
-test('sanitizeAppsScriptWebAppUrl and sanitizeWorkspaceConfigInput enforce strict script.google.com Web App URLs', () => {
-  const validExec =
-    'https://script.google.com/macros/s/AKfycbz1234567890abcdef_ABCDEF/exec?foo=bar';
+test('sanitizeCloudflareWorkerUrl and sanitizeWorkspaceConfigInput enforce strict HTTPS public Cloudflare Worker URLs', () => {
+  const validWorker =
+    'https://cmru-edu-social-care.example-team.workers.dev/api-proxy/?foo=bar#hash';
   assert.equal(
-    sanitizeAppsScriptWebAppUrl(validExec),
-    'https://script.google.com/macros/s/AKfycbz1234567890abcdef_ABCDEF/exec'
+    sanitizeCloudflareWorkerUrl(validWorker),
+    'https://cmru-edu-social-care.example-team.workers.dev/api-proxy'
+  );
+  assert.equal(
+    sanitizeCloudflareWorkerUrl('https://portal.cmru-care.com/'),
+    'https://portal.cmru-care.com'
   );
 
-  assert.equal(sanitizeAppsScriptWebAppUrl('javascript:alert(1)'), undefined);
-  assert.equal(sanitizeAppsScriptWebAppUrl('https://evil.example.com/macros/s/abc123456789/exec'), undefined);
-  assert.equal(sanitizeAppsScriptWebAppUrl('http://script.google.com/macros/s/abc123456789/exec'), undefined);
+  // Reject unsafe schemes, localhost, private IPs, IPv6 literals
+  assert.equal(sanitizeCloudflareWorkerUrl('javascript:alert(1)'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('http://cmru.workers.dev'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('https://localhost:8787'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('https://127.0.0.1:8787'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('https://192.168.1.10'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('https://169.254.169.254/latest/meta-data'), undefined);
+  assert.equal(sanitizeCloudflareWorkerUrl('https://[::1]/'), undefined);
 
   const sanitized = sanitizeWorkspaceConfigInput({
     spreadsheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
-    appsScriptWebAppUrl: validExec,
-    appsScriptSavedAt: '2026-11-26T00:00:00.000Z',
+    cloudflareWorkerUrl: 'https://cmru-edu-social-care.example.workers.dev/',
+    cloudflareDatabaseName: 'cmru-edu-social-care-db',
+    cloudflareBucketName: 'cmru-edu-social-care-files',
+    cloudflareConnectedAt: '2026-11-26T09:00:00.000Z',
   });
   assert.equal(
-    sanitized.appsScriptWebAppUrl,
-    'https://script.google.com/macros/s/AKfycbz1234567890abcdef_ABCDEF/exec'
+    sanitized.cloudflareWorkerUrl,
+    'https://cmru-edu-social-care.example.workers.dev'
   );
-  assert.equal(sanitized.appsScriptSavedAt, '2026-11-26T00:00:00.000Z');
-});
-
-test('generateAppsScriptFiles and buildLocalAppsScriptPreviewHtml include connected IDs, sheet tabs, doGet ALLOWALL, and safe escaped JSON', () => {
-  const files = generateAppsScriptFiles({
-    spreadsheetId: 'SHEET_ID_1234567890',
-    driveFolderId: 'FOLDER_ID_1234567890',
-  });
-
-  assert.ok(files.codeGs.includes("const SPREADSHEET_ID = 'SHEET_ID_1234567890';"));
-  assert.ok(files.codeGs.includes("const DRIVE_FOLDER_ID = 'FOLDER_ID_1234567890';"));
-  assert.ok(files.codeGs.includes('function doGet(e)'));
-  assert.ok(files.codeGs.includes('HtmlService.XFrameOptionsMode.ALLOWALL'));
-  assert.ok(files.codeGs.includes('นักศึกษาและข้อมูลพื้นฐาน'));
-  assert.ok(files.codeGs.includes('คำร้องขอทุนการศึกษา'));
-  assert.ok(files.codeGs.includes('ผลการเรียน_GPA'));
-  assert.ok(files.codeGs.includes('กิจกรรมจิตอาสา'));
-
-  assert.ok(files.indexHtml.includes('EDU SOCIAL CARE CMRU'));
-  assert.ok(files.indexHtml.includes('getDashboardData'));
-  assert.equal(files.indexHtml.includes('Remaining Budget'), false);
-
-  const basic = createEmptyBasicInfo('69000001@g.cmru.ac.th', 'นายทดสอบ <script>alert(1)</script>', '69000001');
-  const previewHtml = buildLocalAppsScriptPreviewHtml(
-    [
-      {
-        user: {
-          id: 'u1',
-          role: 'student',
-          username: '69000001',
-          fullName: basic.fullName,
-          studentId: '69000001',
-          authProvider: 'student_id',
-          hasPassword: true,
-          createdAt: '2026-01-01T00:00:00.000Z',
-        },
-        basicInfo: basic,
-        application: null,
-        grades: [],
-        volunteers: [],
-      },
-    ],
-    { spreadsheetId: 'SHEET_ID_1234567890' }
-  );
-
-  assert.ok(previewHtml.includes('window.__INITIAL_DATA__'));
-  assert.equal(previewHtml.includes('<script>alert(1)</script>'), false);
+  assert.equal(sanitized.cloudflareDatabaseName, 'cmru-edu-social-care-db');
+  assert.equal(sanitized.cloudflareBucketName, 'cmru-edu-social-care-files');
+  assert.equal(sanitized.cloudflareConnectedAt, '2026-11-26T09:00:00.000Z');
 });

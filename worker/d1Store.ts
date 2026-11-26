@@ -342,6 +342,42 @@ export class D1Store {
     return cleaned;
   }
 
+  async pingD1(): Promise<{ d1Connected: boolean; d1LatencyMs: number }> {
+    const started = Date.now();
+    try {
+      await this.env.DB.prepare('SELECT 1 as ok').first<{ ok: number }>();
+      return { d1Connected: true, d1LatencyMs: Math.max(0, Date.now() - started) };
+    } catch {
+      return { d1Connected: false, d1LatencyMs: Math.max(0, Date.now() - started) };
+    }
+  }
+
+  async getCloudflareStatusSummary() {
+    const started = Date.now();
+    const [studentsRow, appsRow, gradesRow, volsRow, cfg] = await Promise.all([
+      this.env.DB.prepare("SELECT COUNT(*) as cnt FROM users WHERE role = 'student'").first<{ cnt: number }>(),
+      this.env.DB.prepare('SELECT COUNT(*) as cnt FROM applications').first<{ cnt: number }>(),
+      this.env.DB.prepare('SELECT COUNT(*) as cnt FROM grades').first<{ cnt: number }>(),
+      this.env.DB.prepare('SELECT COUNT(*) as cnt FROM volunteers').first<{ cnt: number }>(),
+      this.getWorkspaceConfig(),
+    ]);
+    return {
+      runtime: 'cloudflare-workers' as const,
+      d1Connected: true,
+      r2Bound: Boolean(this.env.BUCKET),
+      d1LatencyMs: Math.max(0, Date.now() - started),
+      databaseName: cfg.cloudflareDatabaseName || 'cmru-edu-social-care-db',
+      bucketName: cfg.cloudflareBucketName || 'cmru-edu-social-care-files',
+      counts: {
+        students: Number(studentsRow?.cnt || 0),
+        applications: Number(appsRow?.cnt || 0),
+        grades: Number(gradesRow?.cnt || 0),
+        volunteers: Number(volsRow?.cnt || 0),
+      },
+      config: cfg,
+    };
+  }
+
   async isAdminInitialized(): Promise<boolean> {
     const row = await this.env.DB.prepare(
       "SELECT COUNT(*) as cnt FROM users WHERE role = 'admin'"
@@ -988,14 +1024,8 @@ export class D1Store {
     academicYear: AcademicYear | 'all' = 'all',
     yearLevel: YearLevel | 'all' = 'all'
   ): Promise<PublicOverviewStats> {
-    const [bundles, wsConfig] = await Promise.all([
-      this.getAllStudentBundles(),
-      this.getWorkspaceConfig(),
-    ]);
-    const stats = buildPublicOverviewStats(bundles, academicYear, yearLevel);
-    return wsConfig.appsScriptWebAppUrl
-      ? { ...stats, appsScriptWebAppUrl: wsConfig.appsScriptWebAppUrl }
-      : stats;
+    const bundles = await this.getAllStudentBundles();
+    return buildPublicOverviewStats(bundles, academicYear, yearLevel);
   }
 
   async savePdpaDecision(studentUserId: string, consented: boolean): Promise<BasicInfoData> {

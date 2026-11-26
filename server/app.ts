@@ -25,8 +25,8 @@ import {
   BoundedMap,
   FixedWindowRateLimiter,
   isSafeUploadFilename,
+  sanitizeCloudflareWorkerUrl,
 } from '../src/utils/securityGuard.js';
-import { generateAppsScriptFiles } from '../src/services/googleAppsScriptTemplate.js';
 import { sanitizeUser, store, StoredUser, verifyPassword } from './store.js';
 
 dotenv.config();
@@ -312,7 +312,7 @@ export function createApp() {
   app.use(express.json({ limit: '512kb' }));
 
   app.get('/api/health', (_req, res) => {
-    res.json({ ok: true, timestamp: new Date().toISOString() });
+    res.json({ ok: true, timestamp: new Date().toISOString(), runtime: 'node' });
   });
 
   // Ensure store state is synced (especially on serverless cold starts / remote KV)
@@ -1108,14 +1108,293 @@ export function createApp() {
     }
   );
 
-  app.get('/api/admin/apps-script-template', requireRole(['admin', 'teacher']), (_req, res) => {
-    const cfg = store.getWorkspaceConfig();
-    const files = generateAppsScriptFiles({
-      spreadsheetId: cfg.spreadsheetId,
-      driveFolderId: cfg.driveFolderId,
-    });
-    res.json({ code: files.codeGs, indexHtml: files.indexHtml });
+  app.get('/api/cloudflare/status', requireRole(['teacher', 'admin']), (_req, res) => {
+    res.json({ status: store.getCloudflareStatusSummary() });
   });
+
+  app.post(
+    '/api/cloudflare/test',
+    requireSameOriginOrHeader,
+    requireRole(['teacher', 'admin']),
+    async (req, res) => {
+      try {
+        const rawUrl = (req.body as { workerUrl?: unknown })?.workerUrl;
+        const workerUrl = sanitizeCloudflareWorkerUrl(rawUrl);
+        if (!workerUrl) {
+          res.status(400).json({
+            error:
+              'URL ของ Cloudflare Worker ไม่ถูกต้อง (ต้องเป็น https:// และไม่ใช่ localhost/Private IP)',
+          });
+          return;
+        }
+
+        const started = Date.now();
+        const healthRes = await fetch(`${workerUrl}/api/health`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(10_000),
+        });
+        const latencyMs = Math.max(0, Date.now() - started);
+
+        const healthData = (await healthRes.json().catch(() => null)) as {
+          ok?: boolean;
+          runtime?: string;
+          cloudflare?: {
+            worker?: boolean;
+            d1Connected?: boolean;
+            r2Bound?: boolean;
+            d1LatencyMs?: number;
+          };
+        } | null;
+
+        if (!healthRes.ok || !healthData?.ok) {
+          res.status(502).json({
+            error: `ไม่สามารถเชื่อมต่อ ${workerUrl}/api/health ได้ (HTTP ${healthRes.status}) กรุณาตรวจสอบว่า deploy Worker และรัน D1 migration แล้ว`,
+          });
+          return;
+        }
+
+        const [authRes, overviewRes] = await Promise.all([
+          fetch(`${workerUrl}/api/auth/status`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(8_000),
+          }).catch(() => null),
+          fetch(`${workerUrl}/api/public/overview`, {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+            signal: AbortSignal.timeout(8_000),
+          }).catch(() => null),
+        ]);
+
+        const authJson = authRes?.ok
+          ? ((await authRes.json().catch(() => null)) as { adminInitialized?: boolean } | null)
+          : null;
+        const overviewJson = overviewRes?.ok
+          ? ((await overviewRes.json().catch(() => null)) as {
+              overview?: { totalAllStudents?: number };
+            } | null)
+          : null;
+
+        res.json({
+          result: {
+            ok: true,
+            workerUrl,
+            runtime: healthData.runtime || 'cloudflare-workers',
+            latencyMs,
+            d1Connected: Boolean(healthData.cloudflare?.d1Connected),
+            r2Bound: Boolean(healthData.cloudflare?.r2Bound),
+            d1LatencyMs: healthData.cloudflare?.d1LatencyMs,
+            adminInitialized: authJson?.adminInitialized,
+            totalStudents: overviewJson?.overview?.totalAllStudents,
+          },
+        });
+      } catch (err) {
+        const msg =
+          (err as Error).name === 'TimeoutError'
+            ? 'การเชื่อมต่อ Cloudflare Worker ใช้เวลานานเกินกำหนด'
+            : (err as Error).message || 'ไม่สามารถเชื่อมต่อ Cloudflare Worker ได้';
+        res.status(502).json({ error: msg });
+      }
+    }
+  );
+
+  app.post(
+    '/api/cloudflare/sync',
+    uploadLimitMiddleware,
+    requireSameOriginOrHeader,
+    requireRole(['admin']),
+    async (req: AuthedRequest, res) => {
+      try {
+        const body = (req.body || {}) as {
+          workerUrl?: unknown;
+          direction?: 'push' | 'pull';
+          username?: string;
+          password?: string;
+        };
+        const workerUrl = sanitizeCloudflareWorkerUrl(body.workerUrl);
+        if (!workerUrl) {
+          res.status(400).json({ error: 'URL ของ Cloudflare Worker ไม่ถูกต้อง' });
+          return;
+        }
+        const direction = body.direction === 'pull' ? 'pull' : 'push';
+        const username = String(body.username || '').trim();
+        const password = String(body.password || '');
+        if (!username || !password) {
+          res.status(400).json({
+            error: 'กรุณาระบุชื่อผู้ใช้และรหัสผ่านผู้ดูแลระบบของ Cloudflare Worker',
+          });
+          return;
+        }
+
+        const remoteHeaders: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        };
+
+        const authStatusRes = await fetch(`${workerUrl}/api/auth/status`, {
+          method: 'GET',
+          signal: AbortSignal.timeout(8_000),
+        });
+        const authStatus = (await authStatusRes.json().catch(() => ({}))) as {
+          adminInitialized?: boolean;
+        };
+
+        let remoteToken: string | undefined;
+        if (direction === 'push' && authStatus.adminInitialized === false) {
+          const setupRes = await fetch(`${workerUrl}/api/auth/admin/setup`, {
+            method: 'POST',
+            headers: remoteHeaders,
+            body: JSON.stringify({
+              username,
+              password,
+              confirmPassword: password,
+              fullName: req.currentUser?.fullName || 'ผู้ดูแลระบบงานทุนการศึกษา',
+            }),
+            signal: AbortSignal.timeout(10_000),
+          });
+          const setupJson = (await setupRes.json().catch(() => ({}))) as {
+            token?: string;
+            error?: string;
+          };
+          if (!setupRes.ok || !setupJson.token) {
+            res.status(400).json({
+              error: setupJson.error || 'ไม่สามารถตั้งค่าบัญชีผู้ดูแลบน Cloudflare Worker ได้',
+            });
+            return;
+          }
+          remoteToken = setupJson.token;
+        } else {
+          const loginRes = await fetch(`${workerUrl}/api/auth/login`, {
+            method: 'POST',
+            headers: remoteHeaders,
+            body: JSON.stringify({
+              role: 'admin',
+              username,
+              password,
+            }),
+            signal: AbortSignal.timeout(10_000),
+          });
+          const loginJson = (await loginRes.json().catch(() => ({}))) as {
+            token?: string;
+            error?: string;
+          };
+          if (!loginRes.ok || !loginJson.token) {
+            res.status(401).json({
+              error: loginJson.error || 'เข้าสู่ระบบ Cloudflare Worker ไม่สำเร็จ กรุณาตรวจสอบรหัสผ่าน',
+            });
+            return;
+          }
+          remoteToken = loginJson.token;
+        }
+
+        const authedHeaders = {
+          ...remoteHeaders,
+          Authorization: `Bearer ${remoteToken}`,
+        };
+
+        if (direction === 'push') {
+          const currentCfg = store.getWorkspaceConfig();
+          const snapshotPayload = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            exportedBy: req.currentUser?.fullName || req.currentUser?.username || 'admin',
+            students: store.getAllStudentBundles(),
+            workspaceConfig: {
+              ...currentCfg,
+              cloudflareWorkerUrl: workerUrl,
+              cloudflareLastSyncedAt: new Date().toISOString(),
+              cloudflareLastSyncedBy: req.currentUser?.fullName || req.currentUser?.username,
+            },
+          };
+
+          const pushRes = await fetch(`${workerUrl}/api/admin/restore-snapshot`, {
+            method: 'POST',
+            headers: authedHeaders,
+            body: JSON.stringify(snapshotPayload),
+            signal: AbortSignal.timeout(20_000),
+          });
+          const pushJson = (await pushRes.json().catch(() => ({}))) as {
+            result?: {
+              restoredStudents: number;
+              restoredApplications: number;
+              restoredGrades: number;
+              restoredVolunteers: number;
+            };
+            error?: string;
+          };
+          if (!pushRes.ok || !pushJson.result) {
+            res.status(502).json({
+              error: pushJson.error || 'ส่งข้อมูลขึ้น Cloudflare D1 ไม่สำเร็จ',
+            });
+            return;
+          }
+
+          const syncedAt = new Date().toISOString();
+          const savedCfg = store.saveWorkspaceConfig({
+            ...currentCfg,
+            cloudflareWorkerUrl: workerUrl,
+            cloudflareConnectedAt: currentCfg.cloudflareConnectedAt || syncedAt,
+            cloudflareLastSyncedAt: syncedAt,
+            cloudflareLastSyncedBy: req.currentUser?.fullName || req.currentUser?.username,
+          });
+          await store.flush();
+
+          res.json({
+            direction: 'push',
+            result: pushJson.result,
+            config: savedCfg,
+          });
+          return;
+        }
+
+        // direction === 'pull'
+        const pullRes = await fetch(`${workerUrl}/api/staff/students`, {
+          method: 'GET',
+          headers: authedHeaders,
+          signal: AbortSignal.timeout(20_000),
+        });
+        const pullJson = (await pullRes.json().catch(() => ({}))) as {
+          students?: unknown[];
+          error?: string;
+        };
+        if (!pullRes.ok || !Array.isArray(pullJson.students)) {
+          res.status(502).json({
+            error: pullJson.error || 'ดึงข้อมูลจาก Cloudflare D1 ไม่สำเร็จ',
+          });
+          return;
+        }
+
+        const restored = store.restoreSnapshot({
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          students: pullJson.students,
+        });
+        const currentCfg = store.getWorkspaceConfig();
+        const syncedAt = new Date().toISOString();
+        const savedCfg = store.saveWorkspaceConfig({
+          ...currentCfg,
+          cloudflareWorkerUrl: workerUrl,
+          cloudflareConnectedAt: currentCfg.cloudflareConnectedAt || syncedAt,
+          cloudflareLastSyncedAt: syncedAt,
+          cloudflareLastSyncedBy: req.currentUser?.fullName || req.currentUser?.username,
+        });
+        await store.flush();
+
+        res.json({
+          direction: 'pull',
+          result: restored,
+          config: savedCfg,
+        });
+      } catch (err) {
+        const msg =
+          (err as Error).name === 'TimeoutError'
+            ? 'การซิงก์ข้อมูลกับ Cloudflare ใช้เวลานานเกินกำหนด'
+            : (err as Error).message || 'เกิดข้อผิดพลาดในการซิงก์ข้อมูลกับ Cloudflare';
+        res.status(502).json({ error: msg });
+      }
+    }
+  );
 
   // Global API & JSON parse error handler (prevents server crash or stack leakage)
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

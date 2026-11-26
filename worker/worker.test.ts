@@ -719,6 +719,22 @@ test('Cloudflare Worker + D1 + R2 full end-to-end flow', async (t) => {
   assert.equal(restoredOverview.json.overview.approvedCount, 1);
   assert.equal(restoredOverview.json.overview.approvedVolunteerHours, 5);
 
+  // 10b. Cloudflare health & status endpoint check
+  const healthRes = await reqJson(env, '/api/health');
+  assert.equal(healthRes.response.status, 200);
+  assert.equal(healthRes.json.runtime, 'cloudflare-workers');
+  assert.equal(healthRes.json.cloudflare.d1Connected, true);
+  assert.equal(healthRes.json.cloudflare.r2Bound, true);
+
+  const cfStatusRes = await reqJson(env, '/api/cloudflare/status', {
+    token: adminToken,
+  });
+  assert.equal(cfStatusRes.response.status, 200);
+  assert.equal(cfStatusRes.json.status.runtime, 'cloudflare-workers');
+  assert.equal(cfStatusRes.json.status.d1Connected, true);
+  assert.equal(cfStatusRes.json.status.r2Bound, true);
+  assert.equal(cfStatusRes.json.status.counts.students, 1);
+
   // 11. SPA assets fallback check
   const spaRes = await worker.fetch(
     new Request('https://cmru-care.workers.dev/dashboard'),

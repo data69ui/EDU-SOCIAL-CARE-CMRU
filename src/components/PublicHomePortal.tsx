@@ -5,9 +5,7 @@ import {
   CalendarDays,
   CheckCircle2,
   Clock,
-  ExternalLink,
   FileText,
-  Globe,
   GraduationCap,
   HeartHandshake,
   LayoutDashboard,
@@ -33,7 +31,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { DashboardShell, type SidebarNavGroup } from './DashboardShell';
 import { ScholarshipSummarySection } from './ScholarshipSummarySection';
 
-export type PublicHomeTab = 'overview' | 'google-script' | 'manual' | 'forms' | 'calendar';
+export type PublicHomeTab = 'overview' | 'manual' | 'forms' | 'calendar';
 
 interface PublicHomePortalProps {
   activeTab: PublicHomeTab;
@@ -80,10 +78,6 @@ const TAB_TITLES: Record<PublicHomeTab, { title: string; breadcrumb: string }> =
   overview: {
     title: 'Dashboard',
     breadcrumb: 'ภาพรวมข้อมูลทุนการศึกษา & กยศ.',
-  },
-  'google-script': {
-    title: 'แสดงผลผ่าน Google Script',
-    breadcrumb: 'ข้อมูลทุนการศึกษาออนไลน์จาก Google Apps Script',
   },
   manual: {
     title: 'คู่มือทุนการศึกษา & กยศ.',
@@ -207,9 +201,6 @@ export function PublicHomePortal({
       title: 'เมนูหลัก',
       items: [
         { key: 'overview', label: 'ภาพรวม (Dashboard)', icon: LayoutDashboard },
-        ...(overview.appsScriptWebAppUrl
-          ? [{ key: 'google-script', label: 'แสดงผลผ่าน Google Script', icon: Globe }]
-          : []),
         { key: 'manual', label: 'คู่มือทุนการศึกษา & กยศ.', icon: BookOpen },
         { key: 'forms', label: 'แบบฟอร์ม & เอกสารแนบ', icon: FileText },
         { key: 'calendar', label: 'กำหนดการ & ปฏิทินทุน', icon: CalendarDays },
@@ -957,37 +948,6 @@ export function PublicHomePortal({
                     </div>
                   </div>
                 ))}
-              </div>
-            </section>
-          )}
-          {activeTab === 'google-script' && overview.appsScriptWebAppUrl && (
-            <section className="rounded-2xl border border-[#DFD1BA] bg-white dark:border-[#343842] dark:bg-[#22242B] p-6 space-y-4 surface-card">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EFE5D4] dark:border-[#343842] pb-3">
-                <div>
-                  <h2 className="font-display text-lg font-bold text-[#7A1629] dark:text-[#E8C97A]">
-                    แสดงผลข้อมูลทุนการศึกษาผ่าน Google Apps Script
-                  </h2>
-                  <p className="text-xs text-[#66585B] dark:text-[#A19B91]">
-                    เชื่อมต่อโดยตรงกับหน้าเว็บแอป Google Apps Script ของสาขาวิชาสังคมศึกษา
-                  </p>
-                </div>
-                <a
-                  href={overview.appsScriptWebAppUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-[#7A1629] px-3.5 py-2 text-xs font-semibold text-white hover:bg-[#5B0F1D] transition-colors"
-                >
-                  <span>เปิดในแท็บใหม่</span>
-                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                </a>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-[#DFD1BA] dark:border-[#343842] bg-[#FAF8F5] dark:bg-[#15171C]">
-                <iframe
-                  title="EDU SOCIAL CARE CMRU — Google Apps Script"
-                  src={overview.appsScriptWebAppUrl}
-                  sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
-                  className="w-full h-[640px] border-0"
-                />
               </div>
             </section>
           )}

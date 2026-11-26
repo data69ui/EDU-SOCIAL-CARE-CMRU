@@ -802,9 +802,7 @@ class FileStore {
     academicYear: AcademicYear | 'all' = 'all',
     yearLevel: YearLevel | 'all' = 'all'
   ): PublicOverviewStats {
-    const stats = buildPublicOverviewStats(this.getAllStudentBundles(), academicYear, yearLevel);
-    const appsScriptWebAppUrl = this.state.workspaceConfig?.appsScriptWebAppUrl;
-    return appsScriptWebAppUrl ? { ...stats, appsScriptWebAppUrl } : stats;
+    return buildPublicOverviewStats(this.getAllStudentBundles(), academicYear, yearLevel);
   }
 
   savePdpaDecision(studentUserId: string, consented: boolean): BasicInfoData {
@@ -1107,6 +1105,25 @@ class FileStore {
     this.state.workspaceConfig = cleaned;
     this.persist();
     return cleaned;
+  }
+
+  getCloudflareStatusSummary() {
+    const cfg = this.getWorkspaceConfig();
+    const students = this.state.users.filter((u) => u.role === 'student').length;
+    return {
+      runtime: 'node' as const,
+      d1Connected: false,
+      r2Bound: false,
+      databaseName: cfg.cloudflareDatabaseName || 'cmru-edu-social-care-db',
+      bucketName: cfg.cloudflareBucketName || 'cmru-edu-social-care-files',
+      counts: {
+        students,
+        applications: Object.keys(this.state.applications).length,
+        grades: this.state.grades.length,
+        volunteers: this.state.volunteers.length,
+      },
+      config: cfg,
+    };
   }
 
   restoreSnapshot(rawPayload: unknown): RestoreSnapshotResult {

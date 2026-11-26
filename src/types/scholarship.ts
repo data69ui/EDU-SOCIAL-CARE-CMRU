@@ -31,10 +31,42 @@ export interface GoogleWorkspaceConfig {
   driveFolderId?: string;
   driveFolderName?: string;
   driveFolderUrl?: string;
-  appsScriptWebAppUrl?: string;
-  appsScriptSavedAt?: string;
+  cloudflareWorkerUrl?: string;
+  cloudflareDatabaseName?: string;
+  cloudflareBucketName?: string;
+  cloudflareConnectedAt?: string;
+  cloudflareLastSyncedAt?: string;
+  cloudflareLastSyncedBy?: string;
   lastSyncedAt?: string;
   lastSyncedBy?: string;
+}
+
+export interface CloudflareRuntimeStatus {
+  runtime: 'cloudflare-workers' | 'node';
+  d1Connected: boolean;
+  r2Bound: boolean;
+  d1LatencyMs?: number;
+  databaseName: string;
+  bucketName: string;
+  counts: {
+    students: number;
+    applications: number;
+    grades: number;
+    volunteers: number;
+  };
+  config: GoogleWorkspaceConfig;
+}
+
+export interface CloudflareTestResult {
+  ok: boolean;
+  workerUrl: string;
+  runtime: string;
+  latencyMs: number;
+  d1Connected: boolean;
+  r2Bound: boolean;
+  d1LatencyMs?: number;
+  adminInitialized?: boolean;
+  totalStudents?: number;
 }
 
 export interface ParentInfo {
@@ -296,7 +328,6 @@ export interface PublicOverviewStats {
   academicYearCounts: AcademicYearCount[];
   byYearLevel: YearLevelSummaryBucket[];
   scholarshipSummary: ScholarshipCategorySummary[];
-  appsScriptWebAppUrl?: string;
 }
 
 export interface ImportedStudentRow {
