@@ -5,8 +5,6 @@ import {
   BarChart3,
   CheckCircle2,
   Clock,
-  Code2,
-  DatabaseBackup,
   Download,
   Eye,
   FileSpreadsheet,
@@ -66,7 +64,9 @@ import {
 } from '../utils/scholarshipLogic';
 import { DashboardShell, type SidebarNavGroup } from './DashboardShell';
 import { DirectPrintModal } from './DirectPrintModal';
+import { DriveImage } from './DriveMedia';
 import { FileUploadField } from './FileUploadField';
+import { GoogleWorkspacePanel } from './GoogleWorkspacePanel';
 import { ScholarshipSummarySection } from './ScholarshipSummarySection';
 import { StudentProfilePrintView } from './StudentProfilePrintView';
 import { exportElementToPdf, exportElementToPdfBlobUrl } from '../utils/pdfExport';
@@ -97,7 +97,7 @@ const SECTION_META: Record<StaffSectionKey, { title: string; breadcrumb: string 
   'excel-import': { title: 'นำเข้าข้อมูล Excel / เพิ่มรายชื่อ', breadcrumb: 'อัปโหลดไฟล์ .xlsx / .csv หรือเพิ่มรายบุคคล' },
   'pdf-reports': { title: 'ศูนย์พิมพ์รายงาน PDF', breadcrumb: 'พิมพ์รายชื่อรวมและโปรไฟล์รายบุคคล' },
   'admin-users': { title: 'จัดการผู้ใช้งาน', breadcrumb: 'สร้างบัญชี แก้ไขรหัสผ่าน และลบบัญชี' },
-  integrations: { title: 'Google Sheets & สำรองข้อมูล', breadcrumb: 'ส่งออกข้อมูลและเชื่อมต่อ Apps Script' },
+  integrations: { title: 'Google Sheets & Google Drive', breadcrumb: 'ซิงก์ฐานข้อมูล Google Sheets และเก็บไฟล์บน Google Drive' },
 };
 
 function getInitials(name: string) {
@@ -185,7 +185,6 @@ export function StaffDashboard({
   const [newUsername, setNewUsername] = useState('');
   const [newFullName, setNewFullName] = useState('');
   const [newUserPassword, setNewUserPassword] = useState('');
-  const [appsScriptCode, setAppsScriptCode] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -281,12 +280,6 @@ export function StaffDashboard({
   useEffect(() => {
     loadData();
   }, [currentUser.id]);
-
-  useEffect(() => {
-    if (activeSection === 'integrations' && !appsScriptCode) {
-      api.getAppsScriptTemplate().then((r) => setAppsScriptCode(r.code)).catch(() => {});
-    }
-  }, [activeSection]);
 
   const filteredStudents = useMemo(
     () =>
@@ -605,9 +598,10 @@ export function StaffDashboard({
       ],
     },
     {
-      title: 'นำเข้าข้อมูล & รายงาน',
+      title: 'นำเข้าข้อมูล & Google Workspace',
       items: [
         { key: 'excel-import', label: 'นำเข้า Excel / เพิ่มรายชื่อ', icon: FileSpreadsheet },
+        { key: 'integrations', label: 'Google Sheets & Drive', icon: FileSpreadsheet },
         { key: 'pdf-reports', label: 'พิมพ์รายงาน PDF', icon: Printer },
       ],
     },
@@ -617,7 +611,6 @@ export function StaffDashboard({
             title: 'การจัดการผู้ดูแลระบบ',
             items: [
               { key: 'admin-users', label: 'จัดการผู้ใช้งาน & รหัสผ่าน', icon: KeyRound },
-              { key: 'integrations', label: 'Google Sheets & สำรองข้อมูล', icon: Code2 },
             ],
           },
         ]
@@ -854,10 +847,10 @@ export function StaffDashboard({
                           <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#15803D] text-[11px] text-white">
                             3
                           </span>
-                          <span>เชื่อม Google Sheets &amp; สำรองข้อมูล</span>
+                          <span>เชื่อมต่อ Google Sheets &amp; Drive</span>
                         </div>
                         <p className="text-xs text-[#5A4B4E] leading-relaxed">
-                          ดาวน์โหลดเทมเพลต คัดลอก Apps Script และสำรองฐานข้อมูล (JSON / Excel / PDF)
+                          ซิงก์ข้อมูลนักศึกษาลง Google Sheets และเก็บไฟล์/รูปภาพบน Google Drive โดยตรง
                         </p>
                       </button>
                     </div>
@@ -1083,10 +1076,10 @@ export function StaffDashboard({
                               className="w-full flex items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-[#FAF6EE] transition-colors"
                             >
                               {rec.basicInfo.profilePhoto?.url ? (
-                                <img
+                                <DriveImage
                                   src={rec.basicInfo.profilePhoto.url}
+                                  driveFileId={rec.basicInfo.profilePhoto.driveFileId}
                                   alt={rec.basicInfo.fullName || rec.user.fullName}
-                                  referrerPolicy="no-referrer"
                                   className="h-9 w-9 shrink-0 rounded-full object-cover border border-[#DFD1BA]"
                                 />
                               ) : (
@@ -1540,10 +1533,10 @@ export function StaffDashboard({
                       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[#EAE0CE] pb-4">
                         <div className="flex items-center gap-4">
                           {selectedStudent.basicInfo.profilePhoto && (
-                            <img
+                            <DriveImage
                               src={selectedStudent.basicInfo.profilePhoto.url}
+                              driveFileId={selectedStudent.basicInfo.profilePhoto.driveFileId}
                               alt="รูปประจำตัวนักศึกษา"
-                              referrerPolicy="no-referrer"
                               className="h-20 w-16 rounded-xl border border-[#D8C6A6] object-cover"
                             />
                           )}
@@ -1996,10 +1989,10 @@ export function StaffDashboard({
                                   rel="noreferrer"
                                   className="block"
                                 >
-                                  <img
+                                  <DriveImage
                                     src={p.url}
+                                    driveFileId={p.driveFileId}
                                     alt={p.name}
-                                    referrerPolicy="no-referrer"
                                     className="h-16 w-20 rounded-lg border border-[#D8C6A6] object-cover transition-transform hover:scale-105"
                                   />
                                 </a>
@@ -2844,51 +2837,16 @@ export function StaffDashboard({
               </div>
             )}
 
-            {/* SECTION 7: Google Sheets / Apps Script / Backup */}
-            {isAdmin && activeSection === 'integrations' && (
-              <section className="no-print rounded-2xl border border-[#DFD1BA] bg-white p-6 space-y-4 surface-card">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] pb-3">
-                  <div className="flex items-center gap-2">
-                    <Code2 className="h-5 w-5 text-[#7A1629]" aria-hidden="true" />
-                    <h2 className="font-display text-lg font-bold text-[#7A1629]">
-                      ศูนย์เชื่อมต่อ Google Sheets, Apps Script &amp; สำรองข้อมูล
-                    </h2>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => exportStudentsToExcel(students)}
-                      className="rounded-xl bg-[#166534] px-4 py-2 text-xs font-medium text-white hover:bg-[#14532D] transition-colors"
-                    >
-                      ดาวน์โหลด Excel ทั้งหมด
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => exportStudentsToCsv(students)}
-                      className="rounded-xl border border-[#D8CBB8] bg-[#FAF6EE] px-4 py-2 text-xs font-medium text-[#23181A] hover:bg-[#EFE5D1] transition-colors"
-                    >
-                      ดาวน์โหลด CSV
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDownloadJsonBackup}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-[#7A1629] bg-white px-4 py-2 text-xs font-medium text-[#7A1629] hover:bg-[#FAF6EE] transition-colors"
-                    >
-                      <DatabaseBackup className="h-3.5 w-3.5" aria-hidden="true" />
-                      <span>สำรองข้อมูล (JSON)</span>
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-sm text-[#66585B]">
-                  คัดลอกโค้ด Google Apps Script (`Code.gs`) ด้านล่างไปวางใน Google Apps Script
-                  เพื่อเชื่อมต่อกับ Google Sheets และโฟลเดอร์ Google Drive ของสาขาวิชาสังคมศึกษา
-                </p>
-
-                <pre className="max-h-96 overflow-auto rounded-xl border border-[#EAE0CE] bg-[#1F1718] p-4 text-xs text-[#F5ECD9] font-mono">
-                  {appsScriptCode || 'กำลังโหลดเทมเพลต...'}
-                </pre>
-              </section>
+            {/* SECTION 7: Google Sheets & Google Drive Workspace Center */}
+            {activeSection === 'integrations' && (
+              <GoogleWorkspacePanel
+                students={students}
+                currentUserName={currentUser.fullName}
+                onImportedFromSheet={async () => {
+                  await loadData();
+                }}
+                onDownloadJsonBackup={handleDownloadJsonBackup}
+              />
             )}
           </motion.div>
         </AnimatePresence>

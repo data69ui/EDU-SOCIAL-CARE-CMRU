@@ -19,6 +19,20 @@ export interface UploadedFileMeta {
   mimeType: string;
   url: string;
   uploadedAt: string;
+  storageProvider?: 'google_drive' | 'local';
+  driveFileId?: string;
+  driveWebViewLink?: string;
+}
+
+export interface GoogleWorkspaceConfig {
+  spreadsheetId?: string;
+  spreadsheetTitle?: string;
+  spreadsheetUrl?: string;
+  driveFolderId?: string;
+  driveFolderName?: string;
+  driveFolderUrl?: string;
+  lastSyncedAt?: string;
+  lastSyncedBy?: string;
 }
 
 export interface ParentInfo {

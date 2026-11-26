@@ -1113,6 +1113,16 @@ export function createApp() {
     }
   );
 
+  app.get('/api/workspace/config', requireRole(['student', 'teacher', 'admin']), (_req, res) => {
+    res.json({ config: store.getWorkspaceConfig() });
+  });
+
+  app.put('/api/workspace/config', requireRole(['teacher', 'admin']), async (req, res) => {
+    const saved = store.saveWorkspaceConfig((req.body || {}) as Record<string, unknown>);
+    await store.flush();
+    res.json({ config: saved });
+  });
+
   app.get('/api/admin/apps-script-template', requireRole(['admin', 'teacher']), (_req, res) => {
     res.json({ code: APPS_SCRIPT_TEMPLATE });
   });

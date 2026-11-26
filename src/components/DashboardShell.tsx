@@ -3,6 +3,7 @@ import { LogOut, Menu, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { UserAccount } from '../types/scholarship';
+import { DriveImage } from './DriveMedia';
 
 export interface SidebarNavItem {
   key: string;
@@ -20,6 +21,7 @@ export interface SidebarNavGroup {
 interface DashboardShellProps {
   user: UserAccount | null;
   profilePhotoUrl?: string | null;
+  profilePhotoDriveFileId?: string | null;
   pageTitle: string;
   pageSubtitle?: string;
   breadcrumb?: string;
@@ -54,6 +56,7 @@ function getInitials(name: string) {
 export function DashboardShell({
   user,
   profilePhotoUrl,
+  profilePhotoDriveFileId,
   pageTitle,
   pageSubtitle,
   breadcrumb,
@@ -112,10 +115,10 @@ export function DashboardShell({
           <div className="mx-3 mt-3 rounded-2xl border border-white/15 bg-white/10 p-3 backdrop-blur-xs">
             <div className="flex items-center gap-3">
               {profilePhotoUrl ? (
-                <img
+                <DriveImage
                   src={profilePhotoUrl}
+                  driveFileId={profilePhotoDriveFileId || undefined}
                   alt={user.fullName}
-                  referrerPolicy="no-referrer"
                   className="h-11 w-11 shrink-0 rounded-full border-2 border-[#E8C97A]/80 object-cover bg-white"
                 />
               ) : (

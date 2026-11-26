@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpenCheck, FileText } from 'lucide-react';
+import { BookOpenCheck } from 'lucide-react';
 import { api } from '../services/api';
 import type {
   AcademicYear,
@@ -9,6 +9,7 @@ import type {
   YearLevel,
 } from '../types/scholarship';
 import { ACADEMIC_YEARS, YEAR_LEVELS } from '../utils/scholarshipLogic';
+import { DriveFileLink } from './DriveMedia';
 import { FileUploadField } from './FileUploadField';
 
 interface StudentGradesViewProps {
@@ -223,16 +224,11 @@ export function StudentGradesView({
                     <td className="py-3 pr-4">
                       <div className="flex flex-wrap gap-2">
                         {g.attachments.map((att) => (
-                          <a
+                          <DriveFileLink
                             key={att.id}
-                            href={att.url}
-                            target="_blank"
-                            rel="noreferrer"
+                            file={att}
                             className="inline-flex items-center gap-1 text-xs text-[#7A1629] hover:underline"
-                          >
-                            <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                            <span className="max-w-[140px] truncate">{att.name}</span>
-                          </a>
+                          />
                         ))}
                       </div>
                     </td>

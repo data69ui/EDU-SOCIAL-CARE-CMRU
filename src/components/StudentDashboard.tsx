@@ -255,6 +255,7 @@ export function StudentDashboard({
     <DashboardShell
       user={user}
       profilePhotoUrl={basicInfo.profilePhoto?.url || null}
+      profilePhotoDriveFileId={basicInfo.profilePhoto?.driveFileId || null}
       pageTitle={meta.title}
       breadcrumb={meta.breadcrumb}
       activeNavKey={activeSection}

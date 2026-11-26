@@ -7,6 +7,7 @@ import type {
   ApplicationStatus,
   BasicInfoData,
   GradeRecord,
+  GoogleWorkspaceConfig,
   ImportedStudentRow,
   ImportStudentsResult,
   PublicOverviewStats,
@@ -37,6 +38,7 @@ import {
 import {
   clampPayloadText,
   MAX_SERVER_UPLOAD_BYTES,
+  sanitizeWorkspaceConfigInput,
   validateUploadedBinary,
 } from '../src/utils/securityGuard.js';
 
@@ -51,6 +53,7 @@ export interface DatabaseState {
   applications: Record<string, ScholarshipApplicationData>;
   grades: GradeRecord[];
   volunteers: VolunteerRecord[];
+  workspaceConfig?: GoogleWorkspaceConfig;
 }
 
 const IS_VERCEL = Boolean(
@@ -1067,6 +1070,16 @@ class FileStore {
       }
     }
     return null;
+  }
+  getWorkspaceConfig(): GoogleWorkspaceConfig {
+    return this.state.workspaceConfig || {};
+  }
+
+  saveWorkspaceConfig(raw: Record<string, unknown>): GoogleWorkspaceConfig {
+    const cleaned = sanitizeWorkspaceConfigInput(raw);
+    this.state.workspaceConfig = cleaned;
+    this.persist();
+    return cleaned;
   }
 }
 

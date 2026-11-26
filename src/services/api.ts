@@ -4,6 +4,7 @@ import type {
   ApplicationStatus,
   BasicInfoData,
   GradeRecord,
+  GoogleWorkspaceConfig,
   ImportedStudentRow,
   ImportStudentsResult,
   PublicOverviewStats,
@@ -357,6 +358,17 @@ export const api = {
   adminDeleteUser(userId: string) {
     return request<{ deletedUser: UserAccount }>(`/api/admin/users/${encodeURIComponent(userId)}`, {
       method: 'DELETE',
+    });
+  },
+
+  getWorkspaceConfig() {
+    return request<{ config: GoogleWorkspaceConfig }>('/api/workspace/config');
+  },
+
+  saveWorkspaceConfig(config: GoogleWorkspaceConfig) {
+    return request<{ config: GoogleWorkspaceConfig }>('/api/workspace/config', {
+      method: 'PUT',
+      body: JSON.stringify(config),
     });
   },
 

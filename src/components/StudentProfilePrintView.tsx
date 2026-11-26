@@ -16,6 +16,7 @@ import {
   sanitizeReceivedScholarships,
 } from '../utils/scholarshipLogic';
 import { DirectPrintModal } from './DirectPrintModal';
+import { DriveImage } from './DriveMedia';
 
 interface StudentProfilePrintViewProps {
   record: StudentFullRecord;
@@ -373,10 +374,10 @@ export function StudentProfilePrintView({
               </div>
 
               {basicInfo.profilePhoto && (
-                <img
+                <DriveImage
                   src={basicInfo.profilePhoto.url}
+                  driveFileId={basicInfo.profilePhoto.driveFileId}
                   alt="รูปถ่ายนักศึกษา"
-                  referrerPolicy="no-referrer"
                   className="h-24 w-20 rounded border border-[#9CA3AF] object-cover shrink-0"
                 />
               )}

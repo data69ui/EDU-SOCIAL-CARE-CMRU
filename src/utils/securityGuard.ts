@@ -241,3 +241,63 @@ export function clampPayloadText(value: unknown, maxLength = 2000): string {
 export function isSafeUploadFilename(filename: string): boolean {
   return /^[a-zA-Z0-9._-]{4,120}$/.test(filename) && !filename.includes('..');
 }
+
+export function isSafeGoogleResourceId(id: unknown): boolean {
+  if (typeof id !== 'string' || !id.trim()) return false;
+  return /^[a-zA-Z0-9_-]{10,120}$/.test(id.trim());
+}
+
+export function sanitizeGoogleWorkspaceUrl(url: unknown): string | undefined {
+  if (typeof url !== 'string' || !url.trim()) return undefined;
+  try {
+    const parsed = new URL(url.trim());
+    if (parsed.protocol !== 'https:') return undefined;
+    const allowedHosts = ['docs.google.com', 'drive.google.com'];
+    if (!allowedHosts.includes(parsed.hostname)) return undefined;
+    return parsed.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
+  spreadsheetId?: string;
+  spreadsheetTitle?: string;
+  spreadsheetUrl?: string;
+  driveFolderId?: string;
+  driveFolderName?: string;
+  driveFolderUrl?: string;
+  lastSyncedAt?: string;
+  lastSyncedBy?: string;
+} {
+  const spreadsheetId = isSafeGoogleResourceId(raw.spreadsheetId)
+    ? String(raw.spreadsheetId).trim()
+    : undefined;
+  const driveFolderId = isSafeGoogleResourceId(raw.driveFolderId)
+    ? String(raw.driveFolderId).trim()
+    : undefined;
+
+  return {
+    ...(spreadsheetId ? { spreadsheetId } : {}),
+    ...(raw.spreadsheetTitle
+      ? { spreadsheetTitle: clampPayloadText(raw.spreadsheetTitle, 200).trim() }
+      : {}),
+    ...(sanitizeGoogleWorkspaceUrl(raw.spreadsheetUrl)
+      ? { spreadsheetUrl: sanitizeGoogleWorkspaceUrl(raw.spreadsheetUrl) }
+      : spreadsheetId
+        ? { spreadsheetUrl: `https://docs.google.com/spreadsheets/d/${spreadsheetId}` }
+        : {}),
+    ...(driveFolderId ? { driveFolderId } : {}),
+    ...(raw.driveFolderName
+      ? { driveFolderName: clampPayloadText(raw.driveFolderName, 200).trim() }
+      : {}),
+    ...(sanitizeGoogleWorkspaceUrl(raw.driveFolderUrl)
+      ? { driveFolderUrl: sanitizeGoogleWorkspaceUrl(raw.driveFolderUrl) }
+      : driveFolderId
+        ? { driveFolderUrl: `https://drive.google.com/drive/folders/${driveFolderId}` }
+        : {}),
+    ...(raw.lastSyncedAt ? { lastSyncedAt: clampPayloadText(raw.lastSyncedAt, 64).trim() } : {}),
+    ...(raw.lastSyncedBy ? { lastSyncedBy: clampPayloadText(raw.lastSyncedBy, 120).trim() } : {}),
+  };
+}
+

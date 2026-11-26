@@ -9,6 +9,7 @@ import {
   sanitizeReceivedScholarships,
 } from '../utils/scholarshipLogic';
 import { FileUploadField } from './FileUploadField';
+import { DriveImage } from './DriveMedia';
 import { PdpaConsentModal } from './PdpaConsentModal';
 
 interface StudentBasicInfoFormProps {
@@ -439,10 +440,10 @@ export function StudentBasicInfoForm({
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#EAE0CE] pb-5">
             <div className="flex items-center gap-4">
               {form.profilePhoto ? (
-                <img
+                <DriveImage
                   src={form.profilePhoto.url}
+                  driveFileId={form.profilePhoto.driveFileId}
                   alt="รูปติดบัตรนักศึกษา 1.5 นิ้ว"
-                  referrerPolicy="no-referrer"
                   className="h-24 w-20 rounded-lg border border-[#D8C6A6] object-cover"
                 />
               ) : (
