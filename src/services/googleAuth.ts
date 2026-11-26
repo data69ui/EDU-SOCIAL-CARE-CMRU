@@ -96,11 +96,18 @@ export async function googleWorkspaceSignIn(): Promise<{ user: User; accessToken
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (err) {
     const code = (err as { code?: string })?.code;
-    if (code === 'auth/popup-closed-by-user') {
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
       throw new Error('ยกเลิกการเข้าสู่ระบบด้วย Google');
     }
     if (code === 'auth/popup-blocked') {
       throw new Error('เบราว์เซอร์บล็อกหน้าต่างป๊อปอัป กรุณาอนุญาตป๊อปอัปแล้วลองใหม่อีกครั้ง');
+    }
+    if (code === 'auth/unauthorized-domain') {
+      const host =
+        typeof window !== 'undefined' ? window.location.hostname : 'โดเมนปัจจุบัน';
+      throw new Error(
+        `โดเมน "${host}" ยังไม่ได้รับอนุญาตใน Firebase Authentication — กรุณาไปที่ Firebase Console > Authentication > Settings > Authorized domains แล้วกด Add domain เพื่อเพิ่ม "${host}"`
+      );
     }
     throw err;
   } finally {
