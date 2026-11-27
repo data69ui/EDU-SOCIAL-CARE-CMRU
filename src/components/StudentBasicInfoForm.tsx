@@ -638,12 +638,20 @@ export function StudentBasicInfoForm({
             </h3>
             <FileUploadField
               label="อัปโหลดรูปตัวเอง 1.5 นิ้ว"
-              helperText="*หมายเหตุ* ต้องเป็นรูปติดบัตรเท่านั้น รองรับไฟล์ JPG, PNG และ WEBP ขนาดไม่เกิน 5 MB"
+              helperText="*หมายเหตุ* ต้องเป็นรูปติดบัตรเท่านั้น รองรับไฟล์ JPG, PNG และ WEBP ขนาดไม่เกิน 3 MB"
               files={form.profilePhoto ? [form.profilePhoto] : []}
-              onChange={(files) => setForm({ ...form, profilePhoto: files[0] || null })}
-              maxSizeMB={5}
+              onChange={(files) => {
+                const next = { ...form, profilePhoto: files[0] || null };
+                setForm(next);
+                void api
+                  .saveBasicInfo(next)
+                  .then((res) => onUpdated(res.basicInfo))
+                  .catch(() => {});
+              }}
+              maxSizeMB={3}
               allowPdf={false}
               multiple={false}
+              studentId={form.studentId || basicInfo.studentId}
             />
           </section>
 
@@ -1222,19 +1230,27 @@ export function StudentBasicInfoForm({
                 ส่วนที่ 5 เอกสารประกอบการขอรับทุน
               </h3>
               <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1">
-                ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีภาพถ่าย
+                ขนาดไฟล์ไม่เกิน 3 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP (อัปโหลดได้ไม่จำกัดจำนวนไฟล์) หากยังไม่มีภาพถ่าย
                 สามารถบันทึกฉบับร่างไว้ก่อนและแนบภายหลังได้
               </p>
             </div>
 
             <FileUploadField
               label="แนบรูปบ้าน อย่างน้อย 2 รูป (เห็นรูปภายในบริเวณบ้าน และ นอกบ้าน พร้อมผู้ปกครองทุกรูป)"
-              helperText="รองรับไฟล์ภาพ JPG, PNG, WEBP หรือ PDF สูงสุด 5 MB ต่อไฟล์"
+              helperText="รองรับไฟล์ภาพ JPG, PNG, WEBP หรือ PDF สูงสุด 3 MB ต่อไฟล์"
               files={form.housePhotos}
-              onChange={(housePhotos) => setForm({ ...form, housePhotos })}
-              maxSizeMB={5}
+              onChange={(housePhotos) => {
+                const next = { ...form, housePhotos };
+                setForm(next);
+                void api
+                  .saveBasicInfo(next)
+                  .then((res) => onUpdated(res.basicInfo))
+                  .catch(() => {});
+              }}
+              maxSizeMB={3}
               allowPdf={true}
               minCount={2}
+              studentId={form.studentId || basicInfo.studentId}
             />
           </section>
 

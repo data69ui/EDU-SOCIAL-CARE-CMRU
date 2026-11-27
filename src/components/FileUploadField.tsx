@@ -1,30 +1,20 @@
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { HardDrive, Trash2, Upload } from 'lucide-react';
 import { api } from '../services/api';
-import { subscribeGoogleWorkspaceAuth } from '../services/googleAuth';
-import {
-  deleteDriveFile,
-  uploadFileToGoogleDrive,
-} from '../services/googleWorkspace';
-import type { GoogleWorkspaceConfig, UploadedFileMeta } from '../types/scholarship';
+import type { UploadedFileMeta } from '../types/scholarship';
 import { validateUploadFile } from '../utils/scholarshipLogic';
 import { DriveFileLink, DriveImage } from './DriveMedia';
-import { GoogleSignInButton } from './GoogleSignInButton';
-import {
-  WorkspaceConfirmDialog,
-  WorkspaceConfirmRequest,
-} from './WorkspaceConfirmDialog';
 
 interface FileUploadFieldProps {
   label: string;
   helperText: string;
   files: UploadedFileMeta[];
   onChange: (nextFiles: UploadedFileMeta[]) => void;
-  maxSizeMB: number;
+  maxSizeMB?: number;
   allowPdf: boolean;
   multiple?: boolean;
   minCount?: number;
-  maxCount?: number;
+  studentId?: string;
 }
 
 export function FileUploadField({
@@ -32,45 +22,20 @@ export function FileUploadField({
   helperText,
   files,
   onChange,
-  maxSizeMB,
+  maxSizeMB = 3,
   allowPdf,
   multiple = true,
   minCount,
-  maxCount,
+  studentId,
 }: FileUploadFieldProps) {
   const inputId = useId();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [workspaceConfig, setWorkspaceConfig] = useState<GoogleWorkspaceConfig>({});
-  const [pendingConfirm, setPendingConfirm] = useState<{
-    request: WorkspaceConfirmRequest;
-    action: () => Promise<void>;
-  } | null>(null);
-
-  useEffect(() => {
-    const unsub = subscribeGoogleWorkspaceAuth((snap) => {
-      setAccessToken(snap.accessToken);
-    });
-    api
-      .getWorkspaceConfig()
-      .then((res) => setWorkspaceConfig(res.config || {}))
-      .catch(() => {});
-    return unsub;
-  }, []);
+  const effectiveMaxMB = Math.min(maxSizeMB, 3);
 
   const accept = allowPdf
     ? '.pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp'
     : '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp';
-
-  const applyUploadedFiles = (uploaded: UploadedFileMeta[]) => {
-    if (!multiple) {
-      onChange(uploaded.slice(0, 1));
-    } else {
-      const combined = [...files, ...uploaded];
-      onChange(maxCount ? combined.slice(0, maxCount) : combined);
-    }
-  };
 
   const handleSelectFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files || []);
@@ -81,7 +46,7 @@ export function FileUploadField({
     for (const file of selected) {
       const check = validateUploadFile(
         { name: file.name, size: file.size, type: file.type },
-        { maxSizeMB, allowPdf }
+        { maxSizeMB: effectiveMaxMB, allowPdf }
       );
       if (!check.valid) {
         setError(check.error || 'ไฟล์ไม่ผ่านเงื่อนไข');
@@ -89,86 +54,27 @@ export function FileUploadField({
       }
     }
 
-    if (accessToken) {
-      setPendingConfirm({
-        request: {
-          title: 'อัปโหลดไฟล์ไปยัง Google Drive',
-          description: `ยืนยันการอัปโหลด ${selected.length} ไฟล์เข้าสู่ Google Drive${
-            workspaceConfig.driveFolderName
-              ? ` ในโฟลเดอร์ "${workspaceConfig.driveFolderName}"`
-              : ''
-          }`,
-          details: selected.map(
-            (f) => `${f.name} (${(f.size / 1024).toFixed(0)} KB)`
-          ),
-          confirmLabel: 'อัปโหลดลง Google Drive',
-        },
-        action: async () => {
-          const uploaded: UploadedFileMeta[] = [];
-          for (const file of selected) {
-            const meta = await uploadFileToGoogleDrive(accessToken, file, {
-              folderId: workspaceConfig.driveFolderId,
-              maxSizeMB,
-              allowPdf,
-            });
-            uploaded.push(meta);
-          }
-          applyUploadedFiles(uploaded);
-        },
-      });
-      return;
-    }
-
-    // Fallback when user has not signed in to Google Drive yet
     setUploading(true);
     try {
       const uploaded: UploadedFileMeta[] = [];
       for (const file of selected) {
-        const meta = await api.uploadFile(file);
+        const meta = await api.uploadFile(file, studentId);
         uploaded.push(meta);
       }
-      applyUploadedFiles(uploaded);
+      if (!multiple) {
+        onChange(uploaded.slice(0, 1));
+      } else {
+        onChange([...files, ...uploaded]);
+      }
     } catch (err) {
-      setError((err as Error).message);
+      setError((err as Error).message || 'ไม่สามารถอัปโหลดไฟล์ลง Google Drive ได้');
     } finally {
       setUploading(false);
     }
   };
 
   const handleRemove = (file: UploadedFileMeta) => {
-    if (file.driveFileId && accessToken) {
-      setPendingConfirm({
-        request: {
-          title: 'ยืนยันการลบไฟล์จาก Google Drive',
-          description:
-            'ไฟล์นี้จัดเก็บอยู่บน Google Drive ของคุณ ต้องการลบไฟล์นี้ออกจาก Google Drive ด้วยหรือไม่?',
-          details: [`ชื่อไฟล์: ${file.name}`],
-          confirmLabel: 'ลบออกจาก Google Drive',
-          tone: 'danger',
-        },
-        action: async () => {
-          await deleteDriveFile(accessToken, file.driveFileId!);
-          onChange(files.filter((f) => f.id !== file.id));
-        },
-      });
-      return;
-    }
     onChange(files.filter((f) => f.id !== file.id));
-  };
-
-  const runPendingConfirm = async () => {
-    if (!pendingConfirm) return;
-    setUploading(true);
-    setError(null);
-    try {
-      await pendingConfirm.action();
-      setPendingConfirm(null);
-    } catch (err) {
-      setError((err as Error).message);
-      setPendingConfirm(null);
-    } finally {
-      setUploading(false);
-    }
   };
 
   return (
@@ -180,7 +86,7 @@ export function FileUploadField({
         <span className="text-xs text-[#66585B] dark:text-[#A19B91] tabular-nums">
           แนบแล้ว {files.length} ไฟล์
           {minCount ? ` · ขั้นต่ำ ${minCount} ไฟล์` : ''}
-          {` · สูงสุด ${maxSizeMB} MB/ไฟล์`}
+          {` · สูงสุด ${effectiveMaxMB} MB/ไฟล์`}
         </span>
       </div>
 
@@ -194,13 +100,7 @@ export function FileUploadField({
           }`}
         >
           <Upload className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>
-            {uploading
-              ? 'กำลังอัปโหลด...'
-              : accessToken
-                ? 'เลือกไฟล์อัปโหลดลง Google Drive'
-                : 'เลือกไฟล์อัปโหลด'}
-          </span>
+          <span>{uploading ? 'กำลังอัปโหลดลง Google Drive...' : 'เลือกไฟล์อัปโหลดลง Google Drive'}</span>
         </label>
         <input
           id={inputId}
@@ -211,21 +111,10 @@ export function FileUploadField({
           className="sr-only"
         />
 
-        {accessToken ? (
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#BBF7D0] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-medium text-[#166534] dark:text-emerald-300">
-            <HardDrive className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span>
-              เก็บใน Google Drive
-              {workspaceConfig.driveFolderName ? ` (${workspaceConfig.driveFolderName})` : ''}
-            </span>
-          </span>
-        ) : (
-          <GoogleSignInButton
-            label="Sign in with Google เพื่อเก็บใน Drive"
-            onError={(msg) => setError(msg)}
-            className="!px-3 !py-1.5 !text-xs !rounded-lg"
-          />
-        )}
+        <span className="inline-flex items-center gap-1.5 rounded-lg border border-[#BBF7D0] dark:border-emerald-900/70 bg-[#F0FDF4] dark:bg-emerald-950/50 px-2.5 py-1.5 text-[11px] font-medium text-[#166534] dark:text-emerald-300">
+          <HardDrive className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span>อัปโหลดตรงสู่ Google Drive (ไม่จำกัดจำนวนไฟล์)</span>
+        </span>
       </div>
 
       {error && (
@@ -263,8 +152,7 @@ export function FileUploadField({
                     className="flex items-center gap-1 truncate text-xs font-medium text-[#23181A] dark:text-[#F2EFEA] hover:text-[#7A1629] dark:hover:text-[#E8C97A] underline-offset-2 hover:underline"
                   />
                   <span className="text-[11px] text-[#66585B] dark:text-[#A19B91] tabular-nums block">
-                    {(file.size / 1024).toFixed(0)} KB
-                    {file.storageProvider === 'google_drive' ? ' · Google Drive' : ''}
+                    {file.size > 0 ? `${(file.size / 1024).toFixed(0)} KB · ` : ''}Google Drive
                   </span>
                 </div>
                 <button
@@ -280,15 +168,6 @@ export function FileUploadField({
           })}
         </div>
       )}
-
-      <WorkspaceConfirmDialog
-        request={pendingConfirm?.request || null}
-        busy={uploading}
-        onConfirm={runPendingConfirm}
-        onCancel={() => {
-          if (!uploading) setPendingConfirm(null);
-        }}
-      />
     </div>
   );
 }

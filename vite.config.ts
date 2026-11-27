@@ -42,9 +42,7 @@ export default defineConfig(() => {
       watch:
         process.env.DISABLE_HMR === 'true'
           ? null
-          : {
-              ignored: ['**/data/**', '**/migrations/**', '**/.wrangler/**'],
-            },
+          : undefined,
     },
   };
 });

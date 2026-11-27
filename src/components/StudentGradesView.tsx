@@ -17,6 +17,7 @@ interface StudentGradesViewProps {
   grades: GradeRecord[];
   defaultAcademicYear: AcademicYear;
   defaultYearLevel: YearLevel;
+  studentId?: string;
   onGradeSaved: (grade: GradeRecord) => void;
 }
 
@@ -24,6 +25,7 @@ export function StudentGradesView({
   grades,
   defaultAcademicYear,
   defaultYearLevel,
+  studentId,
   onGradeSaved,
 }: StudentGradesViewProps) {
   const { showSaveSuccess } = useSaveSuccess();
@@ -179,6 +181,7 @@ export function StudentGradesView({
           maxSizeMB={3}
           allowPdf={true}
           minCount={2}
+          studentId={studentId}
         />
 
         <div className="flex justify-end">

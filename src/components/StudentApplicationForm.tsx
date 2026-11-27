@@ -762,7 +762,7 @@ export function StudentApplicationForm({
             ส่วนที่ 4 ภาพถ่ายประกอบการสมัครขอรับทุนการศึกษา
           </h3>
           <p className="text-xs text-[#66585B] dark:text-[#A19B91] mt-1">
-            ขนาดไฟล์ไม่เกิน 5 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP หากยังไม่มีเอกสาร
+            ขนาดไฟล์ไม่เกิน 3 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP (ไม่จำกัดจำนวนไฟล์) หากยังไม่มีเอกสาร
             สามารถบันทึกข้อมูลไว้ก่อนและแนบเอกสารภายหลังได้
           </p>
         </div>
@@ -771,40 +771,72 @@ export function StudentApplicationForm({
           label="4.1 ภาพถ่ายภายในบ้านที่พักอาศัย (ขั้นต่ำ 1 รูป)"
           helperText="แสดงสภาพภายในบริเวณบ้านที่พักอาศัย"
           files={form.indoorHousePhotos}
-          onChange={(indoorHousePhotos) => setForm({ ...form, indoorHousePhotos })}
-          maxSizeMB={5}
+          onChange={(indoorHousePhotos) => {
+            const next = { ...form, indoorHousePhotos };
+            setForm(next);
+            void api
+              .saveApplication(next, false)
+              .then((res) => onSaved(res.application))
+              .catch(() => {});
+          }}
+          maxSizeMB={3}
           allowPdf={true}
           minCount={1}
+          studentId={form.studentId || basicInfo.studentId}
         />
 
         <FileUploadField
           label="4.1 ภาพถ่ายผู้สมัครร่วมกับสมาชิกในครอบครัว (ภายในบ้าน ขั้นต่ำ 1 รูป)"
           helperText="ภาพผู้สมัครถ่ายร่วมกับสมาชิกในครอบครัวภายในบ้าน"
           files={form.indoorFamilyPhotos}
-          onChange={(indoorFamilyPhotos) => setForm({ ...form, indoorFamilyPhotos })}
-          maxSizeMB={5}
+          onChange={(indoorFamilyPhotos) => {
+            const next = { ...form, indoorFamilyPhotos };
+            setForm(next);
+            void api
+              .saveApplication(next, false)
+              .then((res) => onSaved(res.application))
+              .catch(() => {});
+          }}
+          maxSizeMB={3}
           allowPdf={true}
           minCount={1}
+          studentId={form.studentId || basicInfo.studentId}
         />
 
         <FileUploadField
           label="4.2 ภาพถ่ายบริเวณด้านหน้าที่พักอาศัย (ภายนอกบ้าน ขั้นต่ำ 1 รูป)"
           helperText="แสดงบริเวณด้านหน้าและสภาพแวดล้อมภายนอกบ้าน"
           files={form.outdoorHousePhotos}
-          onChange={(outdoorHousePhotos) => setForm({ ...form, outdoorHousePhotos })}
-          maxSizeMB={5}
+          onChange={(outdoorHousePhotos) => {
+            const next = { ...form, outdoorHousePhotos };
+            setForm(next);
+            void api
+              .saveApplication(next, false)
+              .then((res) => onSaved(res.application))
+              .catch(() => {});
+          }}
+          maxSizeMB={3}
           allowPdf={true}
           minCount={1}
+          studentId={form.studentId || basicInfo.studentId}
         />
 
         <FileUploadField
           label="4.2 ภาพถ่ายผู้สมัครร่วมกับสมาชิกในครอบครัว (ภายนอกบ้าน ขั้นต่ำ 1 รูป)"
           helperText="ภาพผู้สมัครถ่ายร่วมกับสมาชิกในครอบครัวบริเวณหน้าบ้าน"
           files={form.outdoorFamilyPhotos}
-          onChange={(outdoorFamilyPhotos) => setForm({ ...form, outdoorFamilyPhotos })}
-          maxSizeMB={5}
+          onChange={(outdoorFamilyPhotos) => {
+            const next = { ...form, outdoorFamilyPhotos };
+            setForm(next);
+            void api
+              .saveApplication(next, false)
+              .then((res) => onSaved(res.application))
+              .catch(() => {});
+          }}
+          maxSizeMB={3}
           allowPdf={true}
           minCount={1}
+          studentId={form.studentId || basicInfo.studentId}
         />
       </section>
 

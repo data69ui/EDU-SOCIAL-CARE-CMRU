@@ -350,6 +350,7 @@ export function StudentDashboard({
               grades={grades}
               defaultAcademicYear={basicInfo.academicYear}
               defaultYearLevel={basicInfo.yearLevel}
+              studentId={basicInfo.studentId || user.studentId}
               onGradeSaved={handleGradeSaved}
             />
           )}
@@ -369,6 +370,7 @@ export function StudentDashboard({
               application={application}
               volunteers={volunteers}
               defaultAcademicYear={basicInfo.academicYear}
+              studentId={basicInfo.studentId || user.studentId}
               onVolunteerAdded={handleVolunteerAdded}
               onGoToProgress={() => onSelectSection('progress')}
             />

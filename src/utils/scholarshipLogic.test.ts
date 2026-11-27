@@ -48,10 +48,27 @@ import {
   clampPayloadText,
   FixedWindowRateLimiter,
   isSafeUploadFilename,
-  sanitizeCloudflareWorkerUrl,
   sanitizeWorkspaceConfigInput,
   validateUploadedBinary,
 } from './securityGuard';
+import {
+  buildDriveImagePreviewUrl,
+  buildSyncTableRequestPayload,
+  buildUploadFileRequestPayload,
+  DB_API_URL,
+  extractGoogleDriveFileId,
+  hashPasswordClient,
+  hydrateDatabasePayload,
+  serializeAdminOrUserRow,
+  serializeApplicationRow,
+  serializeGradeRow,
+  serializeScholarshipRows,
+  serializeSettingsRows,
+  serializeStudentRow,
+  serializeVolunteerRow,
+  stripBase64DataUrlPrefix,
+  verifyPasswordClient,
+} from '../services/googleSheetsDb';
 import type { StudentFullRecord, VolunteerRecord } from '../types/scholarship';
 
 test('generateVerificationCode and verifyVerificationCode handle 5-digit numeric challenges', () => {
@@ -940,39 +957,184 @@ test('formatStructuredAddress renders Thai address parts cleanly and falls back 
   assert.equal(formatStructuredAddress(null, ''), '-');
 });
 
-test('sanitizeCloudflareWorkerUrl and sanitizeWorkspaceConfigInput enforce strict HTTPS public Cloudflare Worker URLs', () => {
-  const validWorker =
-    'https://cmru-edu-social-care.example-team.workers.dev/api-proxy/?foo=bar#hash';
+test('googleSheetsDb helpers strip base64 prefix, extract Drive file IDs, and format Apps Script payloads', () => {
   assert.equal(
-    sanitizeCloudflareWorkerUrl(validWorker),
-    'https://cmru-edu-social-care.example-team.workers.dev/api-proxy'
-  );
-  assert.equal(
-    sanitizeCloudflareWorkerUrl('https://portal.cmru-care.com/'),
-    'https://portal.cmru-care.com'
+    DB_API_URL,
+    'https://script.google.com/macros/s/AKfycbyzJDE-dsfultjzy7lnB3gu9YX0AqtVaYYkUh6HqzQqzJiX4CpAOkjipfYAEB8WYMBz/exec'
   );
 
-  // Reject unsafe schemes, localhost, private IPs, IPv6 literals
-  assert.equal(sanitizeCloudflareWorkerUrl('javascript:alert(1)'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('http://cmru.workers.dev'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('https://localhost:8787'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('https://127.0.0.1:8787'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('https://192.168.1.10'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('https://169.254.169.254/latest/meta-data'), undefined);
-  assert.equal(sanitizeCloudflareWorkerUrl('https://[::1]/'), undefined);
+  assert.equal(
+    stripBase64DataUrlPrefix('data:image/jpeg;base64,/9j/4AAQSkZJRg=='),
+    '/9j/4AAQSkZJRg=='
+  );
+  assert.equal(stripBase64DataUrlPrefix('YWJjMTIz'), 'YWJjMTIz');
 
-  const sanitized = sanitizeWorkspaceConfigInput({
-    spreadsheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
-    cloudflareWorkerUrl: 'https://cmru-edu-social-care.example.workers.dev/',
-    cloudflareDatabaseName: 'cmru-edu-social-care-db',
-    cloudflareBucketName: 'cmru-edu-social-care-files',
-    cloudflareConnectedAt: '2026-11-26T09:00:00.000Z',
+  const driveLink1 = 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWx/view?usp=drivesdk';
+  const driveLink2 = 'https://drive.google.com/open?id=9ZyXwVuTsRqPoNmLkJiHgFeDc';
+  assert.equal(extractGoogleDriveFileId(driveLink1), '1AbCdEfGhIjKlMnOpQrStUvWx');
+  assert.equal(extractGoogleDriveFileId(driveLink2), '9ZyXwVuTsRqPoNmLkJiHgFeDc');
+  assert.equal(
+    buildDriveImagePreviewUrl(driveLink1),
+    'https://drive.google.com/thumbnail?id=1AbCdEfGhIjKlMnOpQrStUvWx&sz=w1000'
+  );
+
+  const syncPayload = buildSyncTableRequestPayload('Students', [{ id: 'stu_69000001' }]);
+  assert.deepEqual(syncPayload, {
+    action: 'syncTable',
+    table: 'Students',
+    records: [{ id: 'stu_69000001' }],
   });
-  assert.equal(
-    sanitized.cloudflareWorkerUrl,
-    'https://cmru-edu-social-care.example.workers.dev'
-  );
-  assert.equal(sanitized.cloudflareDatabaseName, 'cmru-edu-social-care-db');
-  assert.equal(sanitized.cloudflareBucketName, 'cmru-edu-social-care-files');
-  assert.equal(sanitized.cloudflareConnectedAt, '2026-11-26T09:00:00.000Z');
+
+  const uploadPayload = buildUploadFileRequestPayload({
+    studentId: '69000001',
+    fileName: 'house.jpg',
+    mimeType: 'image/jpeg',
+    base64Data: 'data:image/jpeg;base64,QUJDREVGRw==',
+  });
+  assert.deepEqual(uploadPayload, {
+    action: 'uploadFile',
+    studentId: '69000001',
+    fileName: 'house.jpg',
+    mimeType: 'image/jpeg',
+    base64Data: 'QUJDREVGRw==',
+  });
+
+  const sanitizedCfg = sanitizeWorkspaceConfigInput({
+    spreadsheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
+    driveFolderId: '2XyZaBcDeFgHiJkLmNoPqRsTuVw',
+  });
+  assert.equal(sanitizedCfg.spreadsheetId, '1AbCdEfGhIjKlMnOpQrStUvWxYz');
+  assert.equal(sanitizedCfg.driveFolderId, '2XyZaBcDeFgHiJkLmNoPqRsTuVw');
 });
+
+test('googleSheetsDb hashes and verifies passwords and round-trips all 8 Google Sheets tables', async () => {
+  const hash = await hashPasswordClient('CmruAdmin2026');
+  assert.ok(hash.startsWith('pbkdf2$'));
+  assert.equal(await verifyPasswordClient('CmruAdmin2026', hash), true);
+  assert.equal(await verifyPasswordClient('WrongPassword', hash), false);
+  assert.equal(await verifyPasswordClient('69000001', '', '69000001'), true);
+
+  const basic = createEmptyBasicInfo('69000001@g.cmru.ac.th', 'นางสาวกานดา ใจดี', '69000001');
+  basic.pdpaConsented = true;
+  basic.isDraft = false;
+  basic.savedAt = '2026-11-27T08:00:00.000Z';
+  basic.hasOtherScholarship = 'ได้รับทุน';
+  basic.receivedScholarships = [{ id: 'sch_1', name: 'ทุน CYF', provider: 'CYF' }];
+  basic.profilePhoto = {
+    id: 'drv_photo1',
+    name: 'profile.jpg',
+    size: 120000,
+    mimeType: 'image/jpeg',
+    url: 'https://drive.google.com/file/d/1PhotoDriveId12345/view',
+    uploadedAt: '2026-11-27T08:00:00.000Z',
+    storageProvider: 'google_drive',
+    driveFileId: '1PhotoDriveId12345',
+    driveWebViewLink: 'https://drive.google.com/file/d/1PhotoDriveId12345/view',
+  };
+
+  const studentAuth = {
+    id: 'stu_69000001',
+    role: 'student' as const,
+    username: '69000001',
+    email: '69000001@g.cmru.ac.th',
+    fullName: 'นางสาวกานดา ใจดี',
+    studentId: '69000001',
+    authProvider: 'student_id' as const,
+    hasPassword: true,
+    mustChangePassword: false,
+    createdAt: '2026-11-27T08:00:00.000Z',
+    passwordHash: hash,
+  };
+
+  const app = prefillApplicationFromBasicInfo(basic, null, 'stu_69000001');
+  app.status = 'approved';
+
+  const grade = {
+    id: 'grd_1',
+    studentUserId: 'stu_69000001',
+    studentId: '69000001',
+    studentName: 'นางสาวกานดา ใจดี',
+    academicYear: '2569' as const,
+    yearLevel: 'ปี 1' as const,
+    semester: 'ภาคเรียนที่ 1' as const,
+    gpa: '3.75',
+    attachments: [],
+    uploadedByRole: 'student' as const,
+    uploadedByName: 'นางสาวกานดา ใจดี',
+    createdAt: '2026-11-27T08:00:00.000Z',
+    updatedAt: '2026-11-27T08:00:00.000Z',
+  };
+
+  const volunteer = {
+    id: 'vol_1',
+    studentUserId: 'stu_69000001',
+    studentId: '69000001',
+    studentName: 'นางสาวกานดา ใจดี',
+    academicYear: '2569' as const,
+    activityTitle: 'จิตอาสาห้องสมุด',
+    activityDetail: 'จัดชั้นหนังสือ',
+    learnings: 'การวางแผน',
+    hours: 5,
+    activityDate: '2026-11-27',
+    dailyLifeApplication: 'ทำงานเป็นระบบ',
+    photos: [],
+    approvalStatus: 'approved' as const,
+    approvedHours: 5,
+    advisorNote: 'ดีมาก',
+    createdAt: '2026-11-27T08:00:00.000Z',
+  };
+
+  const fullStudent: StudentFullRecord = {
+    user: studentAuth,
+    basicInfo: basic,
+    application: app,
+    grades: [grade],
+    volunteers: [volunteer],
+  };
+
+  const hydrated = hydrateDatabasePayload({
+    Admins: [
+      serializeAdminOrUserRow({
+        id: 'adm_root',
+        role: 'admin',
+        username: 'admincmru',
+        fullName: 'ผู้ดูแลระบบหลัก',
+        authProvider: 'password',
+        hasPassword: true,
+        createdAt: '2026-11-27T08:00:00.000Z',
+        passwordHash: hash,
+      }),
+    ],
+    Users: [
+      serializeAdminOrUserRow({
+        id: 'tch_1',
+        role: 'teacher',
+        username: 'ajarn1',
+        fullName: 'อ.ดร.สมชาย',
+        authProvider: 'password',
+        hasPassword: true,
+        createdAt: '2026-11-27T08:00:00.000Z',
+        passwordHash: hash,
+      }),
+    ],
+    Students: [serializeStudentRow(studentAuth, basic)],
+    Scholarships: serializeScholarshipRows([fullStudent]),
+    Applications: [serializeApplicationRow(app)],
+    Grades: [serializeGradeRow(grade)],
+    VolunteerLogs: [serializeVolunteerRow(volunteer)],
+    Settings: serializeSettingsRows({
+      spreadsheetId: '1AbCdEfGhIjKlMnOpQrStUvWxYz',
+      driveFolderId: '2XyZaBcDeFgHiJkLmNoPqRsTuVw',
+    }),
+  });
+
+  assert.equal(hydrated.admins.length, 1);
+  assert.equal(hydrated.users.length, 1);
+  assert.equal(hydrated.students.length, 1);
+  assert.equal(hydrated.students[0].basicInfo.profilePhoto?.url, 'https://drive.google.com/file/d/1PhotoDriveId12345/view');
+  assert.equal(hydrated.students[0].application?.status, 'approved');
+  assert.equal(hydrated.students[0].grades.length, 1);
+  assert.equal(hydrated.students[0].volunteers.length, 1);
+  assert.equal(hydrated.workspaceConfig.spreadsheetId, '1AbCdEfGhIjKlMnOpQrStUvWxYz');
+});
+

@@ -113,7 +113,7 @@ export class BoundedMap<K, V> {
   }
 }
 
-export const MAX_SERVER_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
+export const MAX_SERVER_UPLOAD_BYTES = 3 * 1024 * 1024; // 3 MB
 
 export type CanonicalUploadExt = '.jpg' | '.png' | '.webp' | '.pdf';
 
@@ -260,41 +260,6 @@ export function sanitizeGoogleWorkspaceUrl(url: unknown): string | undefined {
   }
 }
 
-export function sanitizeCloudflareWorkerUrl(url: unknown): string | undefined {
-  if (typeof url !== 'string' || !url.trim()) return undefined;
-  try {
-    const parsed = new URL(url.trim());
-    if (parsed.protocol !== 'https:') return undefined;
-    const host = parsed.hostname.toLowerCase();
-    if (!host || host === 'localhost' || host.endsWith('.local') || host.endsWith('.internal')) {
-      return undefined;
-    }
-    // Block raw IPv6 literals and private/loopback/link-local IPv4 addresses to prevent SSRF
-    if (host.startsWith('[') || host.includes(':')) return undefined;
-    const ipv4Match = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-    if (ipv4Match) {
-      const a = Number(ipv4Match[1]);
-      const b = Number(ipv4Match[2]);
-      if (
-        a === 10 ||
-        a === 127 ||
-        a === 0 ||
-        (a === 169 && b === 254) ||
-        (a === 172 && b >= 16 && b <= 31) ||
-        (a === 192 && b === 168)
-      ) {
-        return undefined;
-      }
-    }
-    parsed.search = '';
-    parsed.hash = '';
-    const cleanedPath = parsed.pathname.replace(/\/+$/, '');
-    return `${parsed.origin}${cleanedPath}`;
-  } catch {
-    return undefined;
-  }
-}
-
 export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   spreadsheetId?: string;
   spreadsheetTitle?: string;
@@ -302,12 +267,6 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   driveFolderId?: string;
   driveFolderName?: string;
   driveFolderUrl?: string;
-  cloudflareWorkerUrl?: string;
-  cloudflareDatabaseName?: string;
-  cloudflareBucketName?: string;
-  cloudflareConnectedAt?: string;
-  cloudflareLastSyncedAt?: string;
-  cloudflareLastSyncedBy?: string;
   lastSyncedAt?: string;
   lastSyncedBy?: string;
 } {
@@ -317,7 +276,6 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
   const driveFolderId = isSafeGoogleResourceId(raw.driveFolderId)
     ? String(raw.driveFolderId).trim()
     : undefined;
-  const cloudflareWorkerUrl = sanitizeCloudflareWorkerUrl(raw.cloudflareWorkerUrl);
 
   return {
     ...(spreadsheetId ? { spreadsheetId } : {}),
@@ -338,22 +296,6 @@ export function sanitizeWorkspaceConfigInput(raw: Record<string, unknown>): {
       : driveFolderId
         ? { driveFolderUrl: `https://drive.google.com/drive/folders/${driveFolderId}` }
         : {}),
-    ...(cloudflareWorkerUrl ? { cloudflareWorkerUrl } : {}),
-    ...(raw.cloudflareDatabaseName
-      ? { cloudflareDatabaseName: clampPayloadText(raw.cloudflareDatabaseName, 120).trim() }
-      : {}),
-    ...(raw.cloudflareBucketName
-      ? { cloudflareBucketName: clampPayloadText(raw.cloudflareBucketName, 120).trim() }
-      : {}),
-    ...(cloudflareWorkerUrl && raw.cloudflareConnectedAt
-      ? { cloudflareConnectedAt: clampPayloadText(raw.cloudflareConnectedAt, 64).trim() }
-      : {}),
-    ...(raw.cloudflareLastSyncedAt
-      ? { cloudflareLastSyncedAt: clampPayloadText(raw.cloudflareLastSyncedAt, 64).trim() }
-      : {}),
-    ...(raw.cloudflareLastSyncedBy
-      ? { cloudflareLastSyncedBy: clampPayloadText(raw.cloudflareLastSyncedBy, 120).trim() }
-      : {}),
     ...(raw.lastSyncedAt ? { lastSyncedAt: clampPayloadText(raw.lastSyncedAt, 64).trim() } : {}),
     ...(raw.lastSyncedBy ? { lastSyncedBy: clampPayloadText(raw.lastSyncedBy, 120).trim() } : {}),
   };

@@ -45,6 +45,7 @@ export default function App() {
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
+        await api.loadAllDatabase(true);
         const [statusRes, meRes] = await Promise.all([api.getAuthStatus(), api.getMe()]);
         setAdminInitialized(statusRes.adminInitialized);
         if (meRes.user) {
@@ -58,13 +59,13 @@ export default function App() {
       } catch (err) {
         lastError = err;
         if (attempt < 2) {
-          await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 400 : 900));
+          await new Promise((resolve) => setTimeout(resolve, attempt === 0 ? 500 : 1000));
         }
       }
     }
     setBootError(
       (lastError as Error)?.message ||
-        'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ชั่วคราว กรุณากดลองใหม่อีกครั้ง'
+        'ไม่สามารถเชื่อมต่อฐานข้อมูล Google Sheets ได้ชั่วคราว กรุณากดลองใหม่อีกครั้ง'
     );
     setInitializing(false);
   };

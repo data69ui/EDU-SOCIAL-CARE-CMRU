@@ -2,16 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
-import { createApp } from './server/app.js';
-import { store } from './server/store.js';
 
 const PORT = 3000;
 
 async function startServer() {
-  await store.ready();
-  const app = createApp();
+  const app = express();
 
-  // Vite dev / static production serving
   const isProd = process.env.NODE_ENV === 'production';
   const distDir = path.resolve(process.cwd(), 'dist');
 
@@ -29,7 +25,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`EDU SOCIAL CARE CMRU server running on http://localhost:${PORT}`);
+    console.log(`EDU SOCIAL CARE CMRU SPA server running on http://localhost:${PORT}`);
   });
 }
 

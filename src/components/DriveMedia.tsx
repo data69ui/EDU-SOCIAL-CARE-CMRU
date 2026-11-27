@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ExternalLink, FileText, HardDrive } from 'lucide-react';
-import { subscribeGoogleWorkspaceAuth } from '../services/googleAuth';
-import { fetchDriveFileBlobUrl } from '../services/googleWorkspace';
+import { buildDriveImagePreviewUrl } from '../services/googleSheetsDb';
 import type { UploadedFileMeta } from '../types/scholarship';
 
 interface DriveImageProps {
@@ -12,50 +11,15 @@ interface DriveImageProps {
 }
 
 export function DriveImage({ src, driveFileId, alt, className = '' }: DriveImageProps) {
-  const [resolvedUrl, setResolvedUrl] = useState<string>(driveFileId ? '' : src);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [imgSrc, setImgSrc] = useState<string>(() => buildDriveImagePreviewUrl(src, driveFileId));
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    return subscribeGoogleWorkspaceAuth((snap) => {
-      setAccessToken(snap.accessToken);
-    });
-  }, []);
+    setFailed(false);
+    setImgSrc(buildDriveImagePreviewUrl(src, driveFileId));
+  }, [src, driveFileId]);
 
-  useEffect(() => {
-    if (!driveFileId) {
-      setResolvedUrl(src);
-      return;
-    }
-    if (!accessToken) {
-      setResolvedUrl('');
-      return;
-    }
-
-    let cancelled = false;
-    let objectUrl = '';
-
-    fetchDriveFileBlobUrl(accessToken, driveFileId)
-      .then((url) => {
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        objectUrl = url;
-        setResolvedUrl(url);
-      })
-      .catch(() => {
-        if (!cancelled) setResolvedUrl('');
-      });
-
-    return () => {
-      cancelled = true;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [driveFileId, accessToken, src]);
-
-  if (driveFileId && !resolvedUrl) {
+  if (!imgSrc || failed) {
     return (
       <div
         title={`${alt} (จัดเก็บบน Google Drive)`}
@@ -68,9 +32,16 @@ export function DriveImage({ src, driveFileId, alt, className = '' }: DriveImage
 
   return (
     <img
-      src={resolvedUrl || src}
+      src={imgSrc}
       alt={alt}
       referrerPolicy="no-referrer"
+      onError={() => {
+        if (src && imgSrc !== src) {
+          setImgSrc(src);
+        } else {
+          setFailed(true);
+        }
+      }}
       className={className}
     />
   );
@@ -82,38 +53,13 @@ interface DriveFileLinkProps {
 }
 
 export function DriveFileLink({ file, className = '' }: DriveFileLinkProps) {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    return subscribeGoogleWorkspaceAuth((snap) => {
-      setAccessToken(snap.accessToken);
-    });
-  }, []);
-
   const targetHref = file.driveWebViewLink || file.url;
-
-  const handleOpen = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (file.driveFileId && accessToken && !file.driveWebViewLink) {
-      e.preventDefault();
-      try {
-        const blobUrl = await fetchDriveFileBlobUrl(accessToken, file.driveFileId);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = file.name;
-        a.click();
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 15_000);
-      } catch {
-        // Ignore
-      }
-    }
-  };
 
   return (
     <a
       href={targetHref}
       target="_blank"
       rel="noreferrer"
-      onClick={handleOpen}
       className={
         className ||
         'inline-flex items-center gap-1 text-xs font-medium text-[#7A1629] dark:text-[#E8C97A] hover:underline'

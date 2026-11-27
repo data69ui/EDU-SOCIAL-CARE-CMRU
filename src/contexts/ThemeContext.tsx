@@ -24,7 +24,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 function readInitialTheme(): ThemeMode {
   if (typeof window === 'undefined') return 'light';
   try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    const stored = window.sessionStorage.getItem(THEME_STORAGE_KEY);
     if (stored === 'dark' || stored === 'light') return stored;
   } catch {
     // Ignore storage access errors
@@ -45,7 +45,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.colorScheme = 'light';
     }
     try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+      window.sessionStorage.setItem(THEME_STORAGE_KEY, theme);
     } catch {
       // Ignore storage access errors
     }

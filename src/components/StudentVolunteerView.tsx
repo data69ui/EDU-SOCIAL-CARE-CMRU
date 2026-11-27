@@ -19,6 +19,7 @@ interface StudentVolunteerViewProps {
   application: ScholarshipApplicationData | null;
   volunteers: VolunteerRecord[];
   defaultAcademicYear: AcademicYear;
+  studentId?: string;
   onVolunteerAdded: (record: VolunteerRecord) => void;
   onGoToProgress: () => void;
 }
@@ -27,6 +28,7 @@ export function StudentVolunteerView({
   application,
   volunteers,
   defaultAcademicYear,
+  studentId,
   onVolunteerAdded,
   onGoToProgress,
 }: StudentVolunteerViewProps) {
@@ -278,12 +280,13 @@ export function StudentVolunteerView({
 
         <FileUploadField
           label="1. รูปภาพยืนยันการทำจิตอาสา (ขั้นต่ำ 3 รูป)"
-          helperText="ขนาดไฟล์ไม่เกิน 10 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP"
+          helperText="ขนาดไฟล์ไม่เกิน 3 MB ต่อไฟล์ รองรับ PDF, JPG, PNG และ WEBP"
           files={photos}
           onChange={setPhotos}
-          maxSizeMB={10}
+          maxSizeMB={3}
           allowPdf={true}
           minCount={3}
+          studentId={studentId || application?.studentId}
         />
 
         <div className="flex justify-end">

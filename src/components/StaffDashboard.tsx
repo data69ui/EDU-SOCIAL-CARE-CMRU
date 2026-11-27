@@ -99,7 +99,7 @@ const SECTION_META: Record<StaffSectionKey, { title: string; breadcrumb: string 
   'excel-import': { title: 'นำเข้าข้อมูล Excel / เพิ่มรายชื่อ', breadcrumb: 'อัปโหลดไฟล์ .xlsx / .csv หรือเพิ่มรายบุคคล' },
   'pdf-reports': { title: 'ศูนย์พิมพ์รายงาน PDF', breadcrumb: 'พิมพ์รายชื่อรวมและโปรไฟล์รายบุคคล' },
   'admin-users': { title: 'จัดการผู้ใช้งาน', breadcrumb: 'สร้างบัญชี แก้ไขรหัสผ่าน และลบบัญชี' },
-  integrations: { title: 'Cloudflare & Google Workspace', breadcrumb: 'เชื่อมต่อ Cloudflare (Workers/D1/R2), Google Sheets และ Drive' },
+  integrations: { title: 'Google Sheets & Drive', breadcrumb: 'ซิงก์ข้อมูลทุกตารางลง Google Sheets และจัดเก็บเอกสารบน Google Drive' },
 };
 
 function getInitials(name: string) {
@@ -632,10 +632,10 @@ export function StaffDashboard({
       ],
     },
     {
-      title: 'นำเข้าข้อมูล & Google Workspace',
+      title: 'นำเข้าข้อมูล & ฐานข้อมูล Google Sheets',
       items: [
         { key: 'excel-import', label: 'นำเข้า Excel / เพิ่มรายชื่อ', icon: FileSpreadsheet },
-        { key: 'integrations', label: 'Cloudflare & Google', icon: FileSpreadsheet },
+        { key: 'integrations', label: 'Google Sheets & Drive', icon: FileSpreadsheet },
         { key: 'pdf-reports', label: 'พิมพ์รายงาน PDF', icon: Printer },
       ],
     },
@@ -1895,6 +1895,13 @@ export function StaffDashboard({
                         onChange={setGradeFiles}
                         maxSizeMB={3}
                         allowPdf={true}
+                        studentId={
+                          students.find((s) => s.user.id === gradeTargetStudentId)?.basicInfo
+                            .studentId ||
+                          students.find((s) => s.user.id === gradeTargetStudentId)?.user
+                            .studentId ||
+                          'staff'
+                        }
                       />
 
                       <button

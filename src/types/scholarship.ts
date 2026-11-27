@@ -31,42 +31,32 @@ export interface GoogleWorkspaceConfig {
   driveFolderId?: string;
   driveFolderName?: string;
   driveFolderUrl?: string;
-  cloudflareWorkerUrl?: string;
-  cloudflareDatabaseName?: string;
-  cloudflareBucketName?: string;
-  cloudflareConnectedAt?: string;
-  cloudflareLastSyncedAt?: string;
-  cloudflareLastSyncedBy?: string;
   lastSyncedAt?: string;
   lastSyncedBy?: string;
 }
 
-export interface CloudflareRuntimeStatus {
-  runtime: 'cloudflare-workers' | 'node';
-  d1Connected: boolean;
-  r2Bound: boolean;
-  d1LatencyMs?: number;
-  databaseName: string;
-  bucketName: string;
-  counts: {
-    students: number;
-    applications: number;
-    grades: number;
-    volunteers: number;
-  };
-  config: GoogleWorkspaceConfig;
-}
+export type GoogleSheetTableName =
+  | 'Admins'
+  | 'Users'
+  | 'Students'
+  | 'Scholarships'
+  | 'Applications'
+  | 'VolunteerLogs'
+  | 'Grades'
+  | 'Settings';
 
-export interface CloudflareTestResult {
-  ok: boolean;
-  workerUrl: string;
-  runtime: string;
-  latencyMs: number;
-  d1Connected: boolean;
-  r2Bound: boolean;
-  d1LatencyMs?: number;
-  adminInitialized?: boolean;
-  totalStudents?: number;
+export type SheetRecordRow = Record<string, string | number | boolean | null | undefined>;
+
+export interface GoogleSheetsDatabasePayload {
+  Admins: SheetRecordRow[];
+  Users: SheetRecordRow[];
+  Students: SheetRecordRow[];
+  Scholarships: SheetRecordRow[];
+  Applications: SheetRecordRow[];
+  VolunteerLogs: SheetRecordRow[];
+  Grades: SheetRecordRow[];
+  Settings: SheetRecordRow[];
+  [key: string]: SheetRecordRow[];
 }
 
 export interface ParentInfo {
